@@ -20,22 +20,33 @@ class GameScene: SKScene {
     var gun: SKSpriteNode!
     var birdBase: Bird!
     var birds: [Bird] = []
+    var bulletBase: SKSpriteNode!
+    var bullets: [SKSpriteNode] = []
+    var pooBase: SKSpriteNode!
     
     // Controls
     var leftTouch: UITouch?
     var leftInitialPosition: CGPoint!
     var rightTouch: UITouch?
     var rightInitialPosition: CGPoint!
+    var shooting = false
     
     // Gameplay variables
     var heroSpeed: CGFloat = 150
     var birdSpeed: CGFloat = 100
+    var bulletSpeed: CGFloat = 200
     // Average frames until next bird spawn ~(seconds * 60)
     var spawnFrequency: Int = 5 * 60
+    // Frames until next shot
+    var shotFrequency: Int = 1 * 60
+    
+    // BTS variables
     // Actual frames until next bird spawn
     var spawnTime: Int!
-    // Framecount
+    // Framecount for bird spawning
     var spawnTimer: Int = 0
+    // Framecount for shooting
+    var shotTimer: Int = 0
     
     
     override func didMove(to view: SKView) {
@@ -45,6 +56,8 @@ class GameScene: SKScene {
         hero = self.childNode(withName: "//hero") as! SKSpriteNode
         gun = hero.childNode(withName: "gun") as! SKSpriteNode
         birdBase = self.childNode(withName: "//birdBase") as! Bird
+        bulletBase = self.childNode(withName: "//bulletBase") as! SKSpriteNode
+        pooBase = self.childNode(withName: "//pooBase") as! SKSpriteNode
     }
     
     override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
@@ -58,6 +71,7 @@ class GameScene: SKScene {
                 if rightTouch == nil {
                     rightTouch = touch
                     rightInitialPosition = touch.location(in: self.view)
+                    shooting = true
                 }
             }
         }
@@ -93,15 +107,18 @@ class GameScene: SKScene {
                 rightTouch = nil
                 rightInitialPosition = nil
                 gun.zRotation = 0
+                shooting = false
             }
         }
     }
     
     override func update(_ currentTime: TimeInterval) {
         
-        // Spawns new bird if necessary
-        spawnTimer += 1
+        // Spawns new bird if necessary, removes old birds
         birdManager()
+        
+        // Shoots if necessary, removes old bullets
+        shotManager()
         
         // clamps hero's position and velocity to inside play area
         if (hero.position.x <= (-284 + hero.size.width / 2 + 1)) {
@@ -116,15 +133,38 @@ class GameScene: SKScene {
     
     // Figures out if new bird should be spawned, then spawns it. Removes old birds
     func birdManager() {
+        spawnTimer += 1
         if spawnTimer >= spawnTime {
             spawnBird()
             let rand = arc4random_uniform(UInt32(spawnFrequency))
             spawnTime = spawnFrequency + Int(rand) - (spawnFrequency/2)
             spawnTimer = 0
         }
-        for i in 0 ..< birds.count {
+        for var i in 0 ..< birds.count {
+            if i >= birds.count || i < 0 {break}
             if birds[i].position.y < -200 || birds[i].position.x < -350 || birds[i].position.x > 350 {
                 birds.remove(at: i)
+                i -= 1
+            }
+        }
+    }
+    
+    // Figures out if bullet should be shot, then shoots it. Removes old bullets
+    func shotManager() {
+        if shooting {
+            shotTimer += 1
+            if shotTimer > shotFrequency {
+                shoot()
+                shotTimer = 0
+            }
+        } else {
+            shotTimer = 0
+        }
+        for var i in 0 ..< bullets.count {
+            if i >= bullets.count || i < 0 {break}
+            if bullets[i].position.y > 200 || bullets[i].position.x < -350 || bullets[i].position.x > 350 {
+                bullets.remove(at: i)
+                i -= 1
             }
         }
     }
@@ -157,5 +197,18 @@ class GameScene: SKScene {
         newBird.position = newPosition
         self.addChild(newBird)
         birds.append(newBird)
+    }
+    
+    // Shoots
+    func shoot() {
+        let newBullet = bulletBase.copy() as! SKSpriteNode
+        newBullet.physicsBody?.linearDamping = 0
+        newBullet.position = hero.position
+        newBullet.position.x -= gun.size.height * sin(gun.zRotation)
+        newBullet.position.y += gun.size.height * cos(gun.zRotation) - 160 + hero.size.height
+        newBullet.physicsBody?.velocity.dx = -bulletSpeed * sin(gun.zRotation)
+        newBullet.physicsBody?.velocity.dy = bulletSpeed * cos(gun.zRotation)
+        bullets.append(newBullet)
+        self.addChild(newBullet)
     }
 }
