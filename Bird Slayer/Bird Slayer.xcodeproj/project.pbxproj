@@ -7,6 +7,11 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		0FA9C1901F0D525A009621DF /* Hero.sks in Resources */ = {isa = PBXBuildFile; fileRef = 0FA9C18F1F0D525A009621DF /* Hero.sks */; };
+		0FA9C1921F0D570E009621DF /* Bird.sks in Resources */ = {isa = PBXBuildFile; fileRef = 0FA9C1911F0D570E009621DF /* Bird.sks */; };
+		0FA9C1941F0D585E009621DF /* Bullet.sks in Resources */ = {isa = PBXBuildFile; fileRef = 0FA9C1931F0D585E009621DF /* Bullet.sks */; };
+		0FA9C1961F0D5937009621DF /* Poo.sks in Resources */ = {isa = PBXBuildFile; fileRef = 0FA9C1951F0D5937009621DF /* Poo.sks */; };
+		0FA9C19A1F0D608B009621DF /* Hero.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0FA9C1991F0D608B009621DF /* Hero.swift */; };
 		0FFD46611F0D4FC800E26E8E /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0FFD46601F0D4FC800E26E8E /* AppDelegate.swift */; };
 		0FFD46631F0D4FC800E26E8E /* GameScene.sks in Resources */ = {isa = PBXBuildFile; fileRef = 0FFD46621F0D4FC800E26E8E /* GameScene.sks */; };
 		0FFD46651F0D4FC800E26E8E /* Actions.sks in Resources */ = {isa = PBXBuildFile; fileRef = 0FFD46641F0D4FC800E26E8E /* Actions.sks */; };
@@ -18,6 +23,11 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		0FA9C18F1F0D525A009621DF /* Hero.sks */ = {isa = PBXFileReference; lastKnownFileType = file.sks; path = Hero.sks; sourceTree = "<group>"; };
+		0FA9C1911F0D570E009621DF /* Bird.sks */ = {isa = PBXFileReference; lastKnownFileType = file.sks; path = Bird.sks; sourceTree = "<group>"; };
+		0FA9C1931F0D585E009621DF /* Bullet.sks */ = {isa = PBXFileReference; lastKnownFileType = file.sks; path = Bullet.sks; sourceTree = "<group>"; };
+		0FA9C1951F0D5937009621DF /* Poo.sks */ = {isa = PBXFileReference; lastKnownFileType = file.sks; path = Poo.sks; sourceTree = "<group>"; };
+		0FA9C1991F0D608B009621DF /* Hero.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Hero.swift; sourceTree = "<group>"; };
 		0FFD465D1F0D4FC800E26E8E /* Bird Slayer.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Bird Slayer.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		0FFD46601F0D4FC800E26E8E /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		0FFD46621F0D4FC800E26E8E /* GameScene.sks */ = {isa = PBXFileReference; lastKnownFileType = file.sks; path = GameScene.sks; sourceTree = "<group>"; };
@@ -62,8 +72,13 @@
 			children = (
 				0FFD46601F0D4FC800E26E8E /* AppDelegate.swift */,
 				0FFD46621F0D4FC800E26E8E /* GameScene.sks */,
+				0FA9C1911F0D570E009621DF /* Bird.sks */,
+				0FA9C18F1F0D525A009621DF /* Hero.sks */,
+				0FA9C1931F0D585E009621DF /* Bullet.sks */,
+				0FA9C1951F0D5937009621DF /* Poo.sks */,
 				0FFD46641F0D4FC800E26E8E /* Actions.sks */,
 				0FFD46661F0D4FC800E26E8E /* GameScene.swift */,
+				0FA9C1991F0D608B009621DF /* Hero.swift */,
 				0FFD46681F0D4FC800E26E8E /* GameViewController.swift */,
 				0FFD466A1F0D4FC800E26E8E /* Main.storyboard */,
 				0FFD466D1F0D4FC800E26E8E /* Assets.xcassets */,
@@ -134,9 +149,13 @@
 			buildActionMask = 2147483647;
 			files = (
 				0FFD466C1F0D4FC800E26E8E /* Main.storyboard in Resources */,
+				0FA9C1941F0D585E009621DF /* Bullet.sks in Resources */,
 				0FFD46631F0D4FC800E26E8E /* GameScene.sks in Resources */,
+				0FA9C1961F0D5937009621DF /* Poo.sks in Resources */,
 				0FFD466E1F0D4FC800E26E8E /* Assets.xcassets in Resources */,
+				0FA9C1901F0D525A009621DF /* Hero.sks in Resources */,
 				0FFD46711F0D4FC800E26E8E /* LaunchScreen.storyboard in Resources */,
+				0FA9C1921F0D570E009621DF /* Bird.sks in Resources */,
 				0FFD46651F0D4FC800E26E8E /* Actions.sks in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -151,6 +170,7 @@
 				0FFD46671F0D4FC800E26E8E /* GameScene.swift in Sources */,
 				0FFD46691F0D4FC800E26E8E /* GameViewController.swift in Sources */,
 				0FFD46611F0D4FC800E26E8E /* AppDelegate.swift in Sources */,
+				0FA9C19A1F0D608B009621DF /* Hero.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -316,6 +336,7 @@
 				0FFD46771F0D4FC800E26E8E /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};
