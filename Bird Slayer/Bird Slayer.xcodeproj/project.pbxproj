@@ -1,0 +1,323 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 46;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		0FFD46611F0D4FC800E26E8E /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0FFD46601F0D4FC800E26E8E /* AppDelegate.swift */; };
+		0FFD46631F0D4FC800E26E8E /* GameScene.sks in Resources */ = {isa = PBXBuildFile; fileRef = 0FFD46621F0D4FC800E26E8E /* GameScene.sks */; };
+		0FFD46651F0D4FC800E26E8E /* Actions.sks in Resources */ = {isa = PBXBuildFile; fileRef = 0FFD46641F0D4FC800E26E8E /* Actions.sks */; };
+		0FFD46671F0D4FC800E26E8E /* GameScene.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0FFD46661F0D4FC800E26E8E /* GameScene.swift */; };
+		0FFD46691F0D4FC800E26E8E /* GameViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0FFD46681F0D4FC800E26E8E /* GameViewController.swift */; };
+		0FFD466C1F0D4FC800E26E8E /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 0FFD466A1F0D4FC800E26E8E /* Main.storyboard */; };
+		0FFD466E1F0D4FC800E26E8E /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 0FFD466D1F0D4FC800E26E8E /* Assets.xcassets */; };
+		0FFD46711F0D4FC800E26E8E /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 0FFD466F1F0D4FC800E26E8E /* LaunchScreen.storyboard */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		0FFD465D1F0D4FC800E26E8E /* Bird Slayer.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Bird Slayer.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		0FFD46601F0D4FC800E26E8E /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
+		0FFD46621F0D4FC800E26E8E /* GameScene.sks */ = {isa = PBXFileReference; lastKnownFileType = file.sks; path = GameScene.sks; sourceTree = "<group>"; };
+		0FFD46641F0D4FC800E26E8E /* Actions.sks */ = {isa = PBXFileReference; lastKnownFileType = file.sks; path = Actions.sks; sourceTree = "<group>"; };
+		0FFD46661F0D4FC800E26E8E /* GameScene.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameScene.swift; sourceTree = "<group>"; };
+		0FFD46681F0D4FC800E26E8E /* GameViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameViewController.swift; sourceTree = "<group>"; };
+		0FFD466B1F0D4FC800E26E8E /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
+		0FFD466D1F0D4FC800E26E8E /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		0FFD46701F0D4FC800E26E8E /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
+		0FFD46721F0D4FC800E26E8E /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		0FFD465A1F0D4FC800E26E8E /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		0FFD46541F0D4FC800E26E8E = {
+			isa = PBXGroup;
+			children = (
+				0FFD465F1F0D4FC800E26E8E /* Bird Slayer */,
+				0FFD465E1F0D4FC800E26E8E /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		0FFD465E1F0D4FC800E26E8E /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				0FFD465D1F0D4FC800E26E8E /* Bird Slayer.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		0FFD465F1F0D4FC800E26E8E /* Bird Slayer */ = {
+			isa = PBXGroup;
+			children = (
+				0FFD46601F0D4FC800E26E8E /* AppDelegate.swift */,
+				0FFD46621F0D4FC800E26E8E /* GameScene.sks */,
+				0FFD46641F0D4FC800E26E8E /* Actions.sks */,
+				0FFD46661F0D4FC800E26E8E /* GameScene.swift */,
+				0FFD46681F0D4FC800E26E8E /* GameViewController.swift */,
+				0FFD466A1F0D4FC800E26E8E /* Main.storyboard */,
+				0FFD466D1F0D4FC800E26E8E /* Assets.xcassets */,
+				0FFD466F1F0D4FC800E26E8E /* LaunchScreen.storyboard */,
+				0FFD46721F0D4FC800E26E8E /* Info.plist */,
+			);
+			path = "Bird Slayer";
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		0FFD465C1F0D4FC800E26E8E /* Bird Slayer */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 0FFD46751F0D4FC800E26E8E /* Build configuration list for PBXNativeTarget "Bird Slayer" */;
+			buildPhases = (
+				0FFD46591F0D4FC800E26E8E /* Sources */,
+				0FFD465A1F0D4FC800E26E8E /* Frameworks */,
+				0FFD465B1F0D4FC800E26E8E /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = "Bird Slayer";
+			productName = "Bird Slayer";
+			productReference = 0FFD465D1F0D4FC800E26E8E /* Bird Slayer.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		0FFD46551F0D4FC800E26E8E /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				LastSwiftUpdateCheck = 0830;
+				LastUpgradeCheck = 0830;
+				ORGANIZATIONNAME = "Marshall Cain";
+				TargetAttributes = {
+					0FFD465C1F0D4FC800E26E8E = {
+						CreatedOnToolsVersion = 8.3.3;
+						DevelopmentTeam = 8NZVYD35X8;
+						ProvisioningStyle = Automatic;
+					};
+				};
+			};
+			buildConfigurationList = 0FFD46581F0D4FC800E26E8E /* Build configuration list for PBXProject "Bird Slayer" */;
+			compatibilityVersion = "Xcode 3.2";
+			developmentRegion = English;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = 0FFD46541F0D4FC800E26E8E;
+			productRefGroup = 0FFD465E1F0D4FC800E26E8E /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				0FFD465C1F0D4FC800E26E8E /* Bird Slayer */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		0FFD465B1F0D4FC800E26E8E /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				0FFD466C1F0D4FC800E26E8E /* Main.storyboard in Resources */,
+				0FFD46631F0D4FC800E26E8E /* GameScene.sks in Resources */,
+				0FFD466E1F0D4FC800E26E8E /* Assets.xcassets in Resources */,
+				0FFD46711F0D4FC800E26E8E /* LaunchScreen.storyboard in Resources */,
+				0FFD46651F0D4FC800E26E8E /* Actions.sks in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		0FFD46591F0D4FC800E26E8E /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				0FFD46671F0D4FC800E26E8E /* GameScene.swift in Sources */,
+				0FFD46691F0D4FC800E26E8E /* GameViewController.swift in Sources */,
+				0FFD46611F0D4FC800E26E8E /* AppDelegate.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXVariantGroup section */
+		0FFD466A1F0D4FC800E26E8E /* Main.storyboard */ = {
+			isa = PBXVariantGroup;
+			children = (
+				0FFD466B1F0D4FC800E26E8E /* Base */,
+			);
+			name = Main.storyboard;
+			sourceTree = "<group>";
+		};
+		0FFD466F1F0D4FC800E26E8E /* LaunchScreen.storyboard */ = {
+			isa = PBXVariantGroup;
+			children = (
+				0FFD46701F0D4FC800E26E8E /* Base */,
+			);
+			name = LaunchScreen.storyboard;
+			sourceTree = "<group>";
+		};
+/* End PBXVariantGroup section */
+
+/* Begin XCBuildConfiguration section */
+		0FFD46731F0D4FC800E26E8E /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 10.3;
+				MTL_ENABLE_DEBUG_INFO = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		0FFD46741F0D4FC800E26E8E /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 10.3;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				SDKROOT = iphoneos;
+				SWIFT_OPTIMIZATION_LEVEL = "-Owholemodule";
+				TARGETED_DEVICE_FAMILY = "1,2";
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		0FFD46761F0D4FC800E26E8E /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				DEVELOPMENT_TEAM = 8NZVYD35X8;
+				INFOPLIST_FILE = "Bird Slayer/Info.plist";
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
+				PRODUCT_BUNDLE_IDENTIFIER = "com.mcain.Bird-Slayer";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 3.0;
+			};
+			name = Debug;
+		};
+		0FFD46771F0D4FC800E26E8E /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				DEVELOPMENT_TEAM = 8NZVYD35X8;
+				INFOPLIST_FILE = "Bird Slayer/Info.plist";
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
+				PRODUCT_BUNDLE_IDENTIFIER = "com.mcain.Bird-Slayer";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 3.0;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		0FFD46581F0D4FC800E26E8E /* Build configuration list for PBXProject "Bird Slayer" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				0FFD46731F0D4FC800E26E8E /* Debug */,
+				0FFD46741F0D4FC800E26E8E /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		0FFD46751F0D4FC800E26E8E /* Build configuration list for PBXNativeTarget "Bird Slayer" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				0FFD46761F0D4FC800E26E8E /* Debug */,
+				0FFD46771F0D4FC800E26E8E /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 0FFD46551F0D4FC800E26E8E /* Project object */;
+}
