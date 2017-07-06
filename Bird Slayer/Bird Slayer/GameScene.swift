@@ -13,7 +13,7 @@ func clamp<T: Comparable>(value: T, lower: T, upper: T) -> T {
     return min(max(value, lower), upper)
 }
 
-class GameScene: SKScene {
+class GameScene: SKScene, SKPhysicsContactDelegate {
     
     // Game objects
     var hero: SKSpriteNode!
@@ -23,6 +23,7 @@ class GameScene: SKScene {
     var bulletBase: SKSpriteNode!
     var bullets: [SKSpriteNode] = []
     var pooBase: SKSpriteNode!
+    var poops: [SKSpriteNode] = []
     
     // Controls
     var leftTouch: UITouch?
@@ -37,8 +38,10 @@ class GameScene: SKScene {
     var bulletSpeed: CGFloat = 200
     // Average frames until next bird spawn ~(seconds * 60)
     var spawnFrequency: Int = 5 * 60
-    // Frames until next shot
+    // Frames until next shot ~(seconds * 60)
     var shotFrequency: Int = 1 * 60
+    // Average frames until next poop ~(seconds * 60)
+    var poopFrequency: Int = 3 * 60
     
     // BTS variables
     // Actual frames until next bird spawn
@@ -48,9 +51,10 @@ class GameScene: SKScene {
     // Framecount for shooting
     var shotTimer: Int = 0
     
-    
+    // Called when game begins
     override func didMove(to view: SKView) {
         spawnTime = spawnFrequency
+        shotTimer = shotFrequency
         
         // Set reference to objects
         hero = self.childNode(withName: "//hero") as! SKSpriteNode
@@ -58,8 +62,12 @@ class GameScene: SKScene {
         birdBase = self.childNode(withName: "//birdBase") as! Bird
         bulletBase = self.childNode(withName: "//bulletBase") as! SKSpriteNode
         pooBase = self.childNode(withName: "//pooBase") as! SKSpriteNode
+        
+        // Set physics contact delegate
+        physicsWorld.contactDelegate = self
     }
     
+    // Touch functions
     override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
         for touch in touches {
             if touch.location(in: self.view).x <= 284 {
@@ -112,6 +120,7 @@ class GameScene: SKScene {
         }
     }
     
+    // Called every frame
     override func update(_ currentTime: TimeInterval) {
         
         // Spawns new bird if necessary, removes old birds
@@ -131,7 +140,27 @@ class GameScene: SKScene {
         }
     }
     
-    // Figures out if new bird should be spawned, then spawns it. Removes old birds
+    // Called when a physics contact occurs
+    func didBegin(_ contact: SKPhysicsContact) {
+        
+        // Get references to the bodies involved in the collision
+        let contactA:SKPhysicsBody = contact.bodyA
+        let contactB:SKPhysicsBody = contact.bodyB
+        
+        // Get references to the physics body parent SKSpriteNode
+        let nodeA = contactA.node as! SKSpriteNode
+        let nodeB = contactB.node as! SKSpriteNode
+        
+        // Check if either physics bodies was a bird, then removes the bird and the bullet
+        if contactA.categoryBitMask == 2 || contactB.categoryBitMask == 2 {
+            nodeA.removeFromParent()
+            nodeA.isHidden = true
+            nodeB.removeFromParent()
+            nodeB.isHidden = true
+        }
+    }
+    
+    // Figures out if new bird should be spawned, then spawns it. Removes old birds. Makes birds poo if they are due
     func birdManager() {
         spawnTimer += 1
         if spawnTimer >= spawnTime {
@@ -142,29 +171,47 @@ class GameScene: SKScene {
         }
         for var i in 0 ..< birds.count {
             if i >= birds.count || i < 0 {break}
-            if birds[i].position.y < -200 || birds[i].position.x < -350 || birds[i].position.x > 350 {
+            if birds[i].position.x < -350 || birds[i].position.x > 350 {
+                birds[i].removeFromParent()
                 birds.remove(at: i)
-                i -= 1
-            }
+                if i > 0 {
+                    i -= 1
+                }
+            } else if birds[i].isHidden {
+                birds[i].removeFromParent()
+                birds.remove(at: i)
+                if i > 0 {
+                    i -= 1
+                }
+            } //else if {}
         }
     }
     
     // Figures out if bullet should be shot, then shoots it. Removes old bullets
     func shotManager() {
-        if shooting {
+        if shotTimer < shotFrequency {
             shotTimer += 1
-            if shotTimer > shotFrequency {
+        }
+        if shooting {
+            if shotTimer >= shotFrequency {
                 shoot()
                 shotTimer = 0
             }
-        } else {
-            shotTimer = 0
         }
         for var i in 0 ..< bullets.count {
             if i >= bullets.count || i < 0 {break}
             if bullets[i].position.y > 200 || bullets[i].position.x < -350 || bullets[i].position.x > 350 {
+                bullets[i].removeFromParent()
                 bullets.remove(at: i)
-                i -= 1
+                if i > 0 {
+                    i -= 1
+                }
+            } else if bullets[i].isHidden {
+                bullets[i].removeFromParent()
+                bullets.remove(at: i)
+                if i > 0 {
+                    i -= 1
+                }
             }
         }
     }

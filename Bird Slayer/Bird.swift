@@ -21,6 +21,7 @@ class Bird: SKSpriteNode {
     
     var type: BirdType!
     var direction: Side!
+    var pooTimer = 0
     
     // Initializer
     override init(texture: SKTexture?, color: UIColor, size: CGSize) {
