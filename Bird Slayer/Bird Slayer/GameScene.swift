@@ -35,6 +35,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     var highScoreLabel: SKLabelNode!
     var tutorial: SKNode!
     var upgradeScreen: SKNode!
+    var gameOverLabel: SKLabelNode!
     
     // Upgrade UI
     var health_1: SKSpriteNode!
@@ -131,6 +132,8 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         upgradeScreen = self.childNode(withName: "upgradeScreen")
         upgradeScreen.position = self.position
         upgradeScreen.isHidden = true
+        gameOverLabel = self.childNode(withName: "gameOverLabel") as! SKLabelNode
+        gameOverLabel.isHidden = true
         
         // Set reference to upgrade UI objects
         health_1 = self.childNode(withName: "//health_1") as! SKSpriteNode
@@ -184,7 +187,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         if gameState == .inactive {
             gameState = .active
         }
-        if gameState != .gameOver && !self.isPaused{
+        if gameState != .gameOver && !self.isPaused {
             for touch in touches {
                 if touch.location(in: self.view).x <= 284 {
                     if leftTouch == nil {
@@ -213,6 +216,12 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
                     }
                 }
             }
+        }
+        if gameState == .gameOver {
+            let skView = self.view as SKView!
+            let scene = GameScene(fileNamed:"GameScene") as GameScene!
+            scene?.scaleMode = .aspectFill
+            skView?.presentScene(scene)
         }
     }
     
@@ -570,7 +579,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         
         gameState = .gameOver
         hero.removeFromParent()
-        print("Game Over")
+        gameOverLabel.isHidden = false
     
         // Removes all bullets on screen
         for _ in bullets {
