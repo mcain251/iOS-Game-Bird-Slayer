@@ -84,17 +84,29 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     var score = 0
     var highScore = UserDefaults().integer(forKey: "HIGHSCORE")
     var maxHealth = 3
+    let maxMaxHealth = 6
+    let minMaxHealth = 3
     var health = 3
     var heroSpeed: CGFloat = 150
+    let maxHeroSpeed: CGFloat = 300
+    let minHeroSpeed: CGFloat = 150
     var birdSpeed: CGFloat = 100
     var bulletSpeed: CGFloat = 200
+    let maxBulletSpeed: CGFloat = 500
+    let minBulletSpeed: CGFloat = 200
     var pooSpeed: CGFloat = 150
     // Average frames until next bird spawn ~(seconds * 60)
     var spawnFrequency: Int = 5 * 60
+    let maxSpawnFrequency: Int = 30
+    let minSpawnFrequency: Int = 5 * 60
     // Frames until next shot ~(seconds * 60)
     var shotFrequency: Int = 1 * 60
+    let maxShotFrequency: Int = 15
+    let minShotFrequency: Int = 1 * 60
     // Average frames until next poop ~(seconds * 60)
     var pooFrequency: Int = 2 * 60
+    // Number of upgrades per catagory
+    let upgrades = 3
     
     // BTS variables
     // Actual frames until next bird spawn
@@ -462,7 +474,9 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
                 upgradeScores.removeFirst()
                 upgrade()
             }
-            nextUpgradeLabel.text = "Next Upgrade: \(upgradeScores.first!)"
+            if upgradeScores.count > 0 {
+                nextUpgradeLabel.text = "Next Upgrade: \(upgradeScores.first!)"
+            }
         } else {
             nextUpgradeLabel.text = ""
         }
@@ -493,13 +507,13 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             health += 1
         }
         if speedUpgradeStatus - oldSpeedUpgradeStatus == 1 {
-            heroSpeed += 50
+            heroSpeed = (((maxHeroSpeed - minHeroSpeed)/CGFloat(upgrades)) * CGFloat((speedUpgradeStatus - 1))) + minHeroSpeed
         }
         if fireRateUpgradeStatus - oldFireRateUpgradeStatus == 1 {
-            shotFrequency -= 15
+            shotFrequency = minShotFrequency - (((minShotFrequency - maxShotFrequency)/upgrades) * (fireRateUpgradeStatus - 1))
         }
         if bulletSpeedUpgradeStatus - oldBulletSpeedUpgradeStatus == 1 {
-            bulletSpeed += 100
+            bulletSpeed = (((maxBulletSpeed - minBulletSpeed)/CGFloat(upgrades)) * CGFloat((bulletSpeedUpgradeStatus - 1))) + minBulletSpeed
         }
         oldHealthUpgradeStatus = healthUpgradeStatus
         oldSpeedUpgradeStatus = speedUpgradeStatus
