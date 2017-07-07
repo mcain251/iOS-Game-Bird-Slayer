@@ -87,10 +87,10 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     // Gameplay variables
     var score = 0
     var highScore = UserDefaults().integer(forKey: "HIGHSCORE")
-    var maxHealth = 3
-    let maxMaxHealth = 6
-    let minMaxHealth = 3
-    var health = 3
+    var maxHealth = 6
+    let maxMaxHealth = 12
+    let minMaxHealth = 6
+    var health = 6
     var heroSpeed: CGFloat = 150
     let maxHeroSpeed: CGFloat = 300
     let minHeroSpeed: CGFloat = 150
@@ -104,6 +104,8 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     let minShotFrequency: Int = 1 * 60
     // Number of upgrades per catagory
     let upgrades = 3
+    var invincibilityTimer = 0
+    let invincibilityTime = 3 * 60
     
     // Bird constants
     let pooSpeed: CGFloat = 150
@@ -391,6 +393,14 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     
     // Called every frame
     override func update(_ currentTime: TimeInterval) {
+        if invincibilityTimer > 0 {
+            invincibilityTimer -= 1
+            if invincibilityTimer % 30 > 20 {
+                hero.isHidden = true
+            } else {
+                hero.isHidden = false
+            }
+        }
         if gameState != .inactive {
             // Spawns new bird if necessary, removes old birds
             birdManager()
@@ -477,17 +487,21 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         
         // Check if one was the hero, then removes poop and decrements health
         if (contactA.categoryBitMask == 1) {
-            health -= 1
-            if nodeB.xScale == 2 && nodeB.yScale == 2 && health != 0 {
+            if invincibilityTimer <= 0 {
                 health -= 1
+                if nodeB.xScale == 2 && nodeB.yScale == 2 && health != 0{
+                    health -= 1
+                }
             }
             nodeB.removeFromParent()
             nodeB.isHidden = true
         }
         if (contactB.categoryBitMask == 1) {
-            health -= 1
-            if nodeA.xScale == 2 && nodeA.yScale == 2 && health != 0 {
+            if invincibilityTimer <= 0 {
                 health -= 1
+                if nodeA.xScale == 2 && nodeA.yScale == 2 && health != 0 {
+                    health -= 1
+                }
             }
             nodeA.removeFromParent()
             nodeA.isHidden = true
@@ -885,5 +899,8 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         if bigIsSpawning {
             bigSpawnFrequency = Int(Double(bigSpawnFrequency) * 0.9)
         }
+        
+        // Makes invulnerable
+        invincibilityTimer = invincibilityTime
     }
 }
