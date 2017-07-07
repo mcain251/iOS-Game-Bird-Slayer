@@ -94,35 +94,53 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     var bulletSpeed: CGFloat = 200
     let maxBulletSpeed: CGFloat = 500
     let minBulletSpeed: CGFloat = 200
-    var pooSpeed: CGFloat = 150
-    // Average frames until next bird spawn ~(seconds * 60)
-    var spawnFrequency: Int = 5 * 60
-    let maxSpawnFrequency: Int = 30
-    let minSpawnFrequency: Int = 5 * 60
     // Frames until next shot ~(seconds * 60)
     var shotFrequency: Int = 1 * 60
-    let maxShotFrequency: Int = 15
+    let maxShotFrequency: Int = 30
     let minShotFrequency: Int = 1 * 60
-    // Average frames until next poop ~(seconds * 60)
-    var pooFrequency: Int = 2 * 60
     // Number of upgrades per catagory
     let upgrades = 3
     
-    // BTS variables
+    // Bird constants
+    let pooSpeed: CGFloat = 150
+    // Average frames until next poop ~(seconds * 60)
+    let pooFrequency: Int = 2 * 60
+    
+    // Normal bird spawn variables
+    // Average frames until next bird spawn ~(seconds * 60)
+    var normalSpawnFrequency: Int = 5 * 60
     // Actual frames until next bird spawn
-    var spawnTime: Int!
+    var normalSpawnTime: Int!
     // Framecount for bird spawning
-    var spawnTimer: Int = 0
+    var normalSpawnTimer: Int = 0
+    
+    // Smart bird spawn variables
+    var smartSpawnFrequency: Int = 8 * 60
+    var smartSpawnTime: Int!
+    var smartSpawnTimer: Int = 0
+    var smartIsSpawning = false
+    let levelsToSmart = 2
+    
+    // Big bird spawn variables
+    var bigSpawnFrequency: Int = 15 * 60
+    var bigSpawnTime: Int!
+    var bigSpawnTimer: Int = 0
+    var bigIsSpawning = false
+    let levelsToBig = 4
+    
+    // BTS variables
     // Framecount for shooting
     var shotTimer: Int = 0
     var gameState: GameSceneState = .inactive
     // List of scores that initiate upgrade screen
-    //var upgradeScores: [Int] = [50, 150, 300, 500, 750, 1050, 1400, 1800, 2250, 2750, 3300, 3900]
-    var upgradeScores: [Int] = [10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 110, 120]
+    var upgradeScores: [Int] = [50, 150, 300, 500, 750, 1050, 1400, 1800, 2250, 2750, 3300, 3900]
+    // var upgradeScores: [Int] = [10, 20, 50, 80, 130, 200, 250, 300, 350, 400, 450, 500]
     
     // Called when game begins
     override func didMove(to view: SKView) {
-        spawnTime = spawnFrequency
+        normalSpawnTime = normalSpawnFrequency
+        smartSpawnTime = smartSpawnFrequency
+        bigSpawnTime = bigSpawnFrequency
         shotTimer = shotFrequency
         
         // Set reference to objects
@@ -331,35 +349,57 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         let nodeA = contactA.node as! SKSpriteNode
         let nodeB = contactB.node as! SKSpriteNode
         
-        // Check if either physics bodies was a bird, then removes the bird and the bullet
+        // Check if either physics bodies was a bird, then damage the bird and remove the bullet
         if contactA.categoryBitMask == 2 || contactB.categoryBitMask == 2 {
             if let birdA = contactA.node as? Bird {
-                score += birdA.pointValue
+                birdA.health -= 1
+                if birdA.health == 0 {
+                    score += birdA.pointValue
+                }
+                nodeB.removeFromParent()
+                nodeB.isHidden = true
             } else if let birdB = contactB.node as? Bird {
-                score += birdB.pointValue
+                birdB.health -= 1
+                if birdB.health == 0 {
+                    score += birdB.pointValue
+                }
+                nodeA.removeFromParent()
+                nodeA.isHidden = true
             }
-            nodeA.removeFromParent()
-            nodeA.isHidden = true
-            nodeB.removeFromParent()
-            nodeB.isHidden = true
         }
         
-        // Check if one was a bullet and one was a poop, then removes both
-        if (contactA.categoryBitMask == 4 && contactB.categoryBitMask == 8) || (contactA.categoryBitMask == 8 && contactB.categoryBitMask == 4) {
+        // Check if one was a bullet and one was a poop, then removes both, unless it's a big poop
+        if (contactA.categoryBitMask == 4 && contactB.categoryBitMask == 8) {
             nodeA.removeFromParent()
             nodeA.isHidden = true
+            if nodeB.xScale != 2 && nodeB.xScale != 2{
+                nodeB.removeFromParent()
+                nodeB.isHidden = true
+            }
+        }
+        if(contactA.categoryBitMask == 8 && contactB.categoryBitMask == 4) {
             nodeB.removeFromParent()
             nodeB.isHidden = true
+            if nodeA.xScale != 2 && nodeA.xScale != 2{
+                nodeA.removeFromParent()
+                nodeA.isHidden = true
+            }
         }
         
         // Check if one was the hero, then removes poop and decrements health
         if (contactA.categoryBitMask == 1) {
             health -= 1
+            if nodeB.xScale == 2 && nodeB.yScale == 2 && health != 0 {
+                health -= 1
+            }
             nodeB.removeFromParent()
             nodeB.isHidden = true
         }
         if (contactB.categoryBitMask == 1) {
             health -= 1
+            if nodeA.xScale == 2 && nodeA.yScale == 2 && health != 0 {
+                health -= 1
+            }
             nodeA.removeFromParent()
             nodeA.isHidden = true
         }
@@ -367,17 +407,41 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     
     // Figures out if new bird should be spawned, then spawns it. Removes old birds. Makes birds poo if they are due
     func birdManager() {
-        spawnTimer += 1
-        if spawnTimer >= spawnTime {
-            spawnBird()
-            let rand = arc4random_uniform(UInt32(spawnFrequency))
-            spawnTime = Int(rand) + (spawnFrequency/2)
-            spawnTimer = 0
+        normalSpawnTimer += 1
+        if normalSpawnTimer >= normalSpawnTime {
+            spawnBird(.normal)
+            let rand = arc4random_uniform(UInt32(normalSpawnFrequency))
+            normalSpawnTime = Int(rand) + (normalSpawnFrequency/2)
+            normalSpawnTimer = 0
+        }
+        if smartIsSpawning {
+            smartSpawnTimer += 1
+            if smartSpawnTimer >= smartSpawnTime {
+                spawnBird(.smart)
+                let rand = arc4random_uniform(UInt32(smartSpawnFrequency))
+                smartSpawnTime = Int(rand) + (smartSpawnFrequency/2)
+                smartSpawnTimer = 0
+            }
+        }
+        if bigIsSpawning {
+            bigSpawnTimer += 1
+            if bigSpawnTimer >= bigSpawnTime {
+                spawnBird(.big)
+                let rand = arc4random_uniform(UInt32(bigSpawnFrequency))
+                bigSpawnTime = Int(rand) + (bigSpawnFrequency/2)
+                bigSpawnTimer = 0
+            }
         }
         for var i in 0 ..< birds.count {
             if i >= birds.count || i < 0 {break}
             birds[i].pooTimer -= 1
             if birds[i].position.x < -350 || birds[i].position.x > 350 {
+                birds[i].removeFromParent()
+                birds.remove(at: i)
+                if i > 0 {
+                    i -= 1
+                }
+            } else if birds[i].health <= 0 {
                 birds[i].removeFromParent()
                 birds.remove(at: i)
                 if i > 0 {
@@ -515,6 +579,15 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         if bulletSpeedUpgradeStatus - oldBulletSpeedUpgradeStatus == 1 {
             bulletSpeed = (((maxBulletSpeed - minBulletSpeed)/CGFloat(upgrades)) * CGFloat((bulletSpeedUpgradeStatus - 1))) + minBulletSpeed
         }
+        
+        // Toggles harder birds
+        if !smartIsSpawning && total >= upgrades + levelsToSmart {
+            smartIsSpawning = true
+        }
+        if !bigIsSpawning && total >= upgrades + levelsToBig {
+            bigIsSpawning = true
+        }
+        
         oldHealthUpgradeStatus = healthUpgradeStatus
         oldSpeedUpgradeStatus = speedUpgradeStatus
         oldFireRateUpgradeStatus = fireRateUpgradeStatus
@@ -522,12 +595,27 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     }
     
     // Spawns a new bird
-    func spawnBird() {
+    func spawnBird(_ type: BirdType) {
         let newBird = birdBase.copy() as! Bird
         newBird.physicsBody?.linearDamping = 0
         
-        // Chooses type of bird
-        newBird.type = .normal
+        // Sets the bird's attributes based on its type
+        newBird.type = type
+        switch type {
+        case .smart:
+            newBird.color = UIColor(red: 1.0, green: 1.0, blue: 0.75, alpha: 1.0)
+            newBird.health = 2
+            newBird.pointValue = newBird.pointValue * 3
+            newBird.birdSpeed = self.birdSpeed
+        case .big:
+            newBird.xScale = 2
+            newBird.yScale = 2
+            newBird.health = 5
+            newBird.pointValue = newBird.pointValue * 5
+            newBird.birdSpeed = self.birdSpeed * (2/3)
+        default:
+            newBird.birdSpeed = self.birdSpeed
+        }
         
         // Chooses the side the bird spawns on
         let rand1 = arc4random_uniform(UInt32(2))
@@ -541,10 +629,10 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         var rand = arc4random_uniform(UInt32(160 - (2 * newBird.size.height)))
         rand += UInt32(newBird.size.height)
         var newPosition = CGPoint(x: 300,y: Int(rand))
-        newBird.physicsBody?.velocity.dx = -1 * birdSpeed
+        newBird.physicsBody?.velocity.dx = -1 * newBird.birdSpeed
         if newBird.direction == .right {
             newPosition.x = -300
-            newBird.physicsBody?.velocity.dx = birdSpeed
+            newBird.physicsBody?.velocity.dx = newBird.birdSpeed
         }
         newBird.position = newPosition
         self.addChild(newBird)
@@ -572,7 +660,21 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         newPoo.physicsBody?.linearDamping = 0
         newPoo.position = bird.position
         newPoo.position.y = bird.position.y - 10
-        newPoo.physicsBody?.velocity.dy = -1 * pooSpeed
+        switch bird.type! {
+        case .smart:
+            newPoo.color = UIColor(red: 1.0, green: 1.0, blue: 0.75, alpha: 1.0)
+            let xDist = hero.position.x - newPoo.position.x
+            let yDist = hero.position.y - newPoo.position.y - 100
+            let tDist = sqrt(xDist*xDist + yDist*yDist)
+            newPoo.physicsBody?.velocity.dy = pooSpeed * (yDist/tDist)
+            newPoo.physicsBody?.velocity.dx = pooSpeed * (xDist/tDist)
+        case .big:
+            newPoo.xScale = 2
+            newPoo.yScale = 2
+            newPoo.physicsBody?.velocity.dy = -0.75 * pooSpeed
+        default:
+            newPoo.physicsBody?.velocity.dy = -1 * pooSpeed
+        }
         poops.append(newPoo)
         self.addChild(newPoo)
     }
@@ -620,15 +722,15 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         case 1:
             break
         case 2:
-            health_1.color = UIColor(red: 0, green: 255, blue: 0, alpha: 100)
+            health_1.color = UIColor(red: 0.0, green: 1.0, blue: 0.0, alpha: 1.0)
             health_plus.position = health_2.position
             health_button.position = health_2.position
         case 3:
-            health_2.color = UIColor(red: 0, green: 255, blue: 0, alpha: 100)
+            health_2.color = UIColor(red: 0.0, green: 1.0, blue: 0.0, alpha: 1.0)
             health_plus.position = health_3.position
             health_button.position = health_3.position
         default:
-            health_3.color = UIColor(red: 0, green: 255, blue: 0, alpha: 100)
+            health_3.color = UIColor(red: 0.0, green: 1.0, blue: 0.0, alpha: 1.0)
             health_plus.text = ""
             health_button.state = .MSButtonNodeStateHidden
         }
@@ -636,15 +738,15 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         case 1:
             break
         case 2:
-            speed_1.color = UIColor(red: 0, green: 255, blue: 0, alpha: 100)
+            speed_1.color = UIColor(red: 0.0, green: 1.0, blue: 0.0, alpha: 1.0)
             speed_plus.position = speed_2.position
             speed_button.position = speed_2.position
         case 3:
-            speed_2.color = UIColor(red: 0, green: 255, blue: 0, alpha: 100)
+            speed_2.color = UIColor(red: 0.0, green: 1.0, blue: 0.0, alpha: 1.0)
             speed_plus.position = speed_3.position
             speed_button.position = speed_3.position
         default:
-            speed_3.color = UIColor(red: 0, green: 255, blue: 0, alpha: 100)
+            speed_3.color = UIColor(red: 0.0, green: 1.0, blue: 0.0, alpha: 1.0)
             speed_plus.text = ""
             speed_button.state = .MSButtonNodeStateHidden
         }
@@ -652,15 +754,15 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         case 1:
             break
         case 2:
-            fire_rate_1.color = UIColor(red: 0, green: 255, blue: 0, alpha: 100)
+            fire_rate_1.color = UIColor(red: 0.0, green: 1.0, blue: 0.0, alpha: 1.0)
             fire_rate_plus.position = fire_rate_2.position
             fire_rate_button.position = fire_rate_2.position
         case 3:
-            fire_rate_2.color = UIColor(red: 0, green: 255, blue: 0, alpha: 100)
+            fire_rate_2.color = UIColor(red: 0.0, green: 1.0, blue: 0.0, alpha: 1.0)
             fire_rate_plus.position = fire_rate_3.position
             fire_rate_button.position = fire_rate_3.position
         default:
-            fire_rate_3.color = UIColor(red: 0, green: 255, blue: 0, alpha: 100)
+            fire_rate_3.color = UIColor(red: 0.0, green: 1.0, blue: 0.0, alpha: 1.0)
             fire_rate_plus.text = ""
             fire_rate_button.state = .MSButtonNodeStateHidden
         }
@@ -668,17 +770,26 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         case 1:
             break
         case 2:
-            bullet_speed_1.color = UIColor(red: 0, green: 255, blue: 0, alpha: 100)
+            bullet_speed_1.color = UIColor(red: 0.0, green: 1.0, blue: 0.0, alpha: 1.0)
             bullet_speed_plus.position = bullet_speed_2.position
             bullet_speed_button.position = bullet_speed_2.position
         case 3:
-            bullet_speed_2.color = UIColor(red: 0, green: 255, blue: 0, alpha: 100)
+            bullet_speed_2.color = UIColor(red: 0.0, green: 1.0, blue: 0.0, alpha: 1.0)
             bullet_speed_plus.position = bullet_speed_3.position
             bullet_speed_button.position = bullet_speed_3.position
         default:
-            bullet_speed_3.color = UIColor(red: 0, green: 255, blue: 0, alpha: 100)
+            bullet_speed_3.color = UIColor(red: 0.0, green: 1.0, blue: 0.0, alpha: 1.0)
             bullet_speed_plus.text = ""
             bullet_speed_button.state = .MSButtonNodeStateHidden
+        }
+        
+        // Increases the difficulty
+        normalSpawnFrequency = Int(Double(normalSpawnFrequency) * 0.9)
+        if smartIsSpawning {
+            smartSpawnFrequency = Int(Double(smartSpawnFrequency) * 0.9)
+        }
+        if bigIsSpawning {
+            bigSpawnFrequency = Int(Double(bigSpawnFrequency) * 0.9)
         }
     }
 }

@@ -24,6 +24,8 @@ class Bird: SKSpriteNode {
     var pooTimer = 0
     var started = false
     var pointValue = 10
+    var health = 1
+    var birdSpeed: CGFloat!
     
     // Initializer
     override init(texture: SKTexture?, color: UIColor, size: CGSize) {

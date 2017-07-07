@@ -15,6 +15,8 @@
 		0FBC403B1F0EAA1600196891 /* Tutorial.sks in Resources */ = {isa = PBXBuildFile; fileRef = 0FBC403A1F0EAA1600196891 /* Tutorial.sks */; };
 		0FBC403F1F0ED8AD00196891 /* UpgradeScreen.sks in Resources */ = {isa = PBXBuildFile; fileRef = 0FBC403E1F0ED8AD00196891 /* UpgradeScreen.sks */; };
 		0FBC40411F0EDD6300196891 /* MSButtonNode.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0FBC40401F0EDD6300196891 /* MSButtonNode.swift */; };
+		0FD91BD71F100E1000F30CC3 /* MainMenu.sks in Resources */ = {isa = PBXBuildFile; fileRef = 0FD91BD61F100E1000F30CC3 /* MainMenu.sks */; };
+		0FD91BD91F10107300F30CC3 /* MainMenu.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0FD91BD81F10107300F30CC3 /* MainMenu.swift */; };
 		0FFD46611F0D4FC800E26E8E /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0FFD46601F0D4FC800E26E8E /* AppDelegate.swift */; };
 		0FFD46631F0D4FC800E26E8E /* GameScene.sks in Resources */ = {isa = PBXBuildFile; fileRef = 0FFD46621F0D4FC800E26E8E /* GameScene.sks */; };
 		0FFD46651F0D4FC800E26E8E /* Actions.sks in Resources */ = {isa = PBXBuildFile; fileRef = 0FFD46641F0D4FC800E26E8E /* Actions.sks */; };
@@ -34,6 +36,8 @@
 		0FBC403A1F0EAA1600196891 /* Tutorial.sks */ = {isa = PBXFileReference; lastKnownFileType = file.sks; path = Tutorial.sks; sourceTree = "<group>"; };
 		0FBC403E1F0ED8AD00196891 /* UpgradeScreen.sks */ = {isa = PBXFileReference; lastKnownFileType = file.sks; path = UpgradeScreen.sks; sourceTree = "<group>"; };
 		0FBC40401F0EDD6300196891 /* MSButtonNode.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MSButtonNode.swift; sourceTree = "<group>"; };
+		0FD91BD61F100E1000F30CC3 /* MainMenu.sks */ = {isa = PBXFileReference; lastKnownFileType = file.sks; path = MainMenu.sks; sourceTree = "<group>"; };
+		0FD91BD81F10107300F30CC3 /* MainMenu.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MainMenu.swift; sourceTree = "<group>"; };
 		0FFD465D1F0D4FC800E26E8E /* Bird Slayer.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Bird Slayer.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		0FFD46601F0D4FC800E26E8E /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		0FFD46621F0D4FC800E26E8E /* GameScene.sks */ = {isa = PBXFileReference; lastKnownFileType = file.sks; path = GameScene.sks; sourceTree = "<group>"; };
@@ -85,6 +89,8 @@
 				0FBC403E1F0ED8AD00196891 /* UpgradeScreen.sks */,
 				0FFD46621F0D4FC800E26E8E /* GameScene.sks */,
 				0FFD46661F0D4FC800E26E8E /* GameScene.swift */,
+				0FD91BD61F100E1000F30CC3 /* MainMenu.sks */,
+				0FD91BD81F10107300F30CC3 /* MainMenu.swift */,
 				0FFD46641F0D4FC800E26E8E /* Actions.sks */,
 				0FFD46681F0D4FC800E26E8E /* GameViewController.swift */,
 				0FFD46601F0D4FC800E26E8E /* AppDelegate.swift */,
@@ -158,6 +164,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				0FFD466C1F0D4FC800E26E8E /* Main.storyboard in Resources */,
+				0FD91BD71F100E1000F30CC3 /* MainMenu.sks in Resources */,
 				0FA9C1941F0D585E009621DF /* Bullet.sks in Resources */,
 				0FFD46631F0D4FC800E26E8E /* GameScene.sks in Resources */,
 				0FA9C1961F0D5937009621DF /* Poo.sks in Resources */,
@@ -179,6 +186,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				0FFD46671F0D4FC800E26E8E /* GameScene.swift in Sources */,
+				0FD91BD91F10107300F30CC3 /* MainMenu.swift in Sources */,
 				0FFD46691F0D4FC800E26E8E /* GameViewController.swift in Sources */,
 				0FA9C19E1F0D876A009621DF /* Bird.swift in Sources */,
 				0FFD46611F0D4FC800E26E8E /* AppDelegate.swift in Sources */,
