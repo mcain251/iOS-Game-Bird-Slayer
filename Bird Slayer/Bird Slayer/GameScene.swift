@@ -137,8 +137,8 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     var shotTimer: Int = 0
     var gameState: GameSceneState = .inactive
     // List of scores that initiate upgrade screen
-    //var upgradeScores: [Int] = [50, 150, 300, 500, 750, 1050, 1400, 1800, 2250, 2750, 3300, 3900]
-    var upgradeScores: [Int] = [10, 20, 50, 80, 130, 200, 250, 300, 350, 400, 450, 500]
+    var upgradeScores: [Int] = [50, 150, 300, 500, 750, 1050, 1400, 1800, 2250, 2750, 3300, 3900]
+    //var upgradeScores: [Int] = [10, 20, 50, 80, 130, 200, 250, 300, 350, 400, 450, 500]
     var pause = false
     
     // Called when game begins
