@@ -40,6 +40,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     var pauseButton: MSButtonNode!
     var pauseLabel: SKLabelNode!
     var upgradeLabel: SKLabelNode!
+    var delay = false
     
     // Upgrade UI
     var health_1: SKSpriteNode!
@@ -132,7 +133,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     var bigSpawnTime: Int!
     var bigSpawnTimer: Int = 0
     var bigIsSpawning = false
-    let levelsToBig = 4
+    let levelsToBig = 3
     
     // BTS variables
     // Framecount for shooting
@@ -204,24 +205,32 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             self.isPaused  = false
             self.upgradeScreen.isHidden = true
             self.upgradeLabel.isHidden = true
+            self.pauseButton.isHidden = false
+            self.pauseButton.state = .MSButtonNodeStateActive
         }
         speed_button.selectedHandler = {
             self.speedUpgradeStatus += 1
             self.isPaused  = false
             self.upgradeScreen.isHidden = true
             self.upgradeLabel.isHidden = true
+            self.pauseButton.isHidden = false
+            self.pauseButton.state = .MSButtonNodeStateActive
         }
         fire_rate_button.selectedHandler = {
             self.fireRateUpgradeStatus += 1
             self.isPaused  = false
             self.upgradeScreen.isHidden = true
             self.upgradeLabel.isHidden = true
+            self.pauseButton.isHidden = false
+            self.pauseButton.state = .MSButtonNodeStateActive
         }
         bullet_speed_button.selectedHandler = {
             self.bulletSpeedUpgradeStatus += 1
             self.isPaused  = false
             self.upgradeScreen.isHidden = true
             self.upgradeLabel.isHidden = true
+            self.pauseButton.isHidden = false
+            self.pauseButton.state = .MSButtonNodeStateActive
         }
         pauseButton.selectedHandler = {
             if !self.pause {
@@ -362,8 +371,8 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
                     }
                     leftThumb.position.x = clamp(value: touch.location(in: self).x, lower: leftJoystickPosition.x - 50, upper: leftJoystickPosition.x + 50)
                 } else if touch === rightTouch {
-                    gun.zRotation = (rightInitialPosition.x - touch.location(in: self.view).x) * CGFloat(Double.pi/2/50)
-                    gun.zRotation = clamp(value: gun.zRotation, lower: -CGFloat(Double.pi/2), upper: CGFloat(Double.pi/2))
+                    gun.zRotation = (rightInitialPosition.x - touch.location(in: self.view).x) * CGFloat(Double.pi/4/50)
+                    gun.zRotation = clamp(value: gun.zRotation, lower: -CGFloat(Double.pi/4), upper: CGFloat(Double.pi/4))
                     rightThumb.position.x = clamp(value: touch.location(in: self).x, lower: rightJoystickPosition.x - 50, upper: rightJoystickPosition.x + 50)
                 }
             }
@@ -745,15 +754,19 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     // Shoots
     func shoot() {
         if gameState == .active {
-            let newBullet = bulletBase.copy() as! SKSpriteNode
-            newBullet.physicsBody?.linearDamping = 0
-            newBullet.position = hero.position
-            newBullet.position.x -= gun.size.height * sin(gun.zRotation)
-            newBullet.position.y += gun.size.height * cos(gun.zRotation) - 160 + hero.size.height
-            newBullet.physicsBody?.velocity.dx = -bulletSpeed * sin(gun.zRotation)
-            newBullet.physicsBody?.velocity.dy = bulletSpeed * cos(gun.zRotation)
-            bullets.append(newBullet)
-            self.addChild(newBullet)
+            if delay {
+                let newBullet = bulletBase.copy() as! SKSpriteNode
+                newBullet.physicsBody?.linearDamping = 0
+                newBullet.position = hero.position
+                newBullet.position.x -= gun.size.height * sin(gun.zRotation)
+                newBullet.position.y += gun.size.height * cos(gun.zRotation) - 160 + hero.size.height
+                newBullet.physicsBody?.velocity.dx = -bulletSpeed * sin(gun.zRotation)
+                newBullet.physicsBody?.velocity.dy = bulletSpeed * cos(gun.zRotation)
+                bullets.append(newBullet)
+                self.addChild(newBullet)
+            } else {
+                delay = true
+            }
         }
     }
     
@@ -808,6 +821,8 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     
     // Brings up the upgrade screen and pauses the game
     func upgrade() {
+        pauseButton.isHidden = true
+        pauseButton.state = .MSButtonNodeStateHidden
         leftTouch = nil
         leftInitialPosition = nil
         leftJoystick.isHidden = true
