@@ -30,12 +30,16 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     var pooBase: SKSpriteNode!
     var poops: [SKSpriteNode] = []
     var healthBar: SKSpriteNode!
+    var healthBarContainer: SKSpriteNode!
     var scoreLabel: SKLabelNode!
     var nextUpgradeLabel: SKLabelNode!
     var highScoreLabel: SKLabelNode!
     var tutorial: SKNode!
     var upgradeScreen: SKNode!
     var gameOverLabel: SKLabelNode!
+    var pauseButton: MSButtonNode!
+    var pauseLabel: SKLabelNode!
+    var upgradeLabel: SKLabelNode!
     
     // Upgrade UI
     var health_1: SKSpriteNode!
@@ -133,8 +137,9 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     var shotTimer: Int = 0
     var gameState: GameSceneState = .inactive
     // List of scores that initiate upgrade screen
-    var upgradeScores: [Int] = [50, 150, 300, 500, 750, 1050, 1400, 1800, 2250, 2750, 3300, 3900]
-    // var upgradeScores: [Int] = [10, 20, 50, 80, 130, 200, 250, 300, 350, 400, 450, 500]
+    //var upgradeScores: [Int] = [50, 150, 300, 500, 750, 1050, 1400, 1800, 2250, 2750, 3300, 3900]
+    var upgradeScores: [Int] = [10, 20, 50, 80, 130, 200, 250, 300, 350, 400, 450, 500]
+    var pause = false
     
     // Called when game begins
     override func didMove(to view: SKView) {
@@ -150,6 +155,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         bulletBase = self.childNode(withName: "//bulletBase") as! SKSpriteNode
         pooBase = self.childNode(withName: "//pooBase") as! SKSpriteNode
         healthBar = self.childNode(withName: "healthBar") as! SKSpriteNode
+        healthBarContainer = self.childNode(withName: "healthBarContainer") as! SKSpriteNode
         scoreLabel = self.childNode(withName: "scoreLabel") as! SKLabelNode
         highScoreLabel = self.childNode(withName: "highScoreLabel") as! SKLabelNode
         nextUpgradeLabel = self.childNode(withName: "nextUpgradeLabel") as! SKLabelNode
@@ -164,6 +170,11 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         upgradeScreen.isHidden = true
         gameOverLabel = self.childNode(withName: "gameOverLabel") as! SKLabelNode
         gameOverLabel.isHidden = true
+        pauseButton = self.childNode(withName: "pauseButton") as! MSButtonNode
+        pauseLabel = self.childNode(withName: "pauseLabel") as! SKLabelNode
+        pauseLabel.isHidden = true
+        upgradeLabel = self.childNode(withName: "upgradeLabel") as! SKLabelNode
+        upgradeLabel.isHidden = true
         
         // Set reference to upgrade UI objects
         health_1 = self.childNode(withName: "//health_1") as! SKSpriteNode
@@ -190,21 +201,99 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             self.healthUpgradeStatus += 1
             self.isPaused  = false
             self.upgradeScreen.isHidden = true
+            self.upgradeLabel.isHidden = true
         }
         speed_button.selectedHandler = {
             self.speedUpgradeStatus += 1
             self.isPaused  = false
             self.upgradeScreen.isHidden = true
+            self.upgradeLabel.isHidden = true
         }
         fire_rate_button.selectedHandler = {
             self.fireRateUpgradeStatus += 1
             self.isPaused  = false
             self.upgradeScreen.isHidden = true
+            self.upgradeLabel.isHidden = true
         }
         bullet_speed_button.selectedHandler = {
             self.bulletSpeedUpgradeStatus += 1
             self.isPaused  = false
             self.upgradeScreen.isHidden = true
+            self.upgradeLabel.isHidden = true
+        }
+        pauseButton.selectedHandler = {
+            if !self.pause {
+                self.isPaused = true
+                self.leftTouch = nil
+                self.leftInitialPosition = nil
+                self.leftJoystick.isHidden = true
+                self.leftThumb.isHidden = true
+                self.hero.physicsBody?.velocity.dx = 0
+                self.rightTouch = nil
+                self.rightInitialPosition = nil
+                self.gun.zRotation = 0
+                self.shooting = false
+                self.rightJoystick.isHidden = true
+                self.rightThumb.isHidden = true
+                self.isPaused = true
+                self.upgradeScreen.isHidden = false
+                switch self.healthUpgradeStatus {
+                case 1:
+                    break
+                case 2:
+                    self.health_1.color = UIColor(red: 0.0, green: 1.0, blue: 0.0, alpha: 1.0)
+                case 3:
+                    self.health_2.color = UIColor(red: 0.0, green: 1.0, blue: 0.0, alpha: 1.0)
+                default:
+                    self.health_3.color = UIColor(red: 0.0, green: 1.0, blue: 0.0, alpha: 1.0)
+                }
+                switch self.speedUpgradeStatus {
+                case 1:
+                    break
+                case 2:
+                    self.speed_1.color = UIColor(red: 0.0, green: 1.0, blue: 0.0, alpha: 1.0)
+                case 3:
+                    self.speed_2.color = UIColor(red: 0.0, green: 1.0, blue: 0.0, alpha: 1.0)
+                default:
+                    self.speed_3.color = UIColor(red: 0.0, green: 1.0, blue: 0.0, alpha: 1.0)
+                }
+                switch self.fireRateUpgradeStatus {
+                case 1:
+                    break
+                case 2:
+                    self.fire_rate_1.color = UIColor(red: 0.0, green: 1.0, blue: 0.0, alpha: 1.0)
+                case 3:
+                    self.fire_rate_2.color = UIColor(red: 0.0, green: 1.0, blue: 0.0, alpha: 1.0)
+                default:
+                    self.fire_rate_3.color = UIColor(red: 0.0, green: 1.0, blue: 0.0, alpha: 1.0)
+                }
+                switch self.bulletSpeedUpgradeStatus {
+                case 1:
+                    break
+                case 2:
+                    self.bullet_speed_1.color = UIColor(red: 0.0, green: 1.0, blue: 0.0, alpha: 1.0)
+                case 3:
+                    self.bullet_speed_2.color = UIColor(red: 0.0, green: 1.0, blue: 0.0, alpha: 1.0)
+                default:
+                    self.bullet_speed_3.color = UIColor(red: 0.0, green: 1.0, blue: 0.0, alpha: 1.0)
+                }
+                let offScreen: CGPoint = CGPoint(x: -1000, y: -1000)
+                self.health_plus.position = offScreen
+                self.health_button.position = offScreen
+                self.speed_plus.position = offScreen
+                self.speed_button.position = offScreen
+                self.fire_rate_plus.position = offScreen
+                self.fire_rate_button.position = offScreen
+                self.bullet_speed_plus.position = offScreen
+                self.bullet_speed_button.position = offScreen
+                self.pauseLabel.isHidden = false
+                self.pause = true
+            } else {
+                self.isPaused  = false
+                self.upgradeScreen.isHidden = true
+                self.pauseLabel.isHidden = true
+                self.pause = false
+            }
         }
         
         
@@ -515,10 +604,10 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     
     // Sets healthbar and triggers game over when health reaches 0
     func healthManager() {
+        let hWidth = CGFloat(90 * maxHealth/minMaxHealth)
+        healthBarContainer.size.width = hWidth + 10
         let healthRatio: CGFloat = CGFloat(health)/CGFloat(maxHealth)
-        if health >= 0 {
-            healthBar.xScale = healthRatio
-        }
+        healthBar.size.width = healthRatio * hWidth
         if health <= 0 && gameState != .gameOver {
             gameOver()
         }
@@ -567,8 +656,8 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             index += 1
         }
         if healthUpgradeStatus - oldHealthUpgradeStatus == 1 {
-            maxHealth += 1
-            health += 1
+            maxHealth = (((maxMaxHealth - minMaxHealth)/upgrades) * (healthUpgradeStatus - 1)) + minMaxHealth
+            health += ((maxMaxHealth - minMaxHealth)/upgrades)
         }
         if speedUpgradeStatus - oldSpeedUpgradeStatus == 1 {
             heroSpeed = (((maxHeroSpeed - minHeroSpeed)/CGFloat(upgrades)) * CGFloat((speedUpgradeStatus - 1))) + minHeroSpeed
@@ -716,11 +805,13 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         shooting = false
         rightJoystick.isHidden = true
         rightThumb.isHidden = true
-        self.isPaused = true
+        isPaused = true
         upgradeScreen.isHidden = false
+        upgradeLabel.isHidden = false
         switch healthUpgradeStatus {
         case 1:
-            break
+            health_plus.position = health_1.position
+            health_button.position = health_1.position
         case 2:
             health_1.color = UIColor(red: 0.0, green: 1.0, blue: 0.0, alpha: 1.0)
             health_plus.position = health_2.position
@@ -736,7 +827,8 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         }
         switch speedUpgradeStatus {
         case 1:
-            break
+            speed_plus.position = speed_1.position
+            speed_button.position = speed_1.position
         case 2:
             speed_1.color = UIColor(red: 0.0, green: 1.0, blue: 0.0, alpha: 1.0)
             speed_plus.position = speed_2.position
@@ -752,7 +844,8 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         }
         switch fireRateUpgradeStatus {
         case 1:
-            break
+            fire_rate_plus.position = fire_rate_1.position
+            fire_rate_button.position = fire_rate_1.position
         case 2:
             fire_rate_1.color = UIColor(red: 0.0, green: 1.0, blue: 0.0, alpha: 1.0)
             fire_rate_plus.position = fire_rate_2.position
@@ -768,7 +861,8 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         }
         switch bulletSpeedUpgradeStatus {
         case 1:
-            break
+            bullet_speed_plus.position = bullet_speed_1.position
+            bullet_speed_button.position = bullet_speed_1.position
         case 2:
             bullet_speed_1.color = UIColor(red: 0.0, green: 1.0, blue: 0.0, alpha: 1.0)
             bullet_speed_plus.position = bullet_speed_2.position
