@@ -48,6 +48,10 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     var oldTotal = 0
     let upgradedColor: UIColor = UIColor(red: 0.0, green: 1.0, blue: 0.0, alpha: 1.0)
     let offScreen: CGPoint = CGPoint(x: -1000, y: -1000)
+    // Number of upgrades per catagory (set later)
+    var upgrades = 0
+    // Number of categories (set later)
+    var upgradeTypes = 0
     
     // Controls
     var leftTouch: UITouch?
@@ -68,7 +72,8 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     var maxHealth = 6
     let maxMaxHealth = 12
     let minMaxHealth = 6
-    var health = 6
+    // (set later)
+    var health = 0
     var heroSpeed: CGFloat = 150
     let maxHeroSpeed: CGFloat = 300
     let minHeroSpeed: CGFloat = 150
@@ -80,10 +85,6 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     var shotFrequency: Int = 1 * 60
     let maxShotFrequency: Int = 30
     let minShotFrequency: Int = 1 * 60
-    // Number of upgrades per catagory
-    let upgrades = 3
-    // Number of categories
-    let upgradeTypes = 4
     var invincibilityTimer = 0
     let invincibilityTime = 3 * 60
     
@@ -111,12 +112,19 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     
     // Called when game begins
     override func didMove(to view: SKView) {
+        
+        // Set the inital timers
         for (type, variables) in birdVariables {
             birdVariables[type]?.spawnTime = variables.spawnFrequency
         }
         shotTimer = shotFrequency
         
-        // Set reference to objects
+        // Set dependent values
+        upgrades = (upgradeUIElements["health"]?.squares.count)!
+        upgradeTypes = upgradeUIElements.count
+        health = maxHealth
+        
+        // Set reference to objects, screens, and UI and sets their initial states
         hero = self.childNode(withName: "//hero") as! SKSpriteNode
         gun = hero.childNode(withName: "gun") as! SKSpriteNode
         birdBase = self.childNode(withName: "//birdBase") as! Bird
@@ -127,22 +135,22 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         scoreLabel = self.childNode(withName: "scoreLabel") as! SKLabelNode
         highScoreLabel = self.childNode(withName: "highScoreLabel") as! SKLabelNode
         nextUpgradeLabel = self.childNode(withName: "nextUpgradeLabel") as! SKLabelNode
+        gameOverLabel = self.childNode(withName: "gameOverLabel") as! SKLabelNode
+        gameOverLabel.isHidden = true
+        upgradeLabel = self.childNode(withName: "upgradeLabel") as! SKLabelNode
+        upgradeLabel.isHidden = true
+        pauseLabel = self.childNode(withName: "pauseLabel") as! SKLabelNode
+        pauseLabel.isHidden = true
         tutorial = self.childNode(withName: "tutorial")
         tutorial.position = self.position
+        upgradeScreen = self.childNode(withName: "upgradeScreen")
+        upgradeScreen.position = self.position
+        upgradeScreen.isHidden = true
         leftThumb = self.childNode(withName: "leftThumb") as! SKSpriteNode
         rightThumb = self.childNode(withName: "rightThumb") as! SKSpriteNode
         leftJoystick = self.childNode(withName: "leftJoystick") as! SKSpriteNode
         rightJoystick = self.childNode(withName: "rightJoystick") as! SKSpriteNode
-        upgradeScreen = self.childNode(withName: "upgradeScreen")
-        upgradeScreen.position = self.position
-        upgradeScreen.isHidden = true
-        gameOverLabel = self.childNode(withName: "gameOverLabel") as! SKLabelNode
-        gameOverLabel.isHidden = true
         pauseButton = self.childNode(withName: "pauseButton") as! MSButtonNode
-        pauseLabel = self.childNode(withName: "pauseLabel") as! SKLabelNode
-        pauseLabel.isHidden = true
-        upgradeLabel = self.childNode(withName: "upgradeLabel") as! SKLabelNode
-        upgradeLabel.isHidden = true
         
         // Set reference to upgrade UI objects
         for (type, elements) in upgradeUIElements {
@@ -161,7 +169,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             }
         }
         
-        // Pause button functionality (hides UI, presents paused upgrade screen)
+        // Pause button functionality (pauses and presents paused upgrade screen/ unpauses and hides pause screen)
         pauseButton.selectedHandler = {
             if !self.pause {
                 self.isPaused = true
