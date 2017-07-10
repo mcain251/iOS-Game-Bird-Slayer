@@ -42,35 +42,12 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     var upgradeLabel: SKLabelNode!
     var delay = false
     
-    // Upgrade UI
-    var health_1: SKSpriteNode!
-    var health_2: SKSpriteNode!
-    var health_3: SKSpriteNode!
-    var health_plus: SKLabelNode!
-    var health_button: MSButtonNode!
-    var speed_1: SKSpriteNode!
-    var speed_2: SKSpriteNode!
-    var speed_3: SKSpriteNode!
-    var speed_plus: SKLabelNode!
-    var speed_button: MSButtonNode!
-    var fire_rate_1: SKSpriteNode!
-    var fire_rate_2: SKSpriteNode!
-    var fire_rate_3: SKSpriteNode!
-    var fire_rate_plus: SKLabelNode!
-    var fire_rate_button: MSButtonNode!
-    var bullet_speed_1: SKSpriteNode!
-    var bullet_speed_2: SKSpriteNode!
-    var bullet_speed_3: SKSpriteNode!
-    var bullet_speed_plus: SKLabelNode!
-    var bullet_speed_button: MSButtonNode!
-    var healthUpgradeStatus = 1
-    var speedUpgradeStatus = 1
-    var fireRateUpgradeStatus = 1
-    var bulletSpeedUpgradeStatus = 1
-    var oldHealthUpgradeStatus = 1
-    var oldSpeedUpgradeStatus = 1
-    var oldFireRateUpgradeStatus = 1
-    var oldBulletSpeedUpgradeStatus = 1
+    // Upgrade UI and relevant values
+    var upgradeUIElements: [String: (squares: [SKSpriteNode?], _plus: SKLabelNode?, _button: MSButtonNode?, upgradeStatus: Int, oldUpgradeStatus: Int)] = ["health": ([nil, nil, nil], nil, nil, 1, 1), "speed": ([nil, nil, nil], nil, nil, 1, 1), "fire_rate": ([nil, nil, nil], nil, nil, 1, 1), "bullet_speed": ([nil, nil, nil], nil, nil, 1, 1)]
+    var total = 0
+    var oldTotal = 0
+    let upgradedColor: UIColor = UIColor(red: 0.0, green: 1.0, blue: 0.0, alpha: 1.0)
+    let offScreen: CGPoint = CGPoint(x: -1000, y: -1000)
     
     // Controls
     var leftTouch: UITouch?
@@ -137,7 +114,6 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         for (type, variables) in birdVariables {
             birdVariables[type]?.spawnTime = variables.spawnFrequency
         }
-        print(birdVariables)
         shotTimer = shotFrequency
         
         // Set reference to objects
@@ -169,58 +145,23 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         upgradeLabel.isHidden = true
         
         // Set reference to upgrade UI objects
-        health_1 = self.childNode(withName: "//health_1") as! SKSpriteNode
-        health_2 = self.childNode(withName: "//health_2") as! SKSpriteNode
-        health_3 = self.childNode(withName: "//health_3") as! SKSpriteNode
-        health_plus = self.childNode(withName: "//health_plus") as! SKLabelNode
-        health_button = self.childNode(withName: "//health_button") as! MSButtonNode
-        speed_1 = self.childNode(withName: "//speed_1") as! SKSpriteNode
-        speed_2 = self.childNode(withName: "//speed_2") as! SKSpriteNode
-        speed_3 = self.childNode(withName: "//speed_3") as! SKSpriteNode
-        speed_plus = self.childNode(withName: "//speed_plus") as! SKLabelNode
-        speed_button = self.childNode(withName: "//speed_button") as! MSButtonNode
-        fire_rate_1 = self.childNode(withName: "//fire_rate_1") as! SKSpriteNode
-        fire_rate_2 = self.childNode(withName: "//fire_rate_2") as! SKSpriteNode
-        fire_rate_3 = self.childNode(withName: "//fire_rate_3") as! SKSpriteNode
-        fire_rate_plus = self.childNode(withName: "//fire_rate_plus") as! SKLabelNode
-        fire_rate_button = self.childNode(withName: "//fire_rate_button") as! MSButtonNode
-        bullet_speed_1 = self.childNode(withName: "//bullet_speed_1") as! SKSpriteNode
-        bullet_speed_2 = self.childNode(withName: "//bullet_speed_2") as! SKSpriteNode
-        bullet_speed_3 = self.childNode(withName: "//bullet_speed_3") as! SKSpriteNode
-        bullet_speed_plus = self.childNode(withName: "//bullet_speed_plus") as! SKLabelNode
-        bullet_speed_button = self.childNode(withName: "//bullet_speed_button") as! MSButtonNode
-        health_button.selectedHandler = {
-            self.healthUpgradeStatus += 1
-            self.isPaused  = false
-            self.upgradeScreen.isHidden = true
-            self.upgradeLabel.isHidden = true
-            self.pauseButton.isHidden = false
-            self.pauseButton.state = .MSButtonNodeStateActive
+        for (type, elements) in upgradeUIElements {
+            for i in 0 ..< elements.squares.count {
+                upgradeUIElements[type]?.squares[i] = self.childNode(withName: "//\(type)_\(i+1)") as? SKSpriteNode
+            }
+            upgradeUIElements[type]?._plus = self.childNode(withName: "//\(type)_plus") as? SKLabelNode
+            upgradeUIElements[type]?._button = self.childNode(withName: "//\(type)_button") as? MSButtonNode
+            upgradeUIElements[type]?._button?.selectedHandler = {
+                self.upgradeUIElements[type]?.upgradeStatus += 1
+                self.isPaused = false
+                self.upgradeScreen.isHidden = true
+                self.upgradeLabel.isHidden = true
+                self.pauseButton.isHidden = false
+                self.pauseButton.state = .MSButtonNodeStateActive
+            }
         }
-        speed_button.selectedHandler = {
-            self.speedUpgradeStatus += 1
-            self.isPaused  = false
-            self.upgradeScreen.isHidden = true
-            self.upgradeLabel.isHidden = true
-            self.pauseButton.isHidden = false
-            self.pauseButton.state = .MSButtonNodeStateActive
-        }
-        fire_rate_button.selectedHandler = {
-            self.fireRateUpgradeStatus += 1
-            self.isPaused  = false
-            self.upgradeScreen.isHidden = true
-            self.upgradeLabel.isHidden = true
-            self.pauseButton.isHidden = false
-            self.pauseButton.state = .MSButtonNodeStateActive
-        }
-        bullet_speed_button.selectedHandler = {
-            self.bulletSpeedUpgradeStatus += 1
-            self.isPaused  = false
-            self.upgradeScreen.isHidden = true
-            self.upgradeLabel.isHidden = true
-            self.pauseButton.isHidden = false
-            self.pauseButton.state = .MSButtonNodeStateActive
-        }
+        
+        // Pause button functionality (hides UI, presents paused upgrade screen)
         pauseButton.selectedHandler = {
             if !self.pause {
                 self.isPaused = true
@@ -237,55 +178,13 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
                 self.rightThumb.isHidden = true
                 self.isPaused = true
                 self.upgradeScreen.isHidden = false
-                switch self.healthUpgradeStatus {
-                case 1:
-                    break
-                case 2:
-                    self.health_1.color = UIColor(red: 0.0, green: 1.0, blue: 0.0, alpha: 1.0)
-                case 3:
-                    self.health_2.color = UIColor(red: 0.0, green: 1.0, blue: 0.0, alpha: 1.0)
-                default:
-                    self.health_3.color = UIColor(red: 0.0, green: 1.0, blue: 0.0, alpha: 1.0)
+                for (type, elements) in self.upgradeUIElements {
+                    if (elements.upgradeStatus - 2) >= 0 && (elements.upgradeStatus - 2) < elements.squares.count {
+                        self.upgradeUIElements[type]?.squares[elements.upgradeStatus - 2]?.color = self.upgradedColor
+                    }
+                    self.upgradeUIElements[type]?._button?.position = self.offScreen
+                    self.upgradeUIElements[type]?._plus?.position = self.offScreen
                 }
-                switch self.speedUpgradeStatus {
-                case 1:
-                    break
-                case 2:
-                    self.speed_1.color = UIColor(red: 0.0, green: 1.0, blue: 0.0, alpha: 1.0)
-                case 3:
-                    self.speed_2.color = UIColor(red: 0.0, green: 1.0, blue: 0.0, alpha: 1.0)
-                default:
-                    self.speed_3.color = UIColor(red: 0.0, green: 1.0, blue: 0.0, alpha: 1.0)
-                }
-                switch self.fireRateUpgradeStatus {
-                case 1:
-                    break
-                case 2:
-                    self.fire_rate_1.color = UIColor(red: 0.0, green: 1.0, blue: 0.0, alpha: 1.0)
-                case 3:
-                    self.fire_rate_2.color = UIColor(red: 0.0, green: 1.0, blue: 0.0, alpha: 1.0)
-                default:
-                    self.fire_rate_3.color = UIColor(red: 0.0, green: 1.0, blue: 0.0, alpha: 1.0)
-                }
-                switch self.bulletSpeedUpgradeStatus {
-                case 1:
-                    break
-                case 2:
-                    self.bullet_speed_1.color = UIColor(red: 0.0, green: 1.0, blue: 0.0, alpha: 1.0)
-                case 3:
-                    self.bullet_speed_2.color = UIColor(red: 0.0, green: 1.0, blue: 0.0, alpha: 1.0)
-                default:
-                    self.bullet_speed_3.color = UIColor(red: 0.0, green: 1.0, blue: 0.0, alpha: 1.0)
-                }
-                let offScreen: CGPoint = CGPoint(x: -1000, y: -1000)
-                self.health_plus.position = offScreen
-                self.health_button.position = offScreen
-                self.speed_plus.position = offScreen
-                self.speed_button.position = offScreen
-                self.fire_rate_plus.position = offScreen
-                self.fire_rate_button.position = offScreen
-                self.bullet_speed_plus.position = offScreen
-                self.bullet_speed_button.position = offScreen
                 self.pauseLabel.isHidden = false
                 self.pause = true
             } else {
@@ -634,36 +533,31 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     
     // Makes sure multiple inputs are evened out and applies upgrades
     func upgradeManager() {
-        let total = healthUpgradeStatus + speedUpgradeStatus + fireRateUpgradeStatus + bulletSpeedUpgradeStatus
-        let oldTotal = oldHealthUpgradeStatus + oldSpeedUpgradeStatus + oldFireRateUpgradeStatus + oldBulletSpeedUpgradeStatus
-        var index = 0
+        calculateTotals()
         while total - oldTotal > 1 {
-            switch index % 4 {
-            case 0:
-                bulletSpeedUpgradeStatus = max(bulletSpeedUpgradeStatus - 1, oldBulletSpeedUpgradeStatus)
-            case 1:
-                fireRateUpgradeStatus = max(fireRateUpgradeStatus - 1, oldFireRateUpgradeStatus)
-            case 2:
-                speedUpgradeStatus = max(speedUpgradeStatus - 1, oldSpeedUpgradeStatus)
-            case 3:
-                healthUpgradeStatus = max(healthUpgradeStatus - 1, oldHealthUpgradeStatus)
-            default:
-                break
+            for (type, elements) in upgradeUIElements {
+                if total - oldTotal > 1 {
+                    upgradeUIElements[type]?.upgradeStatus = max(elements.upgradeStatus - 1, elements.oldUpgradeStatus)
+                }
+                calculateTotals()
             }
-            index += 1
         }
-        if healthUpgradeStatus - oldHealthUpgradeStatus == 1 {
-            maxHealth = (((maxMaxHealth - minMaxHealth)/upgrades) * (healthUpgradeStatus - 1)) + minMaxHealth
-            health += ((maxMaxHealth - minMaxHealth)/upgrades)
-        }
-        if speedUpgradeStatus - oldSpeedUpgradeStatus == 1 {
-            heroSpeed = (((maxHeroSpeed - minHeroSpeed)/CGFloat(upgrades)) * CGFloat((speedUpgradeStatus - 1))) + minHeroSpeed
-        }
-        if fireRateUpgradeStatus - oldFireRateUpgradeStatus == 1 {
-            shotFrequency = minShotFrequency - (((minShotFrequency - maxShotFrequency)/upgrades) * (fireRateUpgradeStatus - 1))
-        }
-        if bulletSpeedUpgradeStatus - oldBulletSpeedUpgradeStatus == 1 {
-            bulletSpeed = (((maxBulletSpeed - minBulletSpeed)/CGFloat(upgrades)) * CGFloat((bulletSpeedUpgradeStatus - 1))) + minBulletSpeed
+        for (type, elements) in upgradeUIElements {
+            if elements.upgradeStatus - elements.oldUpgradeStatus == 1 {
+                switch type {
+                case "health":
+                    maxHealth = (((maxMaxHealth - minMaxHealth)/upgrades) * (elements.upgradeStatus - 1)) + minMaxHealth
+                    health += ((maxMaxHealth - minMaxHealth)/upgrades)
+                case "speed":
+                    heroSpeed = (((maxHeroSpeed - minHeroSpeed)/CGFloat(upgrades)) * CGFloat((elements.upgradeStatus - 1))) + minHeroSpeed
+                case "fire_rate":
+                    shotFrequency = minShotFrequency - (((minShotFrequency - maxShotFrequency)/upgrades) * (elements.upgradeStatus - 1))
+                case "bullet_speed":
+                    bulletSpeed = (((maxBulletSpeed - minBulletSpeed)/CGFloat(upgrades)) * CGFloat((elements.upgradeStatus - 1))) + minBulletSpeed
+                default:
+                    break
+                }
+            }
         }
         
         // Toggles harder birds
@@ -673,10 +567,10 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             }
         }
         
-        oldHealthUpgradeStatus = healthUpgradeStatus
-        oldSpeedUpgradeStatus = speedUpgradeStatus
-        oldFireRateUpgradeStatus = fireRateUpgradeStatus
-        oldBulletSpeedUpgradeStatus = bulletSpeedUpgradeStatus
+        // Updates old status values
+        for (type, elements) in upgradeUIElements {
+            upgradeUIElements[type]?.oldUpgradeStatus = elements.upgradeStatus
+        }
     }
     
     // Spawns a new bird
@@ -780,6 +674,8 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     
     // Brings up the upgrade screen and pauses the game
     func upgrade() {
+        
+        // Pauses game and removes UI
         pauseButton.isHidden = true
         pauseButton.state = .MSButtonNodeStateHidden
         leftTouch = nil
@@ -794,75 +690,21 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         rightJoystick.isHidden = true
         rightThumb.isHidden = true
         isPaused = true
+        
+        // Presents upgrade screen
         upgradeScreen.isHidden = false
         upgradeLabel.isHidden = false
-        switch healthUpgradeStatus {
-        case 1:
-            health_plus.position = health_1.position
-            health_button.position = health_1.position
-        case 2:
-            health_1.color = UIColor(red: 0.0, green: 1.0, blue: 0.0, alpha: 1.0)
-            health_plus.position = health_2.position
-            health_button.position = health_2.position
-        case 3:
-            health_2.color = UIColor(red: 0.0, green: 1.0, blue: 0.0, alpha: 1.0)
-            health_plus.position = health_3.position
-            health_button.position = health_3.position
-        default:
-            health_3.color = UIColor(red: 0.0, green: 1.0, blue: 0.0, alpha: 1.0)
-            health_plus.text = ""
-            health_button.state = .MSButtonNodeStateHidden
-        }
-        switch speedUpgradeStatus {
-        case 1:
-            speed_plus.position = speed_1.position
-            speed_button.position = speed_1.position
-        case 2:
-            speed_1.color = UIColor(red: 0.0, green: 1.0, blue: 0.0, alpha: 1.0)
-            speed_plus.position = speed_2.position
-            speed_button.position = speed_2.position
-        case 3:
-            speed_2.color = UIColor(red: 0.0, green: 1.0, blue: 0.0, alpha: 1.0)
-            speed_plus.position = speed_3.position
-            speed_button.position = speed_3.position
-        default:
-            speed_3.color = UIColor(red: 0.0, green: 1.0, blue: 0.0, alpha: 1.0)
-            speed_plus.text = ""
-            speed_button.state = .MSButtonNodeStateHidden
-        }
-        switch fireRateUpgradeStatus {
-        case 1:
-            fire_rate_plus.position = fire_rate_1.position
-            fire_rate_button.position = fire_rate_1.position
-        case 2:
-            fire_rate_1.color = UIColor(red: 0.0, green: 1.0, blue: 0.0, alpha: 1.0)
-            fire_rate_plus.position = fire_rate_2.position
-            fire_rate_button.position = fire_rate_2.position
-        case 3:
-            fire_rate_2.color = UIColor(red: 0.0, green: 1.0, blue: 0.0, alpha: 1.0)
-            fire_rate_plus.position = fire_rate_3.position
-            fire_rate_button.position = fire_rate_3.position
-        default:
-            fire_rate_3.color = UIColor(red: 0.0, green: 1.0, blue: 0.0, alpha: 1.0)
-            fire_rate_plus.text = ""
-            fire_rate_button.state = .MSButtonNodeStateHidden
-        }
-        switch bulletSpeedUpgradeStatus {
-        case 1:
-            bullet_speed_plus.position = bullet_speed_1.position
-            bullet_speed_button.position = bullet_speed_1.position
-        case 2:
-            bullet_speed_1.color = UIColor(red: 0.0, green: 1.0, blue: 0.0, alpha: 1.0)
-            bullet_speed_plus.position = bullet_speed_2.position
-            bullet_speed_button.position = bullet_speed_2.position
-        case 3:
-            bullet_speed_2.color = UIColor(red: 0.0, green: 1.0, blue: 0.0, alpha: 1.0)
-            bullet_speed_plus.position = bullet_speed_3.position
-            bullet_speed_button.position = bullet_speed_3.position
-        default:
-            bullet_speed_3.color = UIColor(red: 0.0, green: 1.0, blue: 0.0, alpha: 1.0)
-            bullet_speed_plus.text = ""
-            bullet_speed_button.state = .MSButtonNodeStateHidden
+        for (type, elements) in upgradeUIElements {
+            if (elements.upgradeStatus - 2) >= 0 && (elements.upgradeStatus - 2) < elements.squares.count {
+                self.upgradeUIElements[type]?.squares[elements.upgradeStatus - 2]?.color = self.upgradedColor
+            }
+            if (elements.upgradeStatus - 1) < elements.squares.count {
+                upgradeUIElements[type]?._button?.position = (elements.squares[elements.upgradeStatus - 1]?.position)!
+                upgradeUIElements[type]?._plus?.position = (elements.squares[elements.upgradeStatus - 1]?.position)!
+            } else {
+                upgradeUIElements[type]?._button?.state = .MSButtonNodeStateHidden
+                upgradeUIElements[type]?._plus?.text = ""
+            }
         }
         
         // Increases the difficulty
@@ -872,5 +714,15 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         
         // Makes invulnerable
         invincibilityTimer = invincibilityTime
+    }
+    
+    // Calculates the new and old totals of the upgrade statuses
+    func calculateTotals() {
+        total = 0
+        oldTotal = 0
+        for (_, elements) in upgradeUIElements {
+            total += elements.upgradeStatus
+            oldTotal += elements.oldUpgradeStatus
+        }
     }
 }
