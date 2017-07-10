@@ -69,37 +69,40 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     // Gameplay variables
     var score = 0
     var highScore = UserDefaults().integer(forKey: "HIGHSCORE")
+    // (values at 0 set later)
     var maxHealth = 6
     let maxMaxHealth = 12
     let minMaxHealth = 6
-    // (set later)
     var health = 0
-    var heroSpeed: CGFloat = 150
+    var heroSpeed: CGFloat = 0
     let maxHeroSpeed: CGFloat = 300
     let minHeroSpeed: CGFloat = 150
-    var birdSpeed: CGFloat = 100
-    var bulletSpeed: CGFloat = 200
+    var bulletSpeed: CGFloat = 0
     let maxBulletSpeed: CGFloat = 500
     let minBulletSpeed: CGFloat = 200
     // Frames until next shot ~(seconds * 60)
-    var shotFrequency: Int = 1 * 60
+    var shotFrequency: Int = 0
     let maxShotFrequency: Int = 30
     let minShotFrequency: Int = 1 * 60
+    // Frames until post-upgrade invincibility runs out ~(seconds * 60)
     var invincibilityTimer = 0
     let invincibilityTime = 3 * 60
     
     // Bird constants
+    let birdSpeed: CGFloat = 100
     let pooSpeed: CGFloat = 150
     // Average frames until next poop ~(seconds * 60)
     let pooFrequency: Int = 2 * 60
     
     // All bird variables assigned to each type:
     // spawnFrequency = average frames until next bird spawn ~(seconds * 60)
+    // minSpawnFrequency = largest value that spawnFrequency can be ~(seconds * 60)
+    // maxSpawnFrequency = smallest value that spawnFrequency can be ~(seconds * 60)
     // spawnTime = actual frames until next bird spawn
     // spawnTimer = framecount for bird spawning
     // levelsTo = how many times the player must upgrade for the bird to start spawning
     // isSpawning = if the bird type is spawning or not
-    var birdVariables: [BirdType: (spawnFrequency: Int, spawnTime: Int?, spawnTimer: Int, levelsTo: Int, isSpawning: Bool)] = [.normal: (5 * 60, nil, 0, 0, true), .smart: (8 * 60, nil, 0, 2, false), .big: (15 * 60, nil, 0, 4, false)]
+    var birdVariables: [BirdType: (spawnFrequency: Int, minSpawnFrequency: Int, maxSpawnFrequency: Int, spawnTime: Int, spawnTimer: Int, levelsTo: Int, isSpawning: Bool)] = [.normal: (0, 5 * 60, 2 * 60, 0, 0, 0, true), .smart: (0, 8 * 60, 4 * 60, 0, 0, 2, false), .big: (0, 15 * 60, 8 * 60, 0, 0, 4, false)]
     
     // BTS variables
     // Framecount for shooting
@@ -115,6 +118,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         
         // Set the inital timers
         for (type, variables) in birdVariables {
+            birdVariables[type]?.spawnFrequency = variables.minSpawnFrequency
             birdVariables[type]?.spawnTime = variables.spawnFrequency
         }
         shotTimer = shotFrequency
@@ -123,6 +127,9 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         upgrades = (upgradeUIElements["health"]?.squares.count)!
         upgradeTypes = upgradeUIElements.count
         health = maxHealth
+        heroSpeed = minHeroSpeed
+        bulletSpeed = minBulletSpeed
+        shotFrequency = minShotFrequency
         
         // Set reference to objects, screens, and UI and sets their initial states
         hero = self.childNode(withName: "//hero") as! SKSpriteNode
@@ -417,7 +424,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         for (type, variables) in birdVariables {
             if variables.isSpawning {
                 birdVariables[type]?.spawnTimer += 1
-                if variables.spawnTimer >= variables.spawnTime! {
+                if variables.spawnTimer >= variables.spawnTime {
                     spawnBird(type)
                     let rand = arc4random_uniform(UInt32(variables.spawnFrequency))
                     birdVariables[type]?.spawnTime = Int(rand) + (variables.spawnFrequency/2)
