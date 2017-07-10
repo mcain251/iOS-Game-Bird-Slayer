@@ -724,7 +724,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         
         // Increases the difficulty
         for (type , variables) in birdVariables {
-            birdVariables[type]?.spawnFrequency = Int(Double(variables.spawnFrequency) * 0.9)
+            birdVariables[type]?.spawnFrequency = Int((Double(variables.spawnFrequency) + Double(variables.maxSpawnFrequency)) * 0.5)
         }
         
         // Makes invulnerable
