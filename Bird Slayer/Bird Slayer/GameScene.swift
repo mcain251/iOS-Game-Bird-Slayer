@@ -105,6 +105,8 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     let minShotFrequency: Int = 1 * 60
     // Number of upgrades per catagory
     let upgrades = 3
+    // Number of categories
+    let upgradeTypes = 4
     var invincibilityTimer = 0
     let invincibilityTime = 3 * 60
     
@@ -113,42 +115,29 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     // Average frames until next poop ~(seconds * 60)
     let pooFrequency: Int = 2 * 60
     
-    // Normal bird spawn variables
-    // Average frames until next bird spawn ~(seconds * 60)
-    var normalSpawnFrequency: Int = 5 * 60
-    // Actual frames until next bird spawn
-    var normalSpawnTime: Int!
-    // Framecount for bird spawning
-    var normalSpawnTimer: Int = 0
-    
-    // Smart bird spawn variables
-    var smartSpawnFrequency: Int = 8 * 60
-    var smartSpawnTime: Int!
-    var smartSpawnTimer: Int = 0
-    var smartIsSpawning = false
-    let levelsToSmart = 2
-    
-    // Big bird spawn variables
-    var bigSpawnFrequency: Int = 15 * 60
-    var bigSpawnTime: Int!
-    var bigSpawnTimer: Int = 0
-    var bigIsSpawning = false
-    let levelsToBig = 3
+    // All bird variables assigned to each type:
+    // spawnFrequency = average frames until next bird spawn ~(seconds * 60)
+    // spawnTime = actual frames until next bird spawn
+    // spawnTimer = framecount for bird spawning
+    // levelsTo = how many times the player must upgrade for the bird to start spawning
+    // isSpawning = if the bird type is spawning or not
+    var birdVariables: [BirdType: (spawnFrequency: Int, spawnTime: Int?, spawnTimer: Int, levelsTo: Int, isSpawning: Bool)] = [.normal: (5 * 60, nil, 0, 0, true), .smart: (8 * 60, nil, 0, 2, false), .big: (15 * 60, nil, 0, 4, false)]
     
     // BTS variables
     // Framecount for shooting
     var shotTimer: Int = 0
     var gameState: GameSceneState = .inactive
     // List of scores that initiate upgrade screen
-    var upgradeScores: [Int] = [50, 150, 300, 500, 750, 1050, 1400, 1800, 2250, 2750, 3300, 3900]
-    //var upgradeScores: [Int] = [10, 20, 50, 80, 130, 200, 250, 300, 350, 400, 450, 500]
+    //var upgradeScores: [Int] = [50, 150, 300, 500, 750, 1050, 1400, 1800, 2250, 2750, 3300, 3900]
+    var upgradeScores: [Int] = [10, 20, 50, 80, 130, 200, 250, 300, 350, 400, 450, 500]
     var pause = false
     
     // Called when game begins
     override func didMove(to view: SKView) {
-        normalSpawnTime = normalSpawnFrequency
-        smartSpawnTime = smartSpawnFrequency
-        bigSpawnTime = bigSpawnFrequency
+        for (type, variables) in birdVariables {
+            birdVariables[type]?.spawnTime = variables.spawnFrequency
+        }
+        print(birdVariables)
         shotTimer = shotFrequency
         
         // Set reference to objects
@@ -306,7 +295,6 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
                 self.pause = false
             }
         }
-        
         
         // Set physics contact delegate
         physicsWorld.contactDelegate = self
@@ -519,29 +507,15 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     
     // Figures out if new bird should be spawned, then spawns it. Removes old birds. Makes birds poo if they are due
     func birdManager() {
-        normalSpawnTimer += 1
-        if normalSpawnTimer >= normalSpawnTime {
-            spawnBird(.normal)
-            let rand = arc4random_uniform(UInt32(normalSpawnFrequency))
-            normalSpawnTime = Int(rand) + (normalSpawnFrequency/2)
-            normalSpawnTimer = 0
-        }
-        if smartIsSpawning {
-            smartSpawnTimer += 1
-            if smartSpawnTimer >= smartSpawnTime {
-                spawnBird(.smart)
-                let rand = arc4random_uniform(UInt32(smartSpawnFrequency))
-                smartSpawnTime = Int(rand) + (smartSpawnFrequency/2)
-                smartSpawnTimer = 0
-            }
-        }
-        if bigIsSpawning {
-            bigSpawnTimer += 1
-            if bigSpawnTimer >= bigSpawnTime {
-                spawnBird(.big)
-                let rand = arc4random_uniform(UInt32(bigSpawnFrequency))
-                bigSpawnTime = Int(rand) + (bigSpawnFrequency/2)
-                bigSpawnTimer = 0
+        for (type, variables) in birdVariables {
+            if variables.isSpawning {
+                birdVariables[type]?.spawnTimer += 1
+                if variables.spawnTimer >= variables.spawnTime! {
+                    spawnBird(type)
+                    let rand = arc4random_uniform(UInt32(variables.spawnFrequency))
+                    birdVariables[type]?.spawnTime = Int(rand) + (variables.spawnFrequency/2)
+                    birdVariables[type]?.spawnTimer = 0
+                }
             }
         }
         for var i in 0 ..< birds.count {
@@ -693,11 +667,10 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         }
         
         // Toggles harder birds
-        if !smartIsSpawning && total >= upgrades + levelsToSmart {
-            smartIsSpawning = true
-        }
-        if !bigIsSpawning && total >= upgrades + levelsToBig {
-            bigIsSpawning = true
+        for (type, variables) in birdVariables {
+            if !variables.isSpawning && total >= upgradeTypes + variables.levelsTo {
+                birdVariables[type]?.isSpawning = true
+            }
         }
         
         oldHealthUpgradeStatus = healthUpgradeStatus
@@ -711,23 +684,9 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         let newBird = birdBase.copy() as! Bird
         newBird.physicsBody?.linearDamping = 0
         
-        // Sets the bird's attributes based on its type
+        // Sets the bird's type
+        newBird.birdSpeed = self.birdSpeed
         newBird.type = type
-        switch type {
-        case .smart:
-            newBird.color = UIColor(red: 1.0, green: 1.0, blue: 0.75, alpha: 1.0)
-            newBird.health = 2
-            newBird.pointValue = newBird.pointValue * 3
-            newBird.birdSpeed = self.birdSpeed
-        case .big:
-            newBird.xScale = 2
-            newBird.yScale = 2
-            newBird.health = 5
-            newBird.pointValue = newBird.pointValue * 5
-            newBird.birdSpeed = self.birdSpeed * (2/3)
-        default:
-            newBird.birdSpeed = self.birdSpeed
-        }
         
         // Chooses the side the bird spawns on
         let rand1 = arc4random_uniform(UInt32(2))
@@ -907,12 +866,8 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         }
         
         // Increases the difficulty
-        normalSpawnFrequency = Int(Double(normalSpawnFrequency) * 0.9)
-        if smartIsSpawning {
-            smartSpawnFrequency = Int(Double(smartSpawnFrequency) * 0.9)
-        }
-        if bigIsSpawning {
-            bigSpawnFrequency = Int(Double(bigSpawnFrequency) * 0.9)
+        for (type , variables) in birdVariables {
+            birdVariables[type]?.spawnFrequency = Int(Double(variables.spawnFrequency) * 0.9)
         }
         
         // Makes invulnerable

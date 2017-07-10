@@ -19,7 +19,24 @@ enum Side {
 
 class Bird: SKSpriteNode {
     
-    var type: BirdType!
+    var type: BirdType! {
+        didSet {
+            switch type! {
+            case .smart:
+                color = UIColor(red: 1.0, green: 1.0, blue: 0.75, alpha: 1.0)
+                health = 2
+                pointValue = pointValue * 3
+            case .big:
+                xScale = 2
+                yScale = 2
+                health = 5
+                pointValue = pointValue * 5
+                birdSpeed = birdSpeed * (2/3)
+            default:
+                break
+            }
+        }
+    }
     var direction: Side!
     var pooTimer = 0
     var started = false
