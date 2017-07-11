@@ -10,7 +10,7 @@ import SpriteKit
 
 // specifies the type of bird
 enum BirdType {
-    case normal, smart, big, rare
+    case normal, smart, big, rare, toxic
 }
 
 enum Side {
@@ -22,6 +22,7 @@ class Bird: SKSpriteNode {
     // Colors
     let smartBirdColor = UIColor(red: 1.0, green: 1.0, blue: 0.75, alpha: 1.0)
     let rareBirdColor = UIColor(red: 1.0, green: 1.0, blue: 0.0, alpha: 1.0)
+    let toxicBirdColor = UIColor(red: 0.61, green: 1.0, blue: 0.47, alpha: 1.0)
     
     // Determines bird attributes
     var type: BirdType! {
@@ -35,7 +36,7 @@ class Bird: SKSpriteNode {
                 xScale = 2
                 yScale = 2
                 health = 5
-                pointValue = pointValue * 5
+                pointValue = pointValue * 8
                 birdSpeed = birdSpeed * (2/3)
             case .rare:
                 color = rareBirdColor
@@ -43,6 +44,10 @@ class Bird: SKSpriteNode {
                 yScale = 0.75
                 pointValue = pointValue * 20
                 birdSpeed = birdSpeed * 1.5
+            case .toxic:
+                color = toxicBirdColor
+                health = 2
+                pointValue = pointValue * 5
             default:
                 break
             }
@@ -54,7 +59,7 @@ class Bird: SKSpriteNode {
     var pooTimer = 0
     var started = false
     
-    // Default values (changed when type is set
+    // Default values (changed when type is set)
     var pointValue = 10
     var health = 1
     var birdSpeed: CGFloat!

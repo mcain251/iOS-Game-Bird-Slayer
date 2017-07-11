@@ -15,7 +15,7 @@ func clamp<T: Comparable>(value: T, lower: T, upper: T) -> T {
 
 // Game state enumeration
 enum GameSceneState {
-    case inactive, active, gameOver
+    case inactive, active, gameOver, paused
 }
 
 class GameScene: SKScene, SKPhysicsContactDelegate {
@@ -29,6 +29,8 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     var bullets: [SKSpriteNode] = []
     var pooBase: SKSpriteNode!
     var poops: [SKSpriteNode] = []
+    var toxicHazardBase: SKSpriteNode!
+    var hazards: [(SKSpriteNode, Int)] = []
     var healthBar: SKSpriteNode!
     var healthBarContainer: SKSpriteNode!
     var scoreLabel: SKLabelNode!
@@ -78,18 +80,21 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     let maxShotFrequency: Int = 30
     let minShotFrequency: Int = 1 * 60
     // Average frames until next bird spawn ~(seconds * 60)
-    let minSpawnFrequency = 5 * 60
-    let maxSpawnFrequency = 1 * 60
+    let minSpawnFrequency = 3 * 60
+    let maxSpawnFrequency = Int(0.5 * 60.0)
     // Frames until post-upgrade invincibility runs out ~(seconds * 60)
     let invincibilityTime = 3 * 60
     let birdSpeed: CGFloat = 100
     let pooSpeed: CGFloat = 150
     // Average frames until next poop ~(seconds * 60)
     let pooFrequency: Int = 2 * 60
+    // Frames until hazards disappear ~(seconds * 60)
+    let hazardTime: Int = 2 * 60
     
     // Colors
     let upgradedColor: UIColor = UIColor(red: 0.0, green: 1.0, blue: 0.0, alpha: 1.0)
     let smartPooColor: UIColor = UIColor(red: 1.0, green: 1.0, blue: 0.75, alpha: 1.0)
+    let toxicPooColor: UIColor = UIColor(red: 0.72, green: 1.0, blue: 0.46, alpha: 1.0)
     
     // All bird variables assigned to each type:
     // spawnRatio = relative spawn ratio (100 = same rate as normal bird)
@@ -97,7 +102,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     // spawnTimer = framecount for bird spawning
     // levelsTo = how many times the player must upgrade for the bird to start spawning
     // isSpawning = if the bird type is spawning or not
-    var birdVariables: [BirdType: (spawnRatio: Int, spawnTime: Int, spawnTimer: Int, levelsTo: Int, isSpawning: Bool)] = [.normal: (100, 0, 0, 0, true), .smart: (50, 0, 0, 2, false), .big: (25, 0, 0, 4, false), .rare: (2, 0, 0, 6, false)]
+    var birdVariables: [BirdType: (spawnRatio: Int, spawnTime: Int, spawnTimer: Int, levelsTo: Int, isSpawning: Bool)] = [.normal: (100, 0, 0, 0, true), .smart: (30, 0, 0, 2, false), .toxic: (30, 0, 0, 4, false), .big: (10, 0, 0, 6, false), .rare: (1, 0, 0, 8, false)]
     
     // BTS variables
     var score = 0
@@ -114,7 +119,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     var gameState: GameSceneState = .inactive
     // List of scores that initiate upgrade screen
     //var upgradeScores: [Int] = [50, 150, 300, 500, 750, 1050, 1400, 1800, 2250, 2750, 3300, 3900]
-    var upgradeScores: [Int] = [10, 20, 50, 80, 130, 200, 250, 300, 350, 400, 450, 500]
+    var upgradeScores: [Int] = [10, 20, 50, 80, 110, 140, 220, 300, 500, 700, 900, 1100]
     var pause = false
     
     // Called when game begins
@@ -142,6 +147,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         birdBase = self.childNode(withName: "//birdBase") as! Bird
         bulletBase = self.childNode(withName: "//bulletBase") as! SKSpriteNode
         pooBase = self.childNode(withName: "//pooBase") as! SKSpriteNode
+        toxicHazardBase = self.childNode(withName: "toxicHazardBase") as! SKSpriteNode
         healthBar = self.childNode(withName: "healthBar") as! SKSpriteNode
         healthBarContainer = self.childNode(withName: "healthBarContainer") as! SKSpriteNode
         scoreLabel = self.childNode(withName: "scoreLabel") as! SKLabelNode
@@ -174,6 +180,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             upgradeUIElements[type]?._button?.selectedHandler = {
                 self.upgradeUIElements[type]?.upgradeStatus += 1
                 self.isPaused = false
+                self.gameState = .active
                 self.upgradeScreen.isHidden = true
                 self.upgradeLabel.isHidden = true
                 self.pauseButton.isHidden = false
@@ -184,6 +191,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         // Pause button functionality (pauses and presents paused upgrade screen/ unpauses and hides pause screen)
         pauseButton.selectedHandler = {
             if !self.pause {
+                self.gameState = .paused
                 self.isPaused = true
                 self.leftTouch = nil
                 self.leftInitialPosition = nil
@@ -209,6 +217,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
                 self.pause = true
             } else {
                 self.isPaused  = false
+                self.gameState = .active
                 self.upgradeScreen.isHidden = true
                 self.pauseLabel.isHidden = true
                 self.pause = false
@@ -223,6 +232,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
         if gameState == .inactive {
             gameState = .active
+            pauseButton.isHidden = false
         }
         if gameState != .gameOver && !self.isPaused {
             for touch in touches {
@@ -328,6 +338,13 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         }
         if gameState == .inactive {
             tutorial.isHidden = false
+            pauseButton.isHidden = true
+        }
+        if gameState == .paused {
+            self.isPaused = true
+        }
+        if gameState == .gameOver {
+            pauseButton.isHidden = true
         }
         
         // Removes old poops
@@ -341,6 +358,9 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         
         // Makes sure upgrades are applied correctly
         upgradeManager()
+        
+        // Removes old hazards
+        hazardManager()
         
         // Clamps hero's position and velocity to inside play area
         if (hero.position.x <= (-284 + hero.size.width / 2 + 1)) {
@@ -401,8 +421,8 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             }
         }
         
-        // Check if one was the hero, then removes poop and decrements health
-        if (contactA.categoryBitMask == 1) {
+        // Check if one was the hero and the other was poop, then removes poop and decrements health
+        if (contactA.categoryBitMask == 1 && contactB.categoryBitMask == 8) {
             if invincibilityTimer <= 0 {
                 health -= 1
                 if nodeB.xScale == 2 && nodeB.yScale == 2 && health != 0{
@@ -412,7 +432,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             nodeB.removeFromParent()
             nodeB.isHidden = true
         }
-        if (contactB.categoryBitMask == 1) {
+        if (contactB.categoryBitMask == 1 && contactA.categoryBitMask == 8) {
             if invincibilityTimer <= 0 {
                 health -= 1
                 if nodeA.xScale == 2 && nodeA.yScale == 2 && health != 0 {
@@ -424,8 +444,35 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         }
         
         // Check if one was the ground, then acts accordingly based on the type of poop
-        if (contactA.categoryBitMask == 16 || contactB.categoryBitMask == 16) {
-            
+        if (contactA.categoryBitMask == 16) {
+            if compareColors(nodeB.color, toxicPooColor) {
+                createHazard(nodeB)
+                nodeB.removeFromParent()
+                nodeB.isHidden = true
+            }
+        }
+        if (contactB.categoryBitMask == 16) {
+            if compareColors(nodeA.color, toxicPooColor) {
+                createHazard(nodeA)
+                nodeA.removeFromParent()
+                nodeA.isHidden = true
+            }
+        }
+        
+        // Check if one was a hazard, then removes hazard and decrements health
+        if (contactA.categoryBitMask == 32) {
+            if invincibilityTimer <= 0 {
+                health -= 1
+            }
+            nodeA.removeFromParent()
+            nodeA.isHidden = true
+        }
+        if (contactB.categoryBitMask == 32) {
+            if invincibilityTimer <= 0 {
+                health -= 1
+            }
+            nodeB.removeFromParent()
+            nodeB.isHidden = true
         }
     }
     
@@ -585,7 +632,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
                 case "speed":
                     heroSpeed = (((maxHeroSpeed - minHeroSpeed)/CGFloat(upgrades)) * CGFloat((elements.upgradeStatus - 1))) + minHeroSpeed
                 case "fire_rate":
-                    shotFrequency = minShotFrequency - (((minShotFrequency - maxShotFrequency)/upgrades) * (elements.upgradeStatus - 1))
+                    shotFrequency = Int(Double(minShotFrequency) * pow(pow((Double(maxShotFrequency)/Double(minShotFrequency)), (1.0/Double(upgrades))), Double(elements.upgradeStatus - 1)))
                 case "bullet_speed":
                     bulletSpeed = (((maxBulletSpeed - minBulletSpeed)/CGFloat(upgrades)) * CGFloat((elements.upgradeStatus - 1))) + minBulletSpeed
                 default:
@@ -604,6 +651,22 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         // Updates old status values
         for (type, elements) in upgradeUIElements {
             upgradeUIElements[type]?.oldUpgradeStatus = elements.upgradeStatus
+        }
+    }
+    
+    // Removes hazards if their timer has reached hazardTime
+    func hazardManager() {
+        for i in 0 ..< hazards.count {
+            if i < hazards.count {
+                hazards[i].1 += 1
+                if hazards[i].1 >= hazardTime {
+                    hazards[i].0.removeFromParent()
+                    hazards.remove(at: i)
+                } else if hazards[i].0.isHidden {
+                    hazards[i].0.removeFromParent()
+                    hazards.remove(at: i)
+                }
+            }
         }
     }
     
@@ -684,6 +747,9 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             newPoo.physicsBody?.velocity.dy = -0.75 * pooSpeed
         case .rare:
             isPooping = false
+        case .toxic:
+            newPoo.color = toxicPooColor
+            newPoo.physicsBody?.velocity.dy = -1 * pooSpeed
         default:
             newPoo.physicsBody?.velocity.dy = -1 * pooSpeed
         }
@@ -713,6 +779,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     
         // Removes all bullets on screen
         for _ in bullets {
+            bullets.first?.removeFromParent()
             bullets.removeFirst()
         }
     }
@@ -720,44 +787,47 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     // Brings up the upgrade screen and pauses the game
     func upgrade() {
         
-        // Pauses game and removes UI
-        pauseButton.isHidden = true
-        pauseButton.state = .MSButtonNodeStateHidden
-        leftTouch = nil
-        leftInitialPosition = nil
-        leftJoystick.isHidden = true
-        leftThumb.isHidden = true
-        hero.physicsBody?.velocity.dx = 0
-        rightTouch = nil
-        rightInitialPosition = nil
-        gun.zRotation = 0
-        shooting = false
-        rightJoystick.isHidden = true
-        rightThumb.isHidden = true
-        isPaused = true
-        
-        // Presents upgrade screen
-        upgradeScreen.isHidden = false
-        upgradeLabel.isHidden = false
-        for (type, elements) in upgradeUIElements {
-            if (elements.upgradeStatus - 2) >= 0 && (elements.upgradeStatus - 2) < elements.squares.count {
-                self.upgradeUIElements[type]?.squares[elements.upgradeStatus - 2]?.color = self.upgradedColor
+        if gameState != .gameOver {
+            // Pauses game and removes UI
+            gameState = .paused
+            pauseButton.isHidden = true
+            pauseButton.state = .MSButtonNodeStateHidden
+            leftTouch = nil
+            leftInitialPosition = nil
+            leftJoystick.isHidden = true
+            leftThumb.isHidden = true
+            hero.physicsBody?.velocity.dx = 0
+            rightTouch = nil
+            rightInitialPosition = nil
+            gun.zRotation = 0
+            shooting = false
+            rightJoystick.isHidden = true
+            rightThumb.isHidden = true
+            isPaused = true
+            
+            // Presents upgrade screen
+            upgradeScreen.isHidden = false
+            upgradeLabel.isHidden = false
+            for (type, elements) in upgradeUIElements {
+                if (elements.upgradeStatus - 2) >= 0 && (elements.upgradeStatus - 2) < elements.squares.count {
+                    self.upgradeUIElements[type]?.squares[elements.upgradeStatus - 2]?.color = self.upgradedColor
+                }
+                if (elements.upgradeStatus - 1) < elements.squares.count {
+                    upgradeUIElements[type]?._button?.position = (elements.squares[elements.upgradeStatus - 1]?.position)!
+                    upgradeUIElements[type]?._plus?.position = (elements.squares[elements.upgradeStatus - 1]?.position)!
+                } else {
+                    upgradeUIElements[type]?._button?.state = .MSButtonNodeStateHidden
+                    upgradeUIElements[type]?._plus?.text = ""
+                }
             }
-            if (elements.upgradeStatus - 1) < elements.squares.count {
-                upgradeUIElements[type]?._button?.position = (elements.squares[elements.upgradeStatus - 1]?.position)!
-                upgradeUIElements[type]?._plus?.position = (elements.squares[elements.upgradeStatus - 1]?.position)!
-            } else {
-                upgradeUIElements[type]?._button?.state = .MSButtonNodeStateHidden
-                upgradeUIElements[type]?._plus?.text = ""
-            }
+            
+            // Increases the spawn rate
+            calculateTotals()
+            spawnFrequency = Int(Double(minSpawnFrequency) * pow(pow((Double(maxSpawnFrequency)/Double(minSpawnFrequency)), (1.0/Double(upgrades * upgradeTypes))), Double(total - upgradeTypes + 1)))
+            
+            // Makes invulnerable
+            invincibilityTimer = invincibilityTime
         }
-        
-        // Increases the spawn rate
-        calculateTotals()
-        spawnFrequency = minSpawnFrequency - (((minSpawnFrequency - maxSpawnFrequency)/(upgrades * upgradeTypes)) * (total - upgradeTypes))
-        
-        // Makes invulnerable
-        invincibilityTimer = invincibilityTime
     }
     
     // Calculates the new and old totals of the upgrade statuses
@@ -779,5 +849,29 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             }
         }
         return ratioTotal
+    }
+    
+    // Creates a hazard at the location of the node
+    func createHazard(_ node: SKNode) {
+        let newHazard = toxicHazardBase.copy() as! SKSpriteNode
+        newHazard.position.x = node.position.x
+        newHazard.position.y = -130 - newHazard.size.height/2
+        hazards.append((newHazard, 0))
+        self.addChild(newHazard)
+    }
+    
+    // Compares two UIColors
+    func compareColors(_ c1:UIColor, _ c2:UIColor) -> Bool{
+        var red:CGFloat = 0
+        var green:CGFloat  = 0
+        var blue:CGFloat = 0
+        var alpha:CGFloat  = 0
+        c1.getRed(&red, green: &green, blue: &blue, alpha: &alpha)
+        var red2:CGFloat = 0
+        var green2:CGFloat  = 0
+        var blue2:CGFloat = 0
+        var alpha2:CGFloat  = 0
+        c2.getRed(&red2, green: &green2, blue: &blue2, alpha: &alpha2)
+        return (Int(red*255) == Int(red*255) && Int(green*255) == Int(green2*255) && Int(blue*255) == Int(blue*255))
     }
 }
