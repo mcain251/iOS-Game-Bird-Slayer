@@ -81,7 +81,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     let minShotFrequency: Int = 1 * 60
     // Average frames until next bird spawn ~(seconds * 60)
     let minSpawnFrequency = 3 * 60
-    let maxSpawnFrequency = Int(0.5 * 60.0)
+    let maxSpawnFrequency = Int(0.75 * 60.0)
     // Frames until post-upgrade invincibility runs out ~(seconds * 60)
     let invincibilityTime = 3 * 60
     let birdSpeed: CGFloat = 100
@@ -118,8 +118,8 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     var shotTimer: Int = 0
     var gameState: GameSceneState = .inactive
     // List of scores that initiate upgrade screen
-    //var upgradeScores: [Int] = [50, 150, 300, 500, 750, 1050, 1400, 1800, 2250, 2750, 3300, 3900]
-    var upgradeScores: [Int] = [10, 20, 50, 80, 110, 140, 220, 300, 500, 700, 900, 1100]
+    var upgradeScores: [Int] = [50, 150, 300, 500, 750, 1050, 1400, 1800, 2250, 2750, 3300, 3900]
+    //var upgradeScores: [Int] = [10, 20, 50, 80, 110, 140, 220, 300, 500, 700, 900, 1100]
     var pause = false
     
     // Called when game begins
@@ -445,14 +445,14 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         
         // Check if one was the ground, then acts accordingly based on the type of poop
         if (contactA.categoryBitMask == 16) {
-            if compareColors(nodeB.color, toxicPooColor) {
+            if String(describing: nodeB.color) == String(describing: toxicPooColor){
                 createHazard(nodeB)
                 nodeB.removeFromParent()
                 nodeB.isHidden = true
             }
         }
         if (contactB.categoryBitMask == 16) {
-            if compareColors(nodeA.color, toxicPooColor) {
+            if String(describing: nodeB.color) == String(describing: toxicPooColor) {
                 createHazard(nodeA)
                 nodeA.removeFromParent()
                 nodeA.isHidden = true
@@ -858,20 +858,5 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         newHazard.position.y = -130 - newHazard.size.height/2
         hazards.append((newHazard, 0))
         self.addChild(newHazard)
-    }
-    
-    // Compares two UIColors
-    func compareColors(_ c1:UIColor, _ c2:UIColor) -> Bool{
-        var red:CGFloat = 0
-        var green:CGFloat  = 0
-        var blue:CGFloat = 0
-        var alpha:CGFloat  = 0
-        c1.getRed(&red, green: &green, blue: &blue, alpha: &alpha)
-        var red2:CGFloat = 0
-        var green2:CGFloat  = 0
-        var blue2:CGFloat = 0
-        var alpha2:CGFloat  = 0
-        c2.getRed(&red2, green: &green2, blue: &blue2, alpha: &alpha2)
-        return (Int(red*255) == Int(red*255) && Int(green*255) == Int(green2*255) && Int(blue*255) == Int(blue*255))
     }
 }
