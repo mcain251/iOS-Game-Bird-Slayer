@@ -46,7 +46,6 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     // Total of the upgrade statuses
     var total = 0
     var oldTotal = 0
-    let upgradedColor: UIColor = UIColor(red: 0.0, green: 1.0, blue: 0.0, alpha: 1.0)
     let offScreen: CGPoint = CGPoint(x: -1000, y: -1000)
     // Number of upgrades per catagory (set later)
     var upgrades = 0
@@ -78,14 +77,19 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     // Frames until next shot ~(seconds * 60)
     let maxShotFrequency: Int = 30
     let minShotFrequency: Int = 1 * 60
+    // Average frames until next bird spawn ~(seconds * 60)
+    let minSpawnFrequency = 5 * 60
+    let maxSpawnFrequency = 1 * 60
     // Frames until post-upgrade invincibility runs out ~(seconds * 60)
     let invincibilityTime = 3 * 60
-    
-    // Bird constants
     let birdSpeed: CGFloat = 100
     let pooSpeed: CGFloat = 150
     // Average frames until next poop ~(seconds * 60)
     let pooFrequency: Int = 2 * 60
+    
+    // Colors
+    let upgradedColor: UIColor = UIColor(red: 0.0, green: 1.0, blue: 0.0, alpha: 1.0)
+    let smartPooColor: UIColor = UIColor(red: 1.0, green: 1.0, blue: 0.75, alpha: 1.0)
     
     // All bird variables assigned to each type:
     // spawnRatio = relative spawn ratio (100 = same rate as normal bird)
@@ -93,11 +97,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     // spawnTimer = framecount for bird spawning
     // levelsTo = how many times the player must upgrade for the bird to start spawning
     // isSpawning = if the bird type is spawning or not
-    var birdVariables: [BirdType: (spawnRatio: Int, spawnTime: Int, spawnTimer: Int, levelsTo: Int, isSpawning: Bool)] = [.normal: (100, 0, 0, 0, true), .smart: (50, 0, 0, 2, false), .big: (25, 0, 0, 4, false)]
-    // Average frames until next bird spawn ~(seconds * 60)
-    var spawnFrequency = 0
-    let minSpawnFrequency = 5 * 60
-    let maxSpawnFrequency = 1 * 60
+    var birdVariables: [BirdType: (spawnRatio: Int, spawnTime: Int, spawnTimer: Int, levelsTo: Int, isSpawning: Bool)] = [.normal: (100, 0, 0, 0, true), .smart: (50, 0, 0, 2, false), .big: (25, 0, 0, 4, false), .rare: (2, 0, 0, 6, false)]
     
     // BTS variables
     var score = 0
@@ -107,6 +107,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     var heroSpeed: CGFloat = 0
     var bulletSpeed: CGFloat = 0
     var shotFrequency: Int = 0
+    var spawnFrequency = 0
     // Framecounts for invincibility and shooting
     var invincibilityTimer = 0
     var shotTimer: Int = 0
@@ -421,10 +422,17 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             nodeA.removeFromParent()
             nodeA.isHidden = true
         }
+        
+        // Check if one was the ground, then acts accordingly based on the type of poop
+        if (contactA.categoryBitMask == 16 || contactB.categoryBitMask == 16) {
+            
+        }
     }
     
     // Figures out if new bird should be spawned, then spawns it. Removes old birds. Makes birds poo if they are due
     func birdManager() {
+        
+        // Checks if birds are due to spawn. Spawns if true
         for (type, variables) in birdVariables {
             if variables.isSpawning {
                 birdVariables[type]?.spawnTimer += 1
@@ -440,12 +448,16 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         for var i in 0 ..< birds.count {
             if i >= birds.count || i < 0 {break}
             birds[i].pooTimer -= 1
-            if birds[i].position.x < -350 || birds[i].position.x > 350 {
+            
+            // Checks if the birds are offscreen. Removes if true
+            if birds[i].position.x < -284 - (birds[i].size.width/2 + 1) || birds[i].position.x > 350 + (birds[i].size.width/2 + 1) {
                 birds[i].removeFromParent()
                 birds.remove(at: i)
                 if i > 0 {
                     i -= 1
                 }
+            
+            // Checks if birds are dead. Removes if true
             } else if birds[i].health <= 0 {
                 birds[i].removeFromParent()
                 birds.remove(at: i)
@@ -458,6 +470,8 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
                 if i > 0 {
                     i -= 1
                 }
+                
+            // Checks if birds are due to poo. Poops if true
             } else if birds[i].pooTimer <= 0 {
                 if !birds[i].started {
                     birds[i].started = true
@@ -613,10 +627,10 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         // Determines and sets its inital position
         var rand = arc4random_uniform(UInt32(160 - (2 * newBird.size.height)))
         rand += UInt32(newBird.size.height)
-        var newPosition = CGPoint(x: 300,y: Int(rand))
+        var newPosition = CGPoint(x: 284 + Int(newBird.size.width/2 + 1),y: Int(rand))
         newBird.physicsBody?.velocity.dx = -1 * newBird.birdSpeed
         if newBird.direction == .right {
-            newPosition.x = -300
+            newPosition.x = -284 - (newBird.size.width/2 + 1)
             newBird.physicsBody?.velocity.dx = newBird.birdSpeed
         }
         newBird.position = newPosition
@@ -645,15 +659,22 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     
     // Poops
     func poo(_ bird: Bird) {
+        var isPooping = true
         let newPoo = pooBase.copy() as! SKSpriteNode
         newPoo.physicsBody?.linearDamping = 0
         newPoo.position = bird.position
         newPoo.position.y = bird.position.y - 10
         switch bird.type! {
         case .smart:
-            newPoo.color = UIColor(red: 1.0, green: 1.0, blue: 0.75, alpha: 1.0)
-            let xDist = hero.position.x - newPoo.position.x
+            newPoo.color = smartPooColor
+            var xDist = hero.position.x - newPoo.position.x
             let yDist = hero.position.y - newPoo.position.y - 100
+            if xDist > abs(yDist) {
+                xDist = abs(yDist)
+            }
+            if xDist < yDist {
+                xDist = yDist
+            }
             let tDist = sqrt(xDist*xDist + yDist*yDist)
             newPoo.physicsBody?.velocity.dy = pooSpeed * (yDist/tDist)
             newPoo.physicsBody?.velocity.dx = pooSpeed * (xDist/tDist)
@@ -661,11 +682,15 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             newPoo.xScale = 2
             newPoo.yScale = 2
             newPoo.physicsBody?.velocity.dy = -0.75 * pooSpeed
+        case .rare:
+            isPooping = false
         default:
             newPoo.physicsBody?.velocity.dy = -1 * pooSpeed
         }
-        poops.append(newPoo)
-        self.addChild(newPoo)
+        if isPooping {
+            poops.append(newPoo)
+            self.addChild(newPoo)
+        }
     }
     
     // Called when player's health reaches 0
