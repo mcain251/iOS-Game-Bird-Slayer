@@ -40,10 +40,10 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     var pauseButton: MSButtonNode!
     var pauseLabel: SKLabelNode!
     var upgradeLabel: SKLabelNode!
-    var delay = false
     
     // Upgrade UI and relevant values
     var upgradeUIElements: [String: (squares: [SKSpriteNode?], _plus: SKLabelNode?, _button: MSButtonNode?, upgradeStatus: Int, oldUpgradeStatus: Int)] = ["health": ([nil, nil, nil], nil, nil, 1, 1), "speed": ([nil, nil, nil], nil, nil, 1, 1), "fire_rate": ([nil, nil, nil], nil, nil, 1, 1), "bullet_speed": ([nil, nil, nil], nil, nil, 1, 1)]
+    // Total of the upgrade statuses
     var total = 0
     var oldTotal = 0
     let upgradedColor: UIColor = UIColor(red: 0.0, green: 1.0, blue: 0.0, alpha: 1.0)
@@ -58,34 +58,27 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     var leftInitialPosition: CGPoint!
     var rightTouch: UITouch?
     var rightInitialPosition: CGPoint!
-    var shooting = false
     var leftThumb: SKSpriteNode!
     var rightThumb: SKSpriteNode!
     var leftJoystick: SKSpriteNode!
     var rightJoystick: SKSpriteNode!
     var leftJoystickPosition: CGPoint!
     var rightJoystickPosition: CGPoint!
+    var shooting = false
+    // Delays the first shot to persuade the user to hold down the fire button
+    var delay = false
     
-    // Gameplay variables
-    var score = 0
-    var highScore = UserDefaults().integer(forKey: "HIGHSCORE")
-    // (values at 0 set later)
-    var maxHealth = 6
+    // Gameplay constants
     let maxMaxHealth = 12
     let minMaxHealth = 6
-    var health = 0
-    var heroSpeed: CGFloat = 0
     let maxHeroSpeed: CGFloat = 300
     let minHeroSpeed: CGFloat = 150
-    var bulletSpeed: CGFloat = 0
     let maxBulletSpeed: CGFloat = 500
     let minBulletSpeed: CGFloat = 200
     // Frames until next shot ~(seconds * 60)
-    var shotFrequency: Int = 0
     let maxShotFrequency: Int = 30
     let minShotFrequency: Int = 1 * 60
     // Frames until post-upgrade invincibility runs out ~(seconds * 60)
-    var invincibilityTimer = 0
     let invincibilityTime = 3 * 60
     
     // Bird constants
@@ -95,17 +88,27 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     let pooFrequency: Int = 2 * 60
     
     // All bird variables assigned to each type:
-    // spawnFrequency = average frames until next bird spawn ~(seconds * 60)
-    // minSpawnFrequency = largest value that spawnFrequency can be ~(seconds * 60)
-    // maxSpawnFrequency = smallest value that spawnFrequency can be ~(seconds * 60)
-    // spawnTime = actual frames until next bird spawn
+    // spawnRatio = relative spawn ratio (100 = same rate as normal bird)
+    // spawnTime = actual frames until next bird spawn (set later)
     // spawnTimer = framecount for bird spawning
     // levelsTo = how many times the player must upgrade for the bird to start spawning
     // isSpawning = if the bird type is spawning or not
-    var birdVariables: [BirdType: (spawnFrequency: Int, minSpawnFrequency: Int, maxSpawnFrequency: Int, spawnTime: Int, spawnTimer: Int, levelsTo: Int, isSpawning: Bool)] = [.normal: (0, 5 * 60, 2 * 60, 0, 0, 0, true), .smart: (0, 8 * 60, 4 * 60, 0, 0, 2, false), .big: (0, 15 * 60, 8 * 60, 0, 0, 4, false)]
+    var birdVariables: [BirdType: (spawnRatio: Int, spawnTime: Int, spawnTimer: Int, levelsTo: Int, isSpawning: Bool)] = [.normal: (100, 0, 0, 0, true), .smart: (50, 0, 0, 2, false), .big: (25, 0, 0, 4, false)]
+    // Average frames until next bird spawn ~(seconds * 60)
+    var spawnFrequency = 0
+    let minSpawnFrequency = 5 * 60
+    let maxSpawnFrequency = 1 * 60
     
     // BTS variables
-    // Framecount for shooting
+    var score = 0
+    var highScore = UserDefaults().integer(forKey: "HIGHSCORE")
+    var health = 0
+    var maxHealth = 0
+    var heroSpeed: CGFloat = 0
+    var bulletSpeed: CGFloat = 0
+    var shotFrequency: Int = 0
+    // Framecounts for invincibility and shooting
+    var invincibilityTimer = 0
     var shotTimer: Int = 0
     var gameState: GameSceneState = .inactive
     // List of scores that initiate upgrade screen
@@ -116,20 +119,21 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     // Called when game begins
     override func didMove(to view: SKView) {
         
-        // Set the inital timers
-        for (type, variables) in birdVariables {
-            birdVariables[type]?.spawnFrequency = variables.minSpawnFrequency
-            birdVariables[type]?.spawnTime = variables.spawnFrequency
-        }
-        shotTimer = shotFrequency
-        
         // Set dependent values
         upgrades = (upgradeUIElements["health"]?.squares.count)!
         upgradeTypes = upgradeUIElements.count
+        maxHealth = minMaxHealth
         health = maxHealth
         heroSpeed = minHeroSpeed
         bulletSpeed = minBulletSpeed
         shotFrequency = minShotFrequency
+        spawnFrequency = minSpawnFrequency
+        
+        // Set the inital timers
+        shotTimer = shotFrequency
+        for (type, _) in birdVariables {
+            birdVariables[type]?.spawnTime = spawnFrequency
+        }
         
         // Set reference to objects, screens, and UI and sets their initial states
         hero = self.childNode(withName: "//hero") as! SKSpriteNode
@@ -426,8 +430,9 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
                 birdVariables[type]?.spawnTimer += 1
                 if variables.spawnTimer >= variables.spawnTime {
                     spawnBird(type)
-                    let rand = arc4random_uniform(UInt32(variables.spawnFrequency))
-                    birdVariables[type]?.spawnTime = Int(rand) + (variables.spawnFrequency/2)
+                    let spawnRate = Int(Double(spawnFrequency) * (ratioTotal()/Double(variables.spawnRatio)))
+                    let rand = arc4random_uniform(UInt32(spawnRate))
+                    birdVariables[type]?.spawnTime = Int(rand) + (spawnRate/2)
                     birdVariables[type]?.spawnTimer = 0
                 }
             }
@@ -722,10 +727,9 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             }
         }
         
-        // Increases the difficulty
-        for (type , variables) in birdVariables {
-            birdVariables[type]?.spawnFrequency = Int((Double(variables.spawnFrequency) + Double(variables.maxSpawnFrequency)) * 0.5)
-        }
+        // Increases the spawn rate
+        calculateTotals()
+        spawnFrequency = minSpawnFrequency - (((minSpawnFrequency - maxSpawnFrequency)/(upgrades * upgradeTypes)) * (total - upgradeTypes))
         
         // Makes invulnerable
         invincibilityTimer = invincibilityTime
@@ -739,5 +743,16 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             total += elements.upgradeStatus
             oldTotal += elements.oldUpgradeStatus
         }
+    }
+    
+    // Calculates and returns the total of the relevant bird spawn ratios. Used to calculate individual spawn rates
+    func ratioTotal() -> Double {
+        var ratioTotal: Double = 0.0
+        for (_, variables) in birdVariables {
+            if variables.isSpawning {
+                ratioTotal += Double(variables.spawnRatio)
+            }
+        }
+        return ratioTotal
     }
 }
