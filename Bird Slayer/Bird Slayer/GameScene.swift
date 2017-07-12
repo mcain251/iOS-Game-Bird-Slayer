@@ -15,7 +15,7 @@ func clamp<T: Comparable>(value: T, lower: T, upper: T) -> T {
 
 // Game state enumeration
 enum GameSceneState {
-    case inactive, active, gameOver, paused
+    case inactive, active, gameOver, paused, upgrading
 }
 
 class GameScene: SKScene, SKPhysicsContactDelegate {
@@ -39,6 +39,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     var tutorial: SKNode!
     var upgradeScreen: SKNode!
     var gameOverLabel: SKLabelNode!
+    var levelUpLabel: SKLabelNode!
     var pauseButton: MSButtonNode!
     var pauseLabel: SKLabelNode!
     var upgradeLabel: SKLabelNode!
@@ -155,6 +156,8 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         nextUpgradeLabel = self.childNode(withName: "nextUpgradeLabel") as! SKLabelNode
         gameOverLabel = self.childNode(withName: "gameOverLabel") as! SKLabelNode
         gameOverLabel.isHidden = true
+        levelUpLabel = self.childNode(withName: "levelUpLabel") as! SKLabelNode
+        levelUpLabel.isHidden = true
         upgradeLabel = self.childNode(withName: "upgradeLabel") as! SKLabelNode
         upgradeLabel.isHidden = true
         pauseLabel = self.childNode(withName: "pauseLabel") as! SKLabelNode
@@ -175,7 +178,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             for i in 0 ..< elements.squares.count {
                 upgradeUIElements[type]?.squares[i] = self.childNode(withName: "//\(type)_\(i+1)") as? SKSpriteNode
             }
-            upgradeUIElements[type]?._plus = self.childNode(withName: "//\(type)_plus") as? SKLabelNode
+            upgradeUIElements[type]?._plus = childNode(withName: "//\(type)_plus") as? SKLabelNode
             upgradeUIElements[type]?._button = self.childNode(withName: "//\(type)_button") as? MSButtonNode
             upgradeUIElements[type]?._button?.selectedHandler = {
                 self.upgradeUIElements[type]?.upgradeStatus += 1
@@ -230,11 +233,43 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     
     // Touch functions
     override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
+        
+        // Starts the game
         if gameState == .inactive {
             gameState = .active
             pauseButton.isHidden = false
         }
-        if gameState != .gameOver && !self.isPaused {
+        
+        // Failsafe if you die and pause on the same frame
+        if isPaused && !gameOverLabel.isHidden {
+            isPaused  = false
+            gameState = .gameOver
+            upgradeScreen.isHidden = true
+            pauseLabel.isHidden = true
+            pause = false
+        }
+        
+        // Reveals the upgrade menu
+        if gameState == .upgrading && !levelUpLabel.isHidden {
+            levelUpLabel.isHidden = true
+            upgradeScreen.isHidden = false
+            upgradeLabel.isHidden = false
+            for (type, elements) in upgradeUIElements {
+                if (elements.upgradeStatus - 2) >= 0 && (elements.upgradeStatus - 2) < elements.squares.count {
+                    upgradeUIElements[type]?.squares[elements.upgradeStatus - 2]?.color = upgradedColor
+                }
+                if (elements.upgradeStatus - 1) < elements.squares.count {
+                    upgradeUIElements[type]?._button?.position = (elements.squares[elements.upgradeStatus - 1]?.position)!
+                    upgradeUIElements[type]?._plus?.position = (elements.squares[elements.upgradeStatus - 1]?.position)!
+                } else {
+                    upgradeUIElements[type]?._button?.state = .MSButtonNodeStateHidden
+                    upgradeUIElements[type]?._plus?.text = ""
+                }
+            }
+        }
+        
+        // Allows the player to control the hero if the game is playing
+        if gameState != .gameOver && !isPaused {
             for touch in touches {
                 if touch.location(in: self.view).x <= 284 {
                     if leftTouch == nil {
@@ -264,6 +299,8 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
                 }
             }
         }
+        
+        // Restarts the game
         if gameState == .gameOver {
             let skView = self.view as SKView!
             let scene = GameScene(fileNamed:"GameScene") as GameScene!
@@ -273,7 +310,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     }
     
     override func touchesMoved(_ touches: Set<UITouch>, with event: UIEvent?) {
-        if gameState != .gameOver && !self.isPaused {
+        if gameState != .gameOver && !isPaused {
             for touch in touches {
                 if touch === leftTouch {
                     hero.physicsBody?.velocity.dx = (touch.location(in: self.view).x - leftInitialPosition.x) * (heroSpeed/50)
@@ -297,7 +334,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     }
     
     override func touchesEnded(_ touches: Set<UITouch>, with event: UIEvent?) {
-        if gameState != .gameOver && !self.isPaused {
+        if gameState != .gameOver && !isPaused {
             for touch in touches {
                 if touch === leftTouch {
                     leftTouch = nil
@@ -340,8 +377,8 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             tutorial.isHidden = false
             pauseButton.isHidden = true
         }
-        if gameState == .paused {
-            self.isPaused = true
+        if gameState == .paused || gameState == .upgrading {
+            isPaused = true
         }
         if gameState == .gameOver {
             pauseButton.isHidden = true
@@ -789,7 +826,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         
         if gameState != .gameOver {
             // Pauses game and removes UI
-            gameState = .paused
+            gameState = .upgrading
             pauseButton.isHidden = true
             pauseButton.state = .MSButtonNodeStateHidden
             leftTouch = nil
@@ -805,21 +842,8 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             rightThumb.isHidden = true
             isPaused = true
             
-            // Presents upgrade screen
-            upgradeScreen.isHidden = false
-            upgradeLabel.isHidden = false
-            for (type, elements) in upgradeUIElements {
-                if (elements.upgradeStatus - 2) >= 0 && (elements.upgradeStatus - 2) < elements.squares.count {
-                    self.upgradeUIElements[type]?.squares[elements.upgradeStatus - 2]?.color = self.upgradedColor
-                }
-                if (elements.upgradeStatus - 1) < elements.squares.count {
-                    upgradeUIElements[type]?._button?.position = (elements.squares[elements.upgradeStatus - 1]?.position)!
-                    upgradeUIElements[type]?._plus?.position = (elements.squares[elements.upgradeStatus - 1]?.position)!
-                } else {
-                    upgradeUIElements[type]?._button?.state = .MSButtonNodeStateHidden
-                    upgradeUIElements[type]?._plus?.text = ""
-                }
-            }
+            // Presents level up label
+            levelUpLabel.isHidden = false
             
             // Increases the spawn rate
             calculateTotals()
