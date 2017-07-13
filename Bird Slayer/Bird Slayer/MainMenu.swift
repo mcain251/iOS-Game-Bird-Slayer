@@ -17,7 +17,7 @@ class MainMenu: SKScene {
     override func didMove(to view: SKView) {
         
         // Set reference to play button
-        slayButton = self.childNode(withName: "slayButton") as! MSButtonNode
+        slayButton = childNode(withName: "slayButton") as! MSButtonNode
         
         // Play button functionality
         slayButton.selectedHandler = {

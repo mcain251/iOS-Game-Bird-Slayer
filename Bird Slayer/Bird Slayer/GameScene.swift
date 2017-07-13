@@ -31,6 +31,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     var poops: [SKSpriteNode] = []
     var toxicHazardBase: SKSpriteNode!
     var hazards: [(SKSpriteNode, Int)] = []
+    var powerupBase: SKSpriteNode!
     var healthBar: SKSpriteNode!
     var healthBarContainer: SKSpriteNode!
     var scoreLabel: SKLabelNode!
@@ -43,6 +44,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     var pauseButton: MSButtonNode!
     var pauseLabel: SKLabelNode!
     var upgradeLabel: SKLabelNode!
+    var shield: SKSpriteNode!
     
     // Upgrade UI and relevant values
     var upgradeUIElements: [String: (squares: [SKSpriteNode?], _plus: SKLabelNode?, _button: MSButtonNode?, upgradeStatus: Int, oldUpgradeStatus: Int)] = ["health": ([nil, nil, nil], nil, nil, 1, 1), "speed": ([nil, nil, nil], nil, nil, 1, 1), "fire_rate": ([nil, nil, nil], nil, nil, 1, 1), "bullet_speed": ([nil, nil, nil], nil, nil, 1, 1)]
@@ -91,11 +93,29 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     let pooFrequency: Int = 2 * 60
     // Frames until hazards disappear ~(seconds * 60)
     let hazardTime: Int = 2 * 60
+    // Frames until next powerup ~(seconds * 60)
+    let nextPowerupTime: Int = 1 * 60
+    // Frames until powerup runs out ~(seconds * 60)
+    let powerupTime: Int = 15 * 60
+    // Frames until powerup disappears on ground ~(seconds * 60)
+    let powerupIdleTime: Int = 5 * 60
+    let powerupSpeed: CGFloat = 75
+    let spreadShotSpread: CGFloat = CGFloat(Double.pi/12)
+    
+    // powerups
+    var powerupStatuses: [String: (UIColor, Bool)] = [:]
+    var currentPowerup: (SKSpriteNode, Bool, Int)!
+    var powerupTimer = 0
+    var powerupWillAppear = false
+    var poweredup = false
     
     // Colors
     let upgradedColor: UIColor = UIColor(red: 0.0, green: 1.0, blue: 0.0, alpha: 1.0)
     let smartPooColor: UIColor = UIColor(red: 1.0, green: 1.0, blue: 0.75, alpha: 1.0)
     let toxicPooColor: UIColor = UIColor(red: 0.72, green: 1.0, blue: 0.46, alpha: 1.0)
+    let healthPowerupColor: UIColor = UIColor(red: 1.0, green: 0.0, blue: 0.0, alpha: 1.0)
+    let shieldPowerupColor: UIColor = UIColor(red: 0.0, green: 0.0, blue: 1.0, alpha: 1.0)
+    let spreadShotPowerupColor: UIColor = UIColor(red: 1.0, green: 1.0, blue: 0.0, alpha: 1.0)
     
     // All bird variables assigned to each type:
     // spawnRatio = relative spawn ratio (100 = same rate as normal bird)
@@ -135,6 +155,8 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         bulletSpeed = minBulletSpeed
         shotFrequency = minShotFrequency
         spawnFrequency = minSpawnFrequency
+        powerupStatuses = ["health": (healthPowerupColor, false), "shield": (shieldPowerupColor, false), "spreadShot": (spreadShotPowerupColor, false)]
+        powerupTimer = nextPowerupTime
         
         // Set the inital timers
         shotTimer = shotFrequency
@@ -143,43 +165,45 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         }
         
         // Set reference to objects, screens, and UI and sets their initial states
-        hero = self.childNode(withName: "//hero") as! SKSpriteNode
+        hero = childNode(withName: "//hero") as! SKSpriteNode
         gun = hero.childNode(withName: "gun") as! SKSpriteNode
-        birdBase = self.childNode(withName: "//birdBase") as! Bird
-        bulletBase = self.childNode(withName: "//bulletBase") as! SKSpriteNode
-        pooBase = self.childNode(withName: "//pooBase") as! SKSpriteNode
-        toxicHazardBase = self.childNode(withName: "toxicHazardBase") as! SKSpriteNode
-        healthBar = self.childNode(withName: "healthBar") as! SKSpriteNode
-        healthBarContainer = self.childNode(withName: "healthBarContainer") as! SKSpriteNode
-        scoreLabel = self.childNode(withName: "scoreLabel") as! SKLabelNode
-        highScoreLabel = self.childNode(withName: "highScoreLabel") as! SKLabelNode
-        nextUpgradeLabel = self.childNode(withName: "nextUpgradeLabel") as! SKLabelNode
-        gameOverLabel = self.childNode(withName: "gameOverLabel") as! SKLabelNode
+        birdBase = childNode(withName: "//birdBase") as! Bird
+        bulletBase = childNode(withName: "//bulletBase") as! SKSpriteNode
+        pooBase = childNode(withName: "//pooBase") as! SKSpriteNode
+        toxicHazardBase = childNode(withName: "toxicHazardBase") as! SKSpriteNode
+        powerupBase = childNode(withName: "powerupBase") as! SKSpriteNode
+        healthBar = childNode(withName: "healthBar") as! SKSpriteNode
+        healthBarContainer = childNode(withName: "healthBarContainer") as! SKSpriteNode
+        scoreLabel = childNode(withName: "scoreLabel") as! SKLabelNode
+        highScoreLabel = childNode(withName: "highScoreLabel") as! SKLabelNode
+        nextUpgradeLabel = childNode(withName: "nextUpgradeLabel") as! SKLabelNode
+        gameOverLabel = childNode(withName: "gameOverLabel") as! SKLabelNode
         gameOverLabel.isHidden = true
-        levelUpLabel = self.childNode(withName: "levelUpLabel") as! SKLabelNode
+        levelUpLabel = childNode(withName: "levelUpLabel") as! SKLabelNode
         levelUpLabel.isHidden = true
-        upgradeLabel = self.childNode(withName: "upgradeLabel") as! SKLabelNode
+        upgradeLabel = childNode(withName: "upgradeLabel") as! SKLabelNode
         upgradeLabel.isHidden = true
-        pauseLabel = self.childNode(withName: "pauseLabel") as! SKLabelNode
+        pauseLabel = childNode(withName: "pauseLabel") as! SKLabelNode
         pauseLabel.isHidden = true
-        tutorial = self.childNode(withName: "tutorial")
+        tutorial = childNode(withName: "tutorial")
         tutorial.position = self.position
-        upgradeScreen = self.childNode(withName: "upgradeScreen")
+        upgradeScreen = childNode(withName: "upgradeScreen")
         upgradeScreen.position = self.position
         upgradeScreen.isHidden = true
-        leftThumb = self.childNode(withName: "leftThumb") as! SKSpriteNode
-        rightThumb = self.childNode(withName: "rightThumb") as! SKSpriteNode
-        leftJoystick = self.childNode(withName: "leftJoystick") as! SKSpriteNode
-        rightJoystick = self.childNode(withName: "rightJoystick") as! SKSpriteNode
-        pauseButton = self.childNode(withName: "pauseButton") as! MSButtonNode
+        leftThumb = childNode(withName: "leftThumb") as! SKSpriteNode
+        rightThumb = childNode(withName: "rightThumb") as! SKSpriteNode
+        leftJoystick = childNode(withName: "leftJoystick") as! SKSpriteNode
+        rightJoystick = childNode(withName: "rightJoystick") as! SKSpriteNode
+        pauseButton = childNode(withName: "pauseButton") as! MSButtonNode
+        shield = childNode(withName: "shield") as! SKSpriteNode
         
         // Set reference to upgrade UI objects
         for (type, elements) in upgradeUIElements {
             for i in 0 ..< elements.squares.count {
-                upgradeUIElements[type]?.squares[i] = self.childNode(withName: "//\(type)_\(i+1)") as? SKSpriteNode
+                upgradeUIElements[type]?.squares[i] = childNode(withName: "//\(type)_\(i+1)") as? SKSpriteNode
             }
             upgradeUIElements[type]?._plus = childNode(withName: "//\(type)_plus") as? SKLabelNode
-            upgradeUIElements[type]?._button = self.childNode(withName: "//\(type)_button") as? MSButtonNode
+            upgradeUIElements[type]?._button = childNode(withName: "//\(type)_button") as? MSButtonNode
             upgradeUIElements[type]?._button?.selectedHandler = {
                 self.upgradeUIElements[type]?.upgradeStatus += 1
                 self.isPaused = false
@@ -207,7 +231,6 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
                 self.shooting = false
                 self.rightJoystick.isHidden = true
                 self.rightThumb.isHidden = true
-                self.isPaused = true
                 self.upgradeScreen.isHidden = false
                 for (type, elements) in self.upgradeUIElements {
                     if (elements.upgradeStatus - 2) >= 0 && (elements.upgradeStatus - 2) < elements.squares.count {
@@ -399,6 +422,9 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         // Removes old hazards
         hazardManager()
         
+        // Applies current powerup and removes old powerups
+        powerupManager()
+        
         // Clamps hero's position and velocity to inside play area
         if (hero.position.x <= (-284 + hero.size.width / 2 + 1)) {
             hero.position.x = max(hero.position.x, -284 + hero.size.width / 2)
@@ -421,7 +447,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         let nodeA = contactA.node as! SKSpriteNode
         let nodeB = contactB.node as! SKSpriteNode
         
-        // Check if either physics bodies was a bird, then damage the bird and remove the bullet
+        // Check if either physics bodies was a bird, then damage the bird and remove the bullet.
         if contactA.categoryBitMask == 2 || contactB.categoryBitMask == 2 {
             if let birdA = contactA.node as? Bird {
                 birdA.health -= 1
@@ -458,23 +484,35 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             }
         }
         
-        // Check if one was the hero and the other was poop, then removes poop and decrements health
+        // Check if one was the hero and the other was poop, then removes poop and decrements health, if necessary
         if (contactA.categoryBitMask == 1 && contactB.categoryBitMask == 8) {
-            if invincibilityTimer <= 0 {
-                health -= 1
-                if nodeB.xScale == 2 && nodeB.yScale == 2 && health != 0{
+            if !(powerupStatuses["shield"]?.1)! {
+                if invincibilityTimer <= 0 {
                     health -= 1
+                    if nodeB.xScale == 2 && nodeB.yScale == 2 && health != 0{
+                        health -= 1
+                    }
                 }
+            } else {
+                powerupStatuses["shield"]?.1 = false
+                shield.position = offScreen
+                powerupTimer = nextPowerupTime
+                poweredup = false
             }
             nodeB.removeFromParent()
             nodeB.isHidden = true
         }
         if (contactB.categoryBitMask == 1 && contactA.categoryBitMask == 8) {
-            if invincibilityTimer <= 0 {
-                health -= 1
-                if nodeA.xScale == 2 && nodeA.yScale == 2 && health != 0 {
+            if !(powerupStatuses["shield"]?.1)! {
+                if invincibilityTimer <= 0 {
                     health -= 1
+                    if nodeA.xScale == 2 && nodeA.yScale == 2 && health != 0 {
+                        health -= 1
+                    }
                 }
+            } else {
+                powerupStatuses["shield"]?.1 = false
+                shield.position = offScreen
             }
             nodeA.removeFromParent()
             nodeA.isHidden = true
@@ -511,6 +549,40 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             nodeB.removeFromParent()
             nodeB.isHidden = true
         }
+        
+        // Check if one was a powerup and the other was the ground, then stops the powerup and starts the timer
+        if (contactA.categoryBitMask == 64 && contactB.categoryBitMask == 16) {
+            nodeA.physicsBody?.velocity.dy = 0
+            if nodeA === currentPowerup.0 {
+                currentPowerup.1 = true
+            }
+        }
+        if (contactB.categoryBitMask == 64 && contactA.categoryBitMask == 16) {
+            nodeB.physicsBody?.velocity.dy = 0
+            if nodeB === currentPowerup.0 {
+                currentPowerup.1 = true
+            }
+        }
+        
+        // Check if one was a powerup and the other was the player, then removes the powerup and toggles the powerup
+        if (contactA.categoryBitMask == 64 && contactB.categoryBitMask == 1) {
+            for (powerup, attributes) in powerupStatuses {
+                if String(describing: nodeA.color) == String(describing: attributes.0) {
+                    powerupStatuses[powerup]?.1 = true
+                }
+            }
+            nodeA.removeFromParent()
+            nodeA.isHidden = true
+        }
+        if (contactB.categoryBitMask == 64 && contactA.categoryBitMask == 1) {
+            for (powerup, attributes) in powerupStatuses {
+                if String(describing: nodeB.color) == String(describing: attributes.0) {
+                    powerupStatuses[powerup]?.1 = true
+                }
+            }
+            nodeB.removeFromParent()
+            nodeB.isHidden = true
+        }
     }
     
     // Figures out if new bird should be spawned, then spawns it. Removes old birds. Makes birds poo if they are due
@@ -541,8 +613,12 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
                     i -= 1
                 }
             
-            // Checks if birds are dead. Removes if true
+            // Checks if birds are dead. Removes if true. Spawns powerup if powerup is due
             } else if birds[i].health <= 0 {
+                if powerupWillAppear {
+                    spawnPowerup(birds[i].position)
+                    powerupWillAppear = false
+                }
                 birds[i].removeFromParent()
                 birds.remove(at: i)
                 if i > 0 {
@@ -574,7 +650,11 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         }
         if shooting {
             if shotTimer >= shotFrequency {
-                shoot()
+                if (powerupStatuses["spreadShot"]?.1)! {
+                    spreadShoot()
+                } else {
+                    shoot()
+                }
                 shotTimer = 0
             }
         }
@@ -757,6 +837,29 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         }
     }
     
+    // Shoots in a spread patten
+    func spreadShoot() {
+        if gameState == .active {
+            for i in 1 ... 3 {
+                let newBullet = bulletBase.copy() as! SKSpriteNode
+                newBullet.physicsBody?.linearDamping = 0
+                newBullet.position = hero.position
+                newBullet.position.x -= gun.size.height * sin(gun.zRotation)
+                newBullet.position.y += gun.size.height * cos(gun.zRotation) - 160 + hero.size.height
+                var rotation = gun.zRotation
+                if i == 2 {
+                    rotation += spreadShotSpread
+                } else if i == 3 {
+                    rotation -= spreadShotSpread
+                }
+                newBullet.physicsBody?.velocity.dx = -bulletSpeed * sin(rotation)
+                newBullet.physicsBody?.velocity.dy = bulletSpeed * cos(rotation)
+                bullets.append(newBullet)
+                self.addChild(newBullet)
+            }
+        }
+    }
+    
     // Poops
     func poo(_ bird: Bird) {
         var isPooping = true
@@ -882,5 +985,76 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         newHazard.position.y = -130 - newHazard.size.height/2
         hazards.append((newHazard, 0))
         self.addChild(newHazard)
+    }
+    
+    // Applies current powerup and removes old powerups. Also adds new powerups if they are due.
+    func powerupManager() {
+        for (powerup, attributes) in powerupStatuses {
+            if attributes.1 {
+                switch powerup {
+                case "health":
+                    if health < maxHealth {
+                        health += 1
+                    }
+                case "shield":
+                    shield.position = hero.position
+                    shield.position.y -= 100
+                    if !poweredup {
+                        powerupTimer = powerupTime
+                    }
+                case "spreadShot":
+                    if !poweredup {
+                        powerupTimer = powerupTime
+                    }
+                default:
+                    break
+                }
+                poweredup = true
+            }
+        }
+        
+        print("\(powerupTimer), \(poweredup)")
+        
+        if powerupTimer > 0 {
+            if gameState == .active {
+                powerupTimer -= 1
+            }
+        } else if poweredup {
+            for (powerup, _) in powerupStatuses {
+                powerupStatuses[powerup]?.1 = false
+                shield.position = offScreen
+            }
+            poweredup = false
+            powerupTimer = nextPowerupTime
+        } else if !poweredup && powerupTimer > -100 {
+            powerupWillAppear = true
+            powerupTimer = -100
+        }
+    
+        if currentPowerup != nil {
+            if currentPowerup.1 {
+                currentPowerup.2 -= 1
+            }
+            if currentPowerup.2 <= 0 {
+                currentPowerup.0.removeFromParent()
+                currentPowerup = nil
+                powerupTimer = nextPowerupTime
+            } else if currentPowerup.0.isHidden {
+                currentPowerup.0.removeFromParent()
+                currentPowerup = nil
+            }
+        }
+    }
+    
+    // Spawns a powerup at the given position
+    func spawnPowerup(_ pos: CGPoint) {
+        let newPowerup = powerupBase.copy() as! SKSpriteNode
+        newPowerup.position = pos
+        newPowerup.physicsBody?.linearDamping = 0
+        let rand = Int(arc4random_uniform(UInt32(powerupStatuses.count)))
+        newPowerup.color = Array(powerupStatuses.values)[rand].0
+        newPowerup.physicsBody?.velocity.dy = -1 * powerupSpeed
+        addChild(newPowerup)
+        currentPowerup = (newPowerup, false, powerupIdleTime)
     }
 }
