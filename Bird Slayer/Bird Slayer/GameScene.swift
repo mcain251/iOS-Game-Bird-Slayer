@@ -486,33 +486,21 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         
         // Check if one was the hero and the other was poop, then removes poop and decrements health, if necessary
         if (contactA.categoryBitMask == 1 && contactB.categoryBitMask == 8) {
-            if !(powerupStatuses["shield"]?.1)! {
-                if invincibilityTimer <= 0 {
+            if invincibilityTimer <= 0 && !(powerupStatuses["shield"]?.1)! {
+                health -= 1
+                if nodeB.xScale == 2 && nodeB.yScale == 2 && health != 0{
                     health -= 1
-                    if nodeB.xScale == 2 && nodeB.yScale == 2 && health != 0{
-                        health -= 1
-                    }
                 }
-            } else {
-                powerupStatuses["shield"]?.1 = false
-                shield.position = offScreen
-                powerupTimer = nextPowerupTime
-                poweredup = false
             }
             nodeB.removeFromParent()
             nodeB.isHidden = true
         }
         if (contactB.categoryBitMask == 1 && contactA.categoryBitMask == 8) {
-            if !(powerupStatuses["shield"]?.1)! {
-                if invincibilityTimer <= 0 {
+            if invincibilityTimer <= 0 && !(powerupStatuses["shield"]?.1)! {
+                health -= 1
+                if nodeA.xScale == 2 && nodeA.yScale == 2 && health != 0 {
                     health -= 1
-                    if nodeA.xScale == 2 && nodeA.yScale == 2 && health != 0 {
-                        health -= 1
-                    }
                 }
-            } else {
-                powerupStatuses["shield"]?.1 = false
-                shield.position = offScreen
             }
             nodeA.removeFromParent()
             nodeA.isHidden = true
