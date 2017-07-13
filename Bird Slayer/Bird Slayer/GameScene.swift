@@ -94,7 +94,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     // Frames until hazards disappear ~(seconds * 60)
     let hazardTime: Int = 2 * 60
     // Frames until next powerup ~(seconds * 60)
-    let nextPowerupTime: Int = 1 * 60
+    let nextPowerupTime: Int = 45 * 60
     // Frames until powerup runs out ~(seconds * 60)
     let powerupTime: Int = 15 * 60
     // Frames until powerup disappears on ground ~(seconds * 60)
