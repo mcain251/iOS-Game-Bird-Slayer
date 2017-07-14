@@ -297,27 +297,57 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
                 if touch.location(in: self.view).x <= 284 {
                     if leftTouch == nil {
                         leftTouch = touch
-                        leftInitialPosition = touch.location(in: self.view)
-                        leftJoystickPosition = leftInitialPosition
-                        leftJoystickPosition.x -= 284
-                        leftJoystickPosition.y = 160 - leftInitialPosition.y
+                        if !leftFixed {
+                            leftInitialPosition = touch.location(in: self.view)
+                            leftJoystickPosition = leftInitialPosition
+                            leftJoystickPosition.x -= 284
+                            leftJoystickPosition.y = 160 - leftInitialPosition.y
+                            leftJoystick.position = leftJoystickPosition
+                            leftThumb.position = leftJoystickPosition
+                        } else {
+                            leftInitialPosition = fixedLeftJoystickLocation
+                            leftJoystickPosition = leftInitialPosition
+                            leftJoystickPosition.x -= 284
+                            leftJoystick.position = leftJoystickPosition
+                            leftThumb.position = leftJoystickPosition
+                            hero.physicsBody?.velocity.dx = (touch.location(in: self.view).x - leftInitialPosition.x) * (heroSpeed/50)
+                            hero.physicsBody?.velocity.dx = clamp(value: (hero.physicsBody?.velocity.dx)!, lower: -1 * heroSpeed, upper: heroSpeed)
+                            if (hero.position.x <= (-284 + hero.size.width / 2 + 1)) {
+                                hero.position.x = max(hero.position.x, -284 + hero.size.width / 2)
+                                hero.physicsBody?.velocity.dx = clamp(value: (hero.physicsBody?.velocity.dx)!, lower: 0, upper: heroSpeed)
+                            }
+                            if (hero.position.x >= (284 - (hero.size.width / 2) - 1)) {
+                                hero.position.x = min(hero.position.x, 284 - hero.size.width / 2)
+                                hero.physicsBody?.velocity.dx = clamp(value: (hero.physicsBody?.velocity.dx)!, lower: -1 * heroSpeed, upper: 0)
+                            }
+                            leftThumb.position.x = clamp(value: touch.location(in: self).x, lower: leftJoystickPosition.x - 50, upper: leftJoystickPosition.x + 50)
+                        }
                         leftJoystick.isHidden = false
-                        leftJoystick.position = leftJoystickPosition
                         leftThumb.isHidden = false
-                        leftThumb.position = leftJoystickPosition
                     }
                 } else {
                     if rightTouch == nil {
                         rightTouch = touch
-                        rightInitialPosition = touch.location(in: self.view)
-                        rightJoystickPosition = rightInitialPosition
-                        rightJoystickPosition.x -= 284
-                        rightJoystickPosition.y = 160 - rightInitialPosition.y
+                        if !rightFixed {
+                            rightInitialPosition = touch.location(in: self.view)
+                            rightJoystickPosition = rightInitialPosition
+                            rightJoystickPosition.x -= 284
+                            rightJoystickPosition.y = 160 - rightInitialPosition.y
+                            rightJoystick.position = rightJoystickPosition
+                            rightThumb.position = rightJoystickPosition
+                        } else {
+                            rightInitialPosition = fixedRightJoystickLocation
+                            rightJoystickPosition = rightInitialPosition
+                            rightJoystickPosition.x -= 284
+                            rightJoystick.position = rightJoystickPosition
+                            rightThumb.position = rightJoystickPosition
+                            gun.zRotation = (rightInitialPosition.x - touch.location(in: self.view).x) * CGFloat(Double.pi/4/50)
+                            gun.zRotation = clamp(value: gun.zRotation, lower: -CGFloat(Double.pi/4), upper: CGFloat(Double.pi/4))
+                            rightThumb.position.x = clamp(value: touch.location(in: self).x, lower: rightJoystickPosition.x - 50, upper: rightJoystickPosition.x + 50)
+                        }
                         shooting = true
                         rightJoystick.isHidden = false
-                        rightJoystick.position = rightJoystickPosition
                         rightThumb.isHidden = false
-                        rightThumb.position = rightJoystickPosition
                     }
                 }
             }
@@ -814,7 +844,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
                 newBullet.physicsBody?.linearDamping = 0
                 newBullet.position = hero.position
                 newBullet.position.x -= gun.size.height * sin(gun.zRotation)
-                newBullet.position.y += gun.size.height * cos(gun.zRotation) - 160 + hero.size.height
+                newBullet.position.y += gun.size.height * cos(gun.zRotation) - 160 + hero.size.height + 30
                 newBullet.physicsBody?.velocity.dx = -bulletSpeed * sin(gun.zRotation)
                 newBullet.physicsBody?.velocity.dy = bulletSpeed * cos(gun.zRotation)
                 bullets.append(newBullet)
@@ -970,7 +1000,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     func createHazard(_ node: SKNode) {
         let newHazard = toxicHazardBase.copy() as! SKSpriteNode
         newHazard.position.x = node.position.x
-        newHazard.position.y = -130 - newHazard.size.height/2
+        newHazard.position.y = -100 - newHazard.size.height/2
         hazards.append((newHazard, 0))
         self.addChild(newHazard)
     }
@@ -986,7 +1016,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
                     }
                 case "shield":
                     shield.position = hero.position
-                    shield.position.y -= 100
+                    shield.position.y -= 70
                     if !poweredup {
                         powerupTimer = powerupTime
                     }
@@ -1000,8 +1030,6 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
                 poweredup = true
             }
         }
-        
-        print("\(powerupTimer), \(poweredup)")
         
         if powerupTimer > 0 {
             if gameState == .active {
