@@ -50,6 +50,8 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     var upgradeLabel: SKLabelNode!
     var shield: SKSpriteNode!
     var ground: SKSpriteNode!
+    var powerupBar: SKSpriteNode!
+    var powerupBarContainer: SKSpriteNode!
     
     // Upgrade UI and relevant values
     var upgradeUIElements: [String: (squares: [SKSpriteNode?], _plus: SKLabelNode?, _button: MSButtonNode?, upgradeStatus: Int, oldUpgradeStatus: Int)] = ["health": ([nil, nil, nil], nil, nil, 1, 1), "speed": ([nil, nil, nil], nil, nil, 1, 1), "fire_rate": ([nil, nil, nil], nil, nil, 1, 1), "bullet_speed": ([nil, nil, nil], nil, nil, 1, 1)]
@@ -107,8 +109,8 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     let powerupSpeed: CGFloat = 45
     let spreadShotSpread: CGFloat = CGFloat(Double.pi/12)
     
-    // powerups
-    var powerupStatuses: [String: (UIColor, Bool)] = [:]
+    // powerups (color, status, spawn ratio)
+    var powerupStatuses: [String: (UIColor?, Bool, Int)] = ["health": (nil, false, 1), "shield": (nil, false, 1), "spreadShot": (nil, false, 1)]
     var currentPowerup: (SKSpriteNode, Bool, Int)!
     var powerupTimer = 0
     var powerupWillAppear = false
@@ -160,7 +162,10 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         bulletSpeed = minBulletSpeed
         shotFrequency = minShotFrequency
         spawnFrequency = minSpawnFrequency
-        powerupStatuses = ["health": (healthPowerupColor, false), "shield": (shieldPowerupColor, false), "spreadShot": (spreadShotPowerupColor, false)]
+        powerupStatuses["health"]?.0 = healthPowerupColor
+        powerupStatuses["shield"]?.0 = shieldPowerupColor
+        powerupStatuses["spreadShot"]?.0 = spreadShotPowerupColor
+        
         powerupTimer = nextPowerupTime
         
         // Set the inital timers
@@ -210,6 +215,8 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         menuButton.position = menuButtonPosition
         menuButton.isHidden = true
         menuButton.state = .MSButtonNodeStateHidden
+        powerupBar = childNode(withName: "//powerupBar") as! SKSpriteNode
+        powerupBarContainer = childNode(withName: "powerupBarContainer") as! SKSpriteNode
 
         
         // Set reference to upgrade UI objects
@@ -669,7 +676,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         // Check if one was a powerup and the other was the player, then removes the powerup and toggles the powerup
         if (contactA.categoryBitMask == 64 && contactB.categoryBitMask == 1) {
             for (powerup, attributes) in powerupStatuses {
-                if String(describing: nodeA.color) == String(describing: attributes.0) {
+                if String(describing: nodeA.color) == String(describing: attributes.0!) {
                     powerupStatuses[powerup]?.1 = true
                 }
             }
@@ -678,7 +685,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         }
         if (contactB.categoryBitMask == 64 && contactA.categoryBitMask == 1) {
             for (powerup, attributes) in powerupStatuses {
-                if String(describing: nodeB.color) == String(describing: attributes.0) {
+                if String(describing: nodeB.color) == String(describing: attributes.0!) {
                     powerupStatuses[powerup]?.1 = true
                 }
             }
@@ -687,7 +694,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         }
     }
     
-    // Figures out if new bird should be spawned, then spawns it. Removes old birds. Makes birds poo if they are due
+    // Figures out if new bird should be spawned, then spawns it. Removes old birds. Makes birds poo if they are due. Spawns powerups if due
     func birdManager() {
         
         // Checks if birds are due to spawn. Spawns if true
@@ -1104,10 +1111,14 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
                     if !poweredup {
                         powerupTimer = powerupTime
                     }
+                    powerupBar.color = shieldPowerupColor
+                    //powerupBar.alpha = 0.75
                 case "spreadShot":
                     if !poweredup {
                         powerupTimer = powerupTime
                     }
+                    powerupBar.color = spreadShotPowerupColor
+                    powerupBar.alpha = 0.75
                 default:
                     break
                 }
@@ -1119,6 +1130,12 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             if gameState == .active {
                 powerupTimer -= 1
             }
+            if poweredup {
+                powerupBarContainer.position = hero.position
+                powerupBarContainer.position.y = ground.size.height - powerupBarContainer.size.height/2 - 160
+                powerupBarContainer.position.x -= powerupBarContainer.size.width/2
+                powerupBar.size.width = (CGFloat(powerupTimer)/CGFloat(powerupTime)) * (powerupBarContainer.size.width - 5)
+            }
         } else if poweredup {
             for (powerup, _) in powerupStatuses {
                 powerupStatuses[powerup]?.1 = false
@@ -1126,6 +1143,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             }
             poweredup = false
             powerupTimer = nextPowerupTime
+            powerupBarContainer.position = offScreen
         } else if !poweredup && powerupTimer > -100 {
             powerupWillAppear = true
             powerupTimer = -100
@@ -1151,8 +1169,18 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         let newPowerup = powerupBase.copy() as! SKSpriteNode
         newPowerup.position = pos
         newPowerup.physicsBody?.linearDamping = 0
-        let rand = Int(arc4random_uniform(UInt32(powerupStatuses.count)))
-        newPowerup.color = Array(powerupStatuses.values)[rand].0
+        var rtotal = 0
+        for (_, attributes) in powerupStatuses {
+            rtotal += attributes.2
+        }
+        var rand = Int(arc4random_uniform(UInt32(rtotal))) + 1
+        for (_, attributes) in powerupStatuses {
+            rand -= attributes.2
+            if rand <= 0 {
+                newPowerup.color = attributes.0!
+                break
+            }
+        }
         newPowerup.physicsBody?.velocity.dy = -1 * powerupSpeed
         addChild(newPowerup)
         currentPowerup = (newPowerup, false, powerupIdleTime)

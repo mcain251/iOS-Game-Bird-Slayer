@@ -15,6 +15,10 @@ class OptionMenu: SKScene {
     
     // UI
     var controlsButton: MSButtonNode!
+    var eraseButton: MSButtonNode!
+    var yesButton: MSButtonNode!
+    var noButton: MSButtonNode!
+    var sureBox: SKSpriteNode!
     var backButton: MSButtonNode!
     var controlsBackButton: MSButtonNode!
     var rightButton: MSButtonNode!
@@ -25,6 +29,7 @@ class OptionMenu: SKScene {
     var controlsScreen: SKNode!
     var customizationScreen: SKNode!
     var customizationButton: MSButtonNode!
+    var resetLocationsButton: MSButtonNode!
     var customizationBackButton: MSButtonNode!
     var leftJoystick: SKSpriteNode!
     var rightJoystick: SKSpriteNode!
@@ -37,6 +42,10 @@ class OptionMenu: SKScene {
         
         // Set reference to buttons
         controlsButton = childNode(withName: "//controlsButton") as! MSButtonNode
+        eraseButton = childNode(withName: "//eraseButton") as! MSButtonNode
+        yesButton = childNode(withName: "//yesButton") as! MSButtonNode
+        noButton = childNode(withName: "//noButton") as! MSButtonNode
+        sureBox = childNode(withName: "sureBox") as! SKSpriteNode
         backButton = childNode(withName: "//backButton") as! MSButtonNode
         controlsBackButton = childNode(withName: "//controlsBackButton") as! MSButtonNode
         rightButton = childNode(withName: "//rightButton") as! MSButtonNode
@@ -53,6 +62,7 @@ class OptionMenu: SKScene {
         controlsScreen = childNode(withName: "Controls")
         customizationScreen = childNode(withName: "Customization")
         customizationButton = childNode(withName: "//customizationButton") as! MSButtonNode
+        resetLocationsButton = childNode(withName: "//resetLocationsButton") as! MSButtonNode
         customizationBackButton = childNode(withName: "//customizationBackButton") as! MSButtonNode
         leftJoystick = childNode(withName: "//leftJoystick") as! SKSpriteNode
         rightJoystick = childNode(withName: "//rightJoystick") as! SKSpriteNode
@@ -69,6 +79,40 @@ class OptionMenu: SKScene {
         }
         backButton.selectedHandler = {
             self.loadMainMenu()
+        }
+        eraseButton.selectedHandler = {
+            self.sureBox.position = self.onScreen
+        }
+        yesButton.selectedHandler = {
+            UserDefaults.standard.set(nil, forKey: "HIGHSCORE")
+            UserDefaults.standard.set(nil, forKey: "AUTOFIRE")
+            UserDefaults.standard.set(nil, forKey: "LEFTFIXED")
+            UserDefaults.standard.set(nil, forKey: "RIGHTFIXED")
+            UserDefaults.standard.set(nil, forKey: "LEFTX")
+            UserDefaults.standard.set(nil, forKey: "LEFTY")
+            UserDefaults.standard.set(nil, forKey: "RIGHTX")
+            UserDefaults.standard.set(nil, forKey: "RIGHTY")
+            UserDefaults.standard.set(nil, forKey: "SAVEDSCORE")
+            UserDefaults.standard.set(nil, forKey: "SAVEDHEALTH")
+            let temp = GameScene()
+            for (type, _) in temp.upgradeUIElements {
+                UserDefaults.standard.set(nil, forKey: type)
+            }
+            self.sureBox.position = self.offScreen
+            rightFixed = false
+            self.rightTick.isHidden = true
+            leftFixed = false
+            self.leftTick.isHidden = true
+            self.autoFireTick.isHidden = true
+            fixedLeftJoystickLocation = CGPoint(x: 142, y: -145)
+            fixedRightJoystickLocation = CGPoint(x: 426, y: -145)
+            self.leftJoystick.position = fixedLeftJoystickLocation
+            self.leftJoystick.position.x -= 284
+            self.rightJoystick.position = fixedRightJoystickLocation
+            self.rightJoystick.position.x -= 284
+        }
+        noButton.selectedHandler = {
+            self.sureBox.position = self.offScreen
         }
         controlsBackButton.selectedHandler = {
             self.defaultScreen.position = self.onScreen
@@ -93,6 +137,18 @@ class OptionMenu: SKScene {
             self.controlsScreen.position = self.offScreen
             self.customizationScreen.position = self.onScreen
         }
+        resetLocationsButton.selectedHandler = {
+            UserDefaults.standard.set(nil, forKey: "LEFTX")
+            UserDefaults.standard.set(nil, forKey: "LEFTY")
+            UserDefaults.standard.set(nil, forKey: "RIGHTX")
+            UserDefaults.standard.set(nil, forKey: "RIGHTY")
+            fixedLeftJoystickLocation = CGPoint(x: 142, y: -145)
+            fixedRightJoystickLocation = CGPoint(x: 426, y: -145)
+            self.leftJoystick.position = fixedLeftJoystickLocation
+            self.leftJoystick.position.x -= 284
+            self.rightJoystick.position = fixedRightJoystickLocation
+            self.rightJoystick.position.x -= 284
+        }
         customizationBackButton.selectedHandler = {
             self.customizationScreen.position = self.offScreen
             self.controlsScreen.position = self.onScreen
@@ -100,7 +156,9 @@ class OptionMenu: SKScene {
         
         // Sets joystick locations
         leftJoystick.position = fixedLeftJoystickLocation
+        self.leftJoystick.position.x -= 284
         rightJoystick.position = fixedRightJoystickLocation
+        self.rightJoystick.position.x -= 284
     }
     
     override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
