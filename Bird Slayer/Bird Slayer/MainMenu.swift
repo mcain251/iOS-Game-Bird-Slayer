@@ -8,17 +8,22 @@
 
 import SpriteKit
 
+var autoFire: Bool! = false
+
 var leftFixed: Bool! = false
 var rightFixed: Bool! = false
 
 var fixedLeftJoystickLocation: CGPoint = CGPoint(x: 142, y: -145)
 var fixedRightJoystickLocation: CGPoint = CGPoint(x: 426, y: -145)
 
+var newGame = false
+
 class MainMenu: SKScene {
     
     // UI
     var slayButton: MSButtonNode!
     var optionButton: MSButtonNode!
+    var newGameButton: MSButtonNode!
     
     // Setup scene
     override func didMove(to view: SKView) {
@@ -26,9 +31,15 @@ class MainMenu: SKScene {
         // Set reference to buttons
         slayButton = childNode(withName: "slayButton") as! MSButtonNode
         optionButton = childNode(withName: "optionButton") as! MSButtonNode
+        newGameButton = childNode(withName: "newGameButton") as! MSButtonNode
         
         // Play button functionality
         slayButton.selectedHandler = {
+            self.loadGame("slay")
+        }
+        
+        newGameButton.selectedHandler = {
+            newGame = true
             self.loadGame("slay")
         }
         
@@ -38,6 +49,9 @@ class MainMenu: SKScene {
         }
         
         // Loads saved control scheme
+        if let auto = UserDefaults().bool(forKey: "AUTOFIRE") as Bool? {
+            autoFire = auto
+        }
         if let leftFix = UserDefaults().bool(forKey: "LEFTFIXED") as Bool? {
             leftFixed = leftFix
         }

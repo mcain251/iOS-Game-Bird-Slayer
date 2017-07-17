@@ -42,9 +42,14 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     var gameOverLabel: SKLabelNode!
     var levelUpLabel: SKLabelNode!
     var pauseButton: MSButtonNode!
+    var unpauseButton: MSButtonNode!
+    let unpauseButtonPosition: CGPoint = CGPoint(x: 241.5, y: 122.5)
+    var menuButton: MSButtonNode!
+    let menuButtonPosition: CGPoint = CGPoint(x: -226.5, y: 122.5)
     var pauseLabel: SKLabelNode!
     var upgradeLabel: SKLabelNode!
     var shield: SKSpriteNode!
+    var ground: SKSpriteNode!
     
     // Upgrade UI and relevant values
     var upgradeUIElements: [String: (squares: [SKSpriteNode?], _plus: SKLabelNode?, _button: MSButtonNode?, upgradeStatus: Int, oldUpgradeStatus: Int)] = ["health": ([nil, nil, nil], nil, nil, 1, 1), "speed": ([nil, nil, nil], nil, nil, 1, 1), "fire_rate": ([nil, nil, nil], nil, nil, 1, 1), "bullet_speed": ([nil, nil, nil], nil, nil, 1, 1)]
@@ -196,6 +201,16 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         rightJoystick = childNode(withName: "rightJoystick") as! SKSpriteNode
         pauseButton = childNode(withName: "pauseButton") as! MSButtonNode
         shield = childNode(withName: "shield") as! SKSpriteNode
+        ground = childNode(withName: "ground") as! SKSpriteNode
+        unpauseButton = childNode(withName: "unpauseButton") as! MSButtonNode
+        unpauseButton.position = unpauseButtonPosition
+        unpauseButton.isHidden = true
+        unpauseButton.state = .MSButtonNodeStateHidden
+        menuButton = childNode(withName: "menuButton") as! MSButtonNode
+        menuButton.position = menuButtonPosition
+        menuButton.isHidden = true
+        menuButton.state = .MSButtonNodeStateHidden
+
         
         // Set reference to upgrade UI objects
         for (type, elements) in upgradeUIElements {
@@ -215,43 +230,99 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             }
         }
         
-        // Pause button functionality (pauses and presents paused upgrade screen/ unpauses and hides pause screen)
+        // Pause button functionalities (pauses and presents paused upgrade screen/ unpauses and hides pause screen)
         pauseButton.selectedHandler = {
-            if !self.pause {
-                self.gameState = .paused
-                self.isPaused = true
-                self.leftTouch = nil
-                self.leftInitialPosition = nil
-                self.leftJoystick.isHidden = true
-                self.leftThumb.isHidden = true
-                self.hero.physicsBody?.velocity.dx = 0
-                self.rightTouch = nil
-                self.rightInitialPosition = nil
-                self.gun.zRotation = 0
-                self.shooting = false
-                self.rightJoystick.isHidden = true
-                self.rightThumb.isHidden = true
-                self.upgradeScreen.isHidden = false
-                for (type, elements) in self.upgradeUIElements {
-                    if (elements.upgradeStatus - 2) >= 0 && (elements.upgradeStatus - 2) < elements.squares.count {
-                        self.upgradeUIElements[type]?.squares[elements.upgradeStatus - 2]?.color = self.upgradedColor
+            self.gameState = .paused
+            self.isPaused = true
+            self.leftTouch = nil
+            self.leftInitialPosition = nil
+            self.leftJoystick.isHidden = true
+            self.leftThumb.isHidden = true
+            self.hero.physicsBody?.velocity.dx = 0
+            self.rightTouch = nil
+            self.rightInitialPosition = nil
+            self.gun.zRotation = 0
+            self.shooting = false
+            self.rightJoystick.isHidden = true
+            self.rightThumb.isHidden = true
+            self.upgradeScreen.isHidden = false
+            for (type, elements) in self.upgradeUIElements {
+                if (elements.upgradeStatus - 2) >= 0 && (elements.upgradeStatus - 2) < elements.squares.count {
+                    for i in 0 ... elements.upgradeStatus - 2 {
+                        self.upgradeUIElements[type]?.squares[i]?.color = self.upgradedColor
                     }
-                    self.upgradeUIElements[type]?._button?.position = self.offScreen
-                    self.upgradeUIElements[type]?._plus?.position = self.offScreen
                 }
-                self.pauseLabel.isHidden = false
-                self.pause = true
-            } else {
-                self.isPaused  = false
-                self.gameState = .active
-                self.upgradeScreen.isHidden = true
-                self.pauseLabel.isHidden = true
-                self.pause = false
+                self.upgradeUIElements[type]?._button?.position = self.offScreen
+                self.upgradeUIElements[type]?._plus?.position = self.offScreen
+            }
+            self.pauseLabel.isHidden = false
+            self.pause = true
+            self.unpauseButton.isHidden = false
+            self.unpauseButton.state = .MSButtonNodeStateActive
+            self.menuButton.isHidden = false
+            self.menuButton.state = .MSButtonNodeStateActive
+        }
+        unpauseButton.selectedHandler = {
+            self.isPaused  = false
+            self.gameState = .active
+            self.upgradeScreen.isHidden = true
+            self.pauseLabel.isHidden = true
+            self.pause = false
+            self.unpauseButton.isHidden = true
+            self.unpauseButton.state = .MSButtonNodeStateHidden
+            self.menuButton.isHidden = true
+            self.menuButton.state = .MSButtonNodeStateHidden
+        }
+        menuButton.selectedHandler = {
+            // Set reference to SpriteKit view
+            guard let skView = self.view as SKView! else {
+                print("Could not get Skview")
+                return
+            }
+            
+            // Creates GameScene
+            if let scene = GameScene(fileNamed: "MainMenu") {
+                
+                // Ensure correct aspect mode
+                scene.scaleMode = .aspectFit
+                skView.presentScene(scene)
             }
         }
         
         // Set physics contact delegate
         physicsWorld.contactDelegate = self
+        
+        // Loads saved progress if necessary
+        if !newGame {
+            for (type, _) in upgradeUIElements {
+                if let savedUpgradeStatus = UserDefaults().integer(forKey: type) as Int? {
+                    if savedUpgradeStatus > 0 {
+                        upgradeUIElements[type]?.upgradeStatus = savedUpgradeStatus
+                        upgradeUIElements[type]?.oldUpgradeStatus = savedUpgradeStatus
+                    }
+                }
+            }
+            if let savedScore = UserDefaults().integer(forKey: "SAVEDSCORE") as Int? {
+                score = savedScore
+            }
+            if let savedHealth = UserDefaults().integer(forKey: "SAVEDHEALTH") as Int? {
+                if savedHealth > 0 {
+                    health = savedHealth
+                }
+            }
+            while score >= upgradeScores.first! {
+                upgradeScores.removeFirst()
+            }
+            calculateTotals()
+            spawnFrequency = Int(Double(minSpawnFrequency) * pow(pow((Double(maxSpawnFrequency)/Double(minSpawnFrequency)), (1.0/Double(upgrades * upgradeTypes))), Double(total - upgradeTypes + 1)))
+            maxHealth = (((maxMaxHealth - minMaxHealth)/upgrades) * ((upgradeUIElements["health"]?.upgradeStatus)! - 1)) + minMaxHealth
+            heroSpeed = (((maxHeroSpeed - minHeroSpeed)/CGFloat(upgrades)) * CGFloat(((upgradeUIElements["speed"]?.upgradeStatus)! - 1))) + minHeroSpeed
+            shotFrequency = Int(Double(minShotFrequency) * pow(pow((Double(maxShotFrequency)/Double(minShotFrequency)), (1.0/Double(upgrades))), Double((upgradeUIElements["fire_rate"]?.upgradeStatus)! - 1)))
+            bulletSpeed = (((maxBulletSpeed - minBulletSpeed)/CGFloat(upgrades)) * CGFloat(((upgradeUIElements["bullet_speed"]?
+                .upgradeStatus)! - 1))) + minBulletSpeed
+        } else {
+            newGame = false
+        }
     }
     
     // Touch functions
@@ -279,7 +350,9 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             upgradeLabel.isHidden = false
             for (type, elements) in upgradeUIElements {
                 if (elements.upgradeStatus - 2) >= 0 && (elements.upgradeStatus - 2) < elements.squares.count {
-                    upgradeUIElements[type]?.squares[elements.upgradeStatus - 2]?.color = upgradedColor
+                    for i in 0 ... elements.upgradeStatus - 2 {
+                        self.upgradeUIElements[type]?.squares[i]?.color = self.upgradedColor
+                    }
                 }
                 if (elements.upgradeStatus - 1) < elements.squares.count {
                     upgradeUIElements[type]?._button?.position = (elements.squares[elements.upgradeStatus - 1]?.position)!
@@ -355,6 +428,14 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         
         // Restarts the game
         if gameState == .gameOver {
+            
+            // Resets saved values
+            for (type, _) in upgradeUIElements {
+                UserDefaults.standard.set(1, forKey: type)
+            }
+            
+            UserDefaults.standard.set(0, forKey: "SAVEDSCORE")
+            UserDefaults.standard.set(minMaxHealth, forKey: "SAVEDHEALTH")
             let skView = self.view as SKView!
             let scene = GameScene(fileNamed:"GameScene") as GameScene!
             scene?.scaleMode = .aspectFill
@@ -454,6 +535,9 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         
         // Applies current powerup and removes old powerups
         powerupManager()
+        
+        // Saves progress
+        saveElements()
         
         // Clamps hero's position and velocity to inside play area
         if (hero.position.x <= (-284 + hero.size.width / 2 + 1)) {
@@ -666,7 +750,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         if shotTimer < shotFrequency {
             shotTimer += 1
         }
-        if shooting {
+        if shooting || autoFire {
             if shotTimer >= shotFrequency {
                 if (powerupStatuses["spreadShot"]?.1)! {
                     spreadShoot()
@@ -839,12 +923,12 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     // Shoots
     func shoot() {
         if gameState == .active {
-            if delay {
+            if delay || autoFire {
                 let newBullet = bulletBase.copy() as! SKSpriteNode
                 newBullet.physicsBody?.linearDamping = 0
                 newBullet.position = hero.position
                 newBullet.position.x -= gun.size.height * sin(gun.zRotation)
-                newBullet.position.y += gun.size.height * cos(gun.zRotation) - 160 + hero.size.height + 30
+                newBullet.position.y += gun.size.height * cos(gun.zRotation) - 160 + ground.size.height + (hero.size.height/2)
                 newBullet.physicsBody?.velocity.dx = -bulletSpeed * sin(gun.zRotation)
                 newBullet.physicsBody?.velocity.dy = bulletSpeed * cos(gun.zRotation)
                 bullets.append(newBullet)
@@ -863,7 +947,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
                 newBullet.physicsBody?.linearDamping = 0
                 newBullet.position = hero.position
                 newBullet.position.x -= gun.size.height * sin(gun.zRotation)
-                newBullet.position.y += gun.size.height * cos(gun.zRotation) - 160 + hero.size.height
+                newBullet.position.y += gun.size.height * cos(gun.zRotation) - 160 + ground.size.height + (hero.size.height/2)
                 var rotation = gun.zRotation
                 if i == 2 {
                     rotation += spreadShotSpread
@@ -1016,7 +1100,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
                     }
                 case "shield":
                     shield.position = hero.position
-                    shield.position.y -= 70
+                    shield.position.y += ground.size.height + (hero.size.height/2) - 160
                     if !poweredup {
                         powerupTimer = powerupTime
                     }
@@ -1072,5 +1156,14 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         newPowerup.physicsBody?.velocity.dy = -1 * powerupSpeed
         addChild(newPowerup)
         currentPowerup = (newPowerup, false, powerupIdleTime)
+    }
+    
+    // Saves progress to be picked up when the user returns
+    func saveElements() {
+        for (type, elements) in upgradeUIElements {
+            UserDefaults.standard.set(elements.upgradeStatus, forKey: type)
+        }
+        UserDefaults.standard.set(score, forKey: "SAVEDSCORE")
+        UserDefaults.standard.set(health, forKey: "SAVEDHEALTH")
     }
 }

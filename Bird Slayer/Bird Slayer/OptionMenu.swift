@@ -19,8 +19,6 @@ class OptionMenu: SKScene {
     var controlsBackButton: MSButtonNode!
     var rightButton: MSButtonNode!
     var leftButton: MSButtonNode!
-    var rightTickBox: SKSpriteNode!
-    var leftTickBox: SKSpriteNode!
     var rightTick: SKSpriteNode!
     var leftTick: SKSpriteNode!
     var defaultScreen: SKNode!
@@ -32,6 +30,8 @@ class OptionMenu: SKScene {
     var rightJoystick: SKSpriteNode!
     var leftTouch: UITouch!
     var rightTouch: UITouch!
+    var autoFireButton: MSButtonNode!
+    var autoFireTick: SKSpriteNode!
     
     override func didMove(to view: SKView) {
         
@@ -41,8 +41,6 @@ class OptionMenu: SKScene {
         controlsBackButton = childNode(withName: "//controlsBackButton") as! MSButtonNode
         rightButton = childNode(withName: "//rightButton") as! MSButtonNode
         leftButton = childNode(withName: "//leftButton") as! MSButtonNode
-        rightTickBox = childNode(withName: "//rightTickBox") as! SKSpriteNode
-        leftTickBox = childNode(withName: "//leftTickBox") as! SKSpriteNode
         rightTick = childNode(withName: "//rightTick") as! SKSpriteNode
         if !rightFixed {
             rightTick.isHidden = true
@@ -58,6 +56,11 @@ class OptionMenu: SKScene {
         customizationBackButton = childNode(withName: "//customizationBackButton") as! MSButtonNode
         leftJoystick = childNode(withName: "//leftJoystick") as! SKSpriteNode
         rightJoystick = childNode(withName: "//rightJoystick") as! SKSpriteNode
+        autoFireButton = childNode(withName: "//autoFireButton") as! MSButtonNode
+        autoFireTick = childNode(withName: "//autoFireTick") as! SKSpriteNode
+        if !autoFire {
+            autoFireTick.isHidden = true
+        }
         
         // Button functionalities
         controlsButton.selectedHandler = {
@@ -70,6 +73,11 @@ class OptionMenu: SKScene {
         controlsBackButton.selectedHandler = {
             self.defaultScreen.position = self.onScreen
             self.controlsScreen.position = self.offScreen
+        }
+        autoFireButton.selectedHandler = {
+            autoFire = !autoFire
+            UserDefaults.standard.set(autoFire, forKey: "AUTOFIRE")
+            self.autoFireTick.isHidden = !autoFire
         }
         leftButton.selectedHandler = {
             leftFixed = !leftFixed
