@@ -80,10 +80,10 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     // Gameplay constants
     let maxMaxHealth = 12
     let minMaxHealth = 6
-    let maxHeroSpeed: CGFloat = 300
-    let minHeroSpeed: CGFloat = 150
-    let maxBulletSpeed: CGFloat = 500
-    let minBulletSpeed: CGFloat = 200
+    let maxHeroSpeed: CGFloat = 180
+    let minHeroSpeed: CGFloat = 90
+    let maxBulletSpeed: CGFloat = 300
+    let minBulletSpeed: CGFloat = 120
     // Frames until next shot ~(seconds * 60)
     let maxShotFrequency: Int = 30
     let minShotFrequency: Int = 1 * 60
@@ -92,8 +92,8 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     let maxSpawnFrequency = Int(0.75 * 60.0)
     // Frames until post-upgrade invincibility runs out ~(seconds * 60)
     let invincibilityTime = 3 * 60
-    let birdSpeed: CGFloat = 100
-    let pooSpeed: CGFloat = 150
+    let birdSpeed: CGFloat = 60
+    let pooSpeed: CGFloat = 90
     // Average frames until next poop ~(seconds * 60)
     let pooFrequency: Int = 2 * 60
     // Frames until hazards disappear ~(seconds * 60)
@@ -104,7 +104,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     let powerupTime: Int = 15 * 60
     // Frames until powerup disappears on ground ~(seconds * 60)
     let powerupIdleTime: Int = 5 * 60
-    let powerupSpeed: CGFloat = 75
+    let powerupSpeed: CGFloat = 45
     let spreadShotSpread: CGFloat = CGFloat(Double.pi/12)
     
     // powerups
@@ -1084,7 +1084,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     func createHazard(_ node: SKNode) {
         let newHazard = toxicHazardBase.copy() as! SKSpriteNode
         newHazard.position.x = node.position.x
-        newHazard.position.y = -100 - newHazard.size.height/2
+        newHazard.position.y = ground.position.y + ground.size.height/2 - toxicHazardBase.size.height/2
         hazards.append((newHazard, 0))
         self.addChild(newHazard)
     }
