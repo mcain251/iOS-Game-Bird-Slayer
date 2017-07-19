@@ -19,7 +19,7 @@ enum GameSceneState {
 }
 
 class GameScene: SKScene, SKPhysicsContactDelegate {
-    
+
     // Game objects
     var hero: SKSpriteNode!
     var gun: SKSpriteNode!
@@ -758,7 +758,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             birds[i].pooTimer -= 1
             
             // Checks if the birds are offscreen. Removes if true
-            if birds[i].position.x < -284 - (birds[i].size.width/2 + 1) || birds[i].position.x > 350 + (birds[i].size.width/2 + 1) {
+            if birds[i].position.x < -284 - (birds[i].size.width/2 + 2) || birds[i].position.x > 350 + (birds[i].size.width/2 + 2) {
                 birds[i].removeFromParent()
                 birds.remove(at: i)
                 if i > 0 {
