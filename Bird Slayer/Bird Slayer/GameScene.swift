@@ -52,6 +52,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     var ground: SKSpriteNode!
     var powerupBar: SKSpriteNode!
     var powerupBarContainer: SKSpriteNode!
+    var zoomPoint: SKNode!
     
     // Upgrade UI and relevant values
     var upgradeUIElements: [String: (squares: [SKSpriteNode?], _plus: SKLabelNode?, _button: MSButtonNode?, upgradeStatus: Int, oldUpgradeStatus: Int)] = ["health": ([nil, nil, nil], nil, nil, 1, 1), "speed": ([nil, nil, nil], nil, nil, 1, 1), "fire_rate": ([nil, nil, nil], nil, nil, 1, 1), "bullet_speed": ([nil, nil, nil], nil, nil, 1, 1)]
@@ -82,20 +83,22 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     // Gameplay constants
     let maxMaxHealth = 12
     let minMaxHealth = 6
-    let maxHeroSpeed: CGFloat = 180
-    let minHeroSpeed: CGFloat = 90
-    let maxBulletSpeed: CGFloat = 300
-    let minBulletSpeed: CGFloat = 120
+    let originalMaxHeroSpeed: CGFloat = 300
+    let originalMinHeroSpeed: CGFloat = 150
+    let originalMaxBulletSpeed: CGFloat = 500
+    let originalMinBulletSpeed: CGFloat = 200
     // Frames until next shot ~(seconds * 60)
     let maxShotFrequency: Int = 30
     let minShotFrequency: Int = 1 * 60
     // Average frames until next bird spawn ~(seconds * 60)
     let minSpawnFrequency = 3 * 60
     let maxSpawnFrequency = Int(0.75 * 60.0)
+    let originalMinSpawnHeight = 50
+    let maxSpawnHeight = 160
     // Frames until post-upgrade invincibility runs out ~(seconds * 60)
     let invincibilityTime = 3 * 60
-    let birdSpeed: CGFloat = 60
-    let pooSpeed: CGFloat = 90
+    let originalBirdSpeed: CGFloat = 100
+    let originalPooSpeed: CGFloat = 150
     // Average frames until next poop ~(seconds * 60)
     let pooFrequency: Int = 2 * 60
     // Frames until hazards disappear ~(seconds * 60)
@@ -106,8 +109,10 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     let powerupTime: Int = 15 * 60
     // Frames until powerup disappears on ground ~(seconds * 60)
     let powerupIdleTime: Int = 5 * 60
-    let powerupSpeed: CGFloat = 45
+    let originalPowerupSpeed: CGFloat = 75
     let spreadShotSpread: CGFloat = CGFloat(Double.pi/12)
+    let minScale = 0.6
+    var originalObjectSizes: [String: (x: CGFloat, y: CGFloat)] = [:]
     
     // powerups (color, status, spawn ratio)
     var powerupStatuses: [String: (UIColor?, Bool, Int)] = ["health": (nil, false, 1), "shield": (nil, false, 1), "spreadShot": (nil, false, 1)]
@@ -149,6 +154,15 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     var upgradeScores: [Int] = [50, 150, 300, 500, 750, 1050, 1400, 1800, 2250, 2750, 3300, 3900]
     //var upgradeScores: [Int] = [10, 20, 50, 80, 110, 140, 220, 300, 500, 700, 900, 1100]
     var pause = false
+    var maxHeroSpeed: CGFloat = 0
+    var minHeroSpeed: CGFloat = 0
+    var maxBulletSpeed: CGFloat = 0
+    var minBulletSpeed: CGFloat = 0
+    var birdSpeed: CGFloat = 0
+    var pooSpeed: CGFloat = 0
+    var powerupSpeed: CGFloat = 0
+    var scaleChanged = false
+    var minSpawnHeight = 0
     
     // Called when game begins
     override func didMove(to view: SKView) {
@@ -156,6 +170,14 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         // Set dependent values
         upgrades = (upgradeUIElements["health"]?.squares.count)!
         upgradeTypes = upgradeUIElements.count
+        maxHeroSpeed = originalMaxHeroSpeed
+        minHeroSpeed = originalMinHeroSpeed
+        maxBulletSpeed = originalMaxBulletSpeed
+        minBulletSpeed = originalMinHeroSpeed
+        birdSpeed = originalBirdSpeed
+        pooSpeed = originalPooSpeed
+        powerupSpeed = originalPowerupSpeed
+        minSpawnHeight = originalMinSpawnHeight
         maxHealth = minMaxHealth
         health = maxHealth
         heroSpeed = minHeroSpeed
@@ -217,6 +239,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         menuButton.state = .MSButtonNodeStateHidden
         powerupBar = childNode(withName: "//powerupBar") as! SKSpriteNode
         powerupBarContainer = childNode(withName: "powerupBarContainer") as! SKSpriteNode
+        zoomPoint = childNode(withName: "zoomPoint")
 
         
         // Set reference to upgrade UI objects
@@ -234,6 +257,8 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
                 self.upgradeLabel.isHidden = true
                 self.pauseButton.isHidden = false
                 self.pauseButton.state = .MSButtonNodeStateActive
+                // Changes scale
+                self.scaleChanged = true
             }
         }
         
@@ -317,7 +342,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
                     health = savedHealth
                 }
             }
-            while score >= upgradeScores.first! {
+            while upgradeScores.count >= 1 && score >= upgradeScores.first! {
                 upgradeScores.removeFirst()
             }
             calculateTotals()
@@ -330,6 +355,19 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         } else {
             newGame = false
         }
+        
+        // Save original object sizes
+        originalObjectSizes["birdBase"] = (birdBase.size.width, birdBase.size.height)
+        originalObjectSizes["pooBase"] = (pooBase.size.width, pooBase.size.height)
+        originalObjectSizes["bulletBase"] = (bulletBase.size.width, bulletBase.size.height)
+        originalObjectSizes["hero"] = (hero.size.width, hero.size.height)
+        originalObjectSizes["gun"] = (gun.size.width, gun.size.height)
+        originalObjectSizes["toxicHazardBase"] = (toxicHazardBase.size.width, toxicHazardBase.size.height)
+        originalObjectSizes["shield"] = (shield.size.width, shield.size.height)
+        originalObjectSizes["powerupBase"] = (powerupBase.size.width, powerupBase.size.height)
+        
+        scaleManager()
+        hero.position.y = -120 + ground.size.height + hero.size.height/2.0
     }
     
     // Touch functions
@@ -499,7 +537,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     override func update(_ currentTime: TimeInterval) {
         if invincibilityTimer > 0 {
             invincibilityTimer -= 1
-            if invincibilityTimer % 30 > 20 {
+            if invincibilityTimer % 20 > 13 {
                 hero.isHidden = true
             } else {
                 hero.isHidden = false
@@ -545,6 +583,9 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         
         // Saves progress
         saveElements()
+        
+        // Makes sure the scale of scalable variables is correct
+        scaleManager()
         
         // Clamps hero's position and velocity to inside play area
         if (hero.position.x <= (-284 + hero.size.width / 2 + 1)) {
@@ -612,6 +653,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
                 if nodeB.xScale == 2 && nodeB.yScale == 2 && health != 0{
                     health -= 1
                 }
+                invincibilityTimer = invincibilityTime
             }
             nodeB.removeFromParent()
             nodeB.isHidden = true
@@ -622,6 +664,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
                 if nodeA.xScale == 2 && nodeA.yScale == 2 && health != 0 {
                     health -= 1
                 }
+                invincibilityTimer = invincibilityTime
             }
             nodeA.removeFromParent()
             nodeA.isHidden = true
@@ -850,23 +893,22 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             }
         }
         for (type, elements) in upgradeUIElements {
-            if elements.upgradeStatus - elements.oldUpgradeStatus == 1 {
-                switch type {
-                case "health":
+            if type == "health" && elements.upgradeStatus - elements.oldUpgradeStatus == 1 {
                     maxHealth = (((maxMaxHealth - minMaxHealth)/upgrades) * (elements.upgradeStatus - 1)) + minMaxHealth
                     health += ((maxMaxHealth - minMaxHealth)/upgrades)
-                case "speed":
-                    heroSpeed = (((maxHeroSpeed - minHeroSpeed)/CGFloat(upgrades)) * CGFloat((elements.upgradeStatus - 1))) + minHeroSpeed
-                case "fire_rate":
-                    shotFrequency = Int(Double(minShotFrequency) * pow(pow((Double(maxShotFrequency)/Double(minShotFrequency)), (1.0/Double(upgrades))), Double(elements.upgradeStatus - 1)))
-                case "bullet_speed":
-                    bulletSpeed = (((maxBulletSpeed - minBulletSpeed)/CGFloat(upgrades)) * CGFloat((elements.upgradeStatus - 1))) + minBulletSpeed
-                default:
-                    break
-                }
+            }
+            switch type{
+            case "speed":
+                heroSpeed = (((maxHeroSpeed - minHeroSpeed)/CGFloat(upgrades)) * CGFloat((elements.upgradeStatus - 1))) + minHeroSpeed
+            case "fire_rate":
+                shotFrequency = Int(Double(minShotFrequency) * pow(pow((Double(maxShotFrequency)/Double(minShotFrequency)), (1.0/Double(upgrades))), Double(elements.upgradeStatus - 1)))
+            case "bullet_speed":
+                bulletSpeed = (((maxBulletSpeed - minBulletSpeed)/CGFloat(upgrades)) * CGFloat((elements.upgradeStatus - 1))) + minBulletSpeed
+            default:
+                break
             }
         }
-        
+    
         // Toggles harder birds
         for (type, variables) in birdVariables {
             if !variables.isSpawning && total >= upgradeTypes + variables.levelsTo {
@@ -914,8 +956,8 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         }
         
         // Determines and sets its inital position
-        var rand = arc4random_uniform(UInt32(160 - (2 * newBird.size.height)))
-        rand += UInt32(newBird.size.height)
+        var rand = arc4random_uniform(UInt32(CGFloat(maxSpawnHeight - minSpawnHeight) - (2 * newBird.size.height)))
+        rand += UInt32(newBird.size.height) + UInt32(minSpawnHeight)
         var newPosition = CGPoint(x: 284 + Int(newBird.size.width/2 + 1),y: Int(rand))
         newBird.physicsBody?.velocity.dx = -1 * newBird.birdSpeed
         if newBird.direction == .right {
@@ -940,6 +982,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
                 newBullet.physicsBody?.velocity.dy = bulletSpeed * cos(gun.zRotation)
                 bullets.append(newBullet)
                 self.addChild(newBullet)
+                newBullet.zPosition = 2
             } else {
                 delay = true
             }
@@ -1107,12 +1150,11 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
                     }
                 case "shield":
                     shield.position = hero.position
-                    shield.position.y += ground.size.height + (hero.size.height/2) - 160
+                    shield.position.y = ground.size.height + (hero.size.height/2) - 160
                     if !poweredup {
                         powerupTimer = powerupTime
                     }
                     powerupBar.color = shieldPowerupColor
-                    //powerupBar.alpha = 0.75
                 case "spreadShot":
                     if !poweredup {
                         powerupTimer = powerupTime
@@ -1193,5 +1235,73 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         }
         UserDefaults.standard.set(score, forKey: "SAVEDSCORE")
         UserDefaults.standard.set(health, forKey: "SAVEDHEALTH")
+    }
+    
+    // Scales the scaling elements on the screen down to simulate zooming out
+    func scaleManager() {
+        calculateTotals()
+        let smallScale = CGFloat(pow(Double(minScale), (1.0/Double(upgrades * upgradeTypes))))
+        let scale = CGFloat(pow(Double(smallScale), Double(total - upgradeTypes)))
+        minSpawnHeight = Int((CGFloat(originalMinSpawnHeight) - zoomPoint.position.y) * scale + zoomPoint.position.y)
+        maxHeroSpeed = originalMaxHeroSpeed * scale
+        minHeroSpeed = originalMinHeroSpeed * scale
+        maxBulletSpeed = originalMaxBulletSpeed * scale
+        minBulletSpeed = originalMinBulletSpeed * scale
+        birdSpeed = originalBirdSpeed * scale
+        pooSpeed = originalPooSpeed * scale
+        powerupSpeed = originalPowerupSpeed * scale
+        birdBase.size = CGSize(width: (originalObjectSizes["birdBase"]?.x)! * scale, height: (originalObjectSizes["birdBase"]?.y)! * scale)
+        pooBase.size = CGSize(width: (originalObjectSizes["pooBase"]?.x)! * scale, height: (originalObjectSizes["pooBase"]?.y)! * scale)
+        bulletBase.size = CGSize(width: (originalObjectSizes["bulletBase"]?.x)! * scale, height: (originalObjectSizes["bulletBase"]?.y)! * scale)
+        toxicHazardBase.size = CGSize(width: (originalObjectSizes["toxicHazardBase"]?.x)! * scale, height: (originalObjectSizes["toxicHazardBase"]?.y)! * scale)
+        hero.size = CGSize(width: (originalObjectSizes["hero"]?.x)! * scale, height: (originalObjectSizes["hero"]?.y)! * scale)
+        shield.size = CGSize(width: (originalObjectSizes["shield"]?.x)! * scale, height: (originalObjectSizes["shield"]?.y)! * scale)
+        gun.size = CGSize(width: (originalObjectSizes["gun"]?.x)! * scale, height: (originalObjectSizes["gun"]?.y)! * scale)
+        powerupBase.size = CGSize(width: (originalObjectSizes["powerupBase"]?.x)! * scale, height: (originalObjectSizes["powerupBase"]?.y)! * scale)
+        if currentPowerup != nil {
+            currentPowerup.0.size = powerupBase.size
+            if scaleChanged {
+                currentPowerup.0.position.x = currentPowerup.0.position.x
+                currentPowerup.0.position.y = ((currentPowerup.0.position.y - zoomPoint.position.y) * scale) + zoomPoint.position.y
+                currentPowerup.0.physicsBody?.velocity.dy = (currentPowerup.0.physicsBody?.velocity.dy)! * scale
+            }
+        }
+        for bird in birds {
+            if scaleChanged {
+                bird.size = CGSize(width: bird.size.width * smallScale, height: bird.size.height * smallScale)
+                bird.position.x = bird.position.x * scale
+                bird.position.y = ((bird.position.y - zoomPoint.position.y) * scale) + zoomPoint.position.y
+                bird.physicsBody?.velocity.dx = (bird.physicsBody?.velocity.dx)! * scale
+            }
+        }
+        for bullet in bullets {
+            bullet.size = bulletBase.size
+            if scaleChanged {
+                bullet.position.x = bullet.position.x * scale
+                bullet.position.y = ((bullet.position.y - zoomPoint.position.y) * scale) + zoomPoint.position.y
+                bullet.physicsBody?.velocity.dy = (bullet.physicsBody?.velocity.dy)! * scale
+                bullet.physicsBody?.velocity.dx = (bullet.physicsBody?.velocity.dx)! * scale
+            }
+        }
+        for hazard in hazards {
+            hazard.0.size = toxicHazardBase.size
+            if scaleChanged {
+                hazard.0.position.x = hazard.0.position.x * scale
+                hazard.0.position.y = ((hazard.0.position.y - zoomPoint.position.y) * scale) + zoomPoint.position.y
+            }
+        }
+        for poo in poops {
+            if scaleChanged {
+                poo.size = CGSize(width: poo.size.width * smallScale, height: poo.size.height * smallScale)
+                poo.position.x = poo.position.x * scale
+                poo.position.y = ((poo.position.y - zoomPoint.position.y) * scale) + zoomPoint.position.y
+                poo.physicsBody?.velocity.dy = (poo.physicsBody?.velocity.dy)! * scale
+            }
+        }
+        if scaleChanged {
+            hero.position.x = hero.position.x * scale
+            hero.position.y = -120 + ground.size.height + hero.size.height/2.0
+            scaleChanged = false
+        }
     }
 }
