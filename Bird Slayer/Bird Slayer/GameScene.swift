@@ -691,6 +691,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             if invincibilityTimer <= 0 {
                 health -= 1
             }
+            invincibilityTimer = invincibilityTime
             nodeA.removeFromParent()
             nodeA.isHidden = true
         }
@@ -698,6 +699,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             if invincibilityTimer <= 0 {
                 health -= 1
             }
+            invincibilityTimer = invincibilityTime
             nodeB.removeFromParent()
             nodeB.isHidden = true
         }
