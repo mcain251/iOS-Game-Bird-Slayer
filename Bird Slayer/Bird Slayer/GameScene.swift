@@ -163,6 +163,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     var powerupSpeed: CGFloat = 0
     var scaleChanged = false
     var minSpawnHeight = 0
+    var right = true
     
     // Called when game begins
     override func didMove(to view: SKView) {
@@ -368,6 +369,10 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         
         scaleManager()
         hero.position.y = -120 + ground.size.height + hero.size.height/2.0
+        
+        if autoFire {
+            gun.zRotation = CGFloat.pi
+        }
     }
     
     // Touch functions
@@ -453,19 +458,23 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
                             rightJoystickPosition.y = 160 - rightInitialPosition.y
                             rightJoystick.position = rightJoystickPosition
                             rightThumb.position = rightJoystickPosition
+                            gun.zRotation = CGFloat.pi
                         } else {
                             rightInitialPosition = fixedRightJoystickLocation
                             rightJoystickPosition = rightInitialPosition
                             rightJoystickPosition.x -= 284
                             rightJoystick.position = rightJoystickPosition
                             rightThumb.position = rightJoystickPosition
-                            gun.zRotation = (rightInitialPosition.x - touch.location(in: self.view).x) * CGFloat(Double.pi/4/50)
-                            gun.zRotation = clamp(value: gun.zRotation, lower: -CGFloat(Double.pi/4), upper: CGFloat(Double.pi/4))
+                            gun.zRotation = (rightInitialPosition.x - touch.location(in: self.view).x) * CGFloat(Double.pi/4/50) + CGFloat.pi
+                            gun.zRotation = clamp(value: gun.zRotation, lower: -CGFloat(Double.pi/4) + CGFloat.pi, upper: CGFloat(Double.pi/4) + CGFloat.pi)
                             rightThumb.position.x = clamp(value: touch.location(in: self).x, lower: rightJoystickPosition.x - 50, upper: rightJoystickPosition.x + 50)
                         }
                         shooting = true
                         rightJoystick.isHidden = false
                         rightThumb.isHidden = false
+                        if hero.xScale == -1 {
+                            gun.zRotation = -gun.zRotation
+                        }
                     }
                 }
             }
@@ -504,9 +513,12 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
                     }
                     leftThumb.position.x = clamp(value: touch.location(in: self).x, lower: leftJoystickPosition.x - 50, upper: leftJoystickPosition.x + 50)
                 } else if touch === rightTouch {
-                    gun.zRotation = (rightInitialPosition.x - touch.location(in: self.view).x) * CGFloat(Double.pi/4/50)
-                    gun.zRotation = clamp(value: gun.zRotation, lower: -CGFloat(Double.pi/4), upper: CGFloat(Double.pi/4))
+                    gun.zRotation = (rightInitialPosition.x - touch.location(in: self.view).x) * CGFloat(Double.pi/4/50) + CGFloat.pi
+                    gun.zRotation = clamp(value: gun.zRotation, lower: -CGFloat(Double.pi/4) + CGFloat.pi, upper: CGFloat(Double.pi/4) + CGFloat.pi)
                     rightThumb.position.x = clamp(value: touch.location(in: self).x, lower: rightJoystickPosition.x - 50, upper: rightJoystickPosition.x + 50)
+                    if hero.xScale == -1 {
+                        gun.zRotation = -gun.zRotation
+                    }
                 }
             }
         }
@@ -524,7 +536,11 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
                 } else if touch === rightTouch {
                     rightTouch = nil
                     rightInitialPosition = nil
-                    gun.zRotation = 0
+                    if autoFire {
+                        gun.zRotation = CGFloat.pi
+                    } else {
+                        gun.zRotation = 0
+                    }
                     shooting = false
                     rightJoystick.isHidden = true
                     rightThumb.isHidden = true
@@ -595,6 +611,21 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         if (hero.position.x >= (284 - (hero.size.width / 2) - 1)) {
             hero.position.x = min(hero.position.x, 284 - (hero.size.width / 2))
             hero.physicsBody?.velocity.dx = clamp(value: (hero.physicsBody?.velocity.dx)!, lower: -1 * heroSpeed, upper: 0)
+        }
+        
+        if (hero.physicsBody?.velocity.dx)! < CGFloat(0) {
+            hero.xScale = -1
+            if right {
+                gun.zRotation = -gun.zRotation
+            }
+            right = false
+        }
+        if (hero.physicsBody?.velocity.dx)! > CGFloat(0) {
+            hero.xScale = 1
+            if !right {
+                gun.zRotation = -gun.zRotation
+            }
+            right = true
         }
     }
     
@@ -975,13 +1006,18 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     func shoot() {
         if gameState == .active {
             if delay || autoFire {
+                var rotation = gun.zRotation + CGFloat.pi
+                if hero.xScale == -1 {
+                    rotation = CGFloat.pi - gun.zRotation
+                }
                 let newBullet = bulletBase.copy() as! SKSpriteNode
                 newBullet.physicsBody?.linearDamping = 0
                 newBullet.position = hero.position
-                newBullet.position.x -= gun.size.height * sin(gun.zRotation)
-                newBullet.position.y += gun.size.height * cos(gun.zRotation) - 160 + ground.size.height + (hero.size.height/2)
-                newBullet.physicsBody?.velocity.dx = -bulletSpeed * sin(gun.zRotation)
-                newBullet.physicsBody?.velocity.dy = bulletSpeed * cos(gun.zRotation)
+                newBullet.position.x -= gun.size.height * sin(rotation)
+                newBullet.position.y = gun.size.height * cos(rotation) - 160 + ground.size.height + (hero.size.height/2) + gun.position.y
+                newBullet.physicsBody?.velocity.dx = -bulletSpeed * sin(rotation)
+                newBullet.physicsBody?.velocity.dy = bulletSpeed * cos(rotation)
+                newBullet.zRotation = rotation
                 bullets.append(newBullet)
                 self.addChild(newBullet)
                 newBullet.zPosition = 2
@@ -998,9 +1034,12 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
                 let newBullet = bulletBase.copy() as! SKSpriteNode
                 newBullet.physicsBody?.linearDamping = 0
                 newBullet.position = hero.position
-                newBullet.position.x -= gun.size.height * sin(gun.zRotation)
-                newBullet.position.y += gun.size.height * cos(gun.zRotation) - 160 + ground.size.height + (hero.size.height/2)
-                var rotation = gun.zRotation
+                var rotation = gun.zRotation + CGFloat.pi
+                if hero.xScale == -1 {
+                    rotation = CGFloat.pi - gun.zRotation
+                }
+                newBullet.position.x -= gun.size.height * sin(rotation)
+                newBullet.position.y = gun.size.height * cos(rotation) - 160 + ground.size.height + (hero.size.height/2) + gun.position.y
                 if i == 2 {
                     rotation += spreadShotSpread
                 } else if i == 3 {
@@ -1008,6 +1047,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
                 }
                 newBullet.physicsBody?.velocity.dx = -bulletSpeed * sin(rotation)
                 newBullet.physicsBody?.velocity.dy = bulletSpeed * cos(rotation)
+                newBullet.zRotation = rotation
                 bullets.append(newBullet)
                 self.addChild(newBullet)
             }
