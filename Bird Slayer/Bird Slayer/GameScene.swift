@@ -23,6 +23,8 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     // Game objects
     var hero: SKSpriteNode!
     var gun: SKSpriteNode!
+    var rightLeg: SKSpriteNode!
+    var leftLeg: SKSpriteNode!
     var birdBase: Bird!
     var birds: [Bird] = []
     var bulletBase: SKSpriteNode!
@@ -111,8 +113,14 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     let powerupIdleTime: Int = 5 * 60
     let originalPowerupSpeed: CGFloat = 75
     let spreadShotSpread: CGFloat = CGFloat(Double.pi/12)
+    // Minimum size of objects on screen after zoom-out
     let minScale = 0.6
+    // Tracks the original size of scalable objects for scaling
     var originalObjectSizes: [String: (x: CGFloat, y: CGFloat)] = [:]
+    // Max angle of hero's legs
+    let legAngle = CGFloat.pi * (CGFloat(45)/CGFloat(180))
+    // Max angular delta of hero's legs (angle of change per frame)
+    let maxLegSpeed = CGFloat.pi * (CGFloat(5)/CGFloat(180))
     
     // powerups (color, status, spawn ratio)
     var powerupStatuses: [String: (UIColor?, Bool, Int)] = ["health": (nil, false, 1), "shield": (nil, false, 1), "spreadShot": (nil, false, 1)]
@@ -164,6 +172,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     var scaleChanged = false
     var minSpawnHeight = 0
     var right = true
+    var legsMovingForward = true
     
     // Called when game begins
     override func didMove(to view: SKView) {
@@ -200,6 +209,8 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         // Set reference to objects, screens, and UI and sets their initial states
         hero = childNode(withName: "//hero") as! SKSpriteNode
         gun = hero.childNode(withName: "gun") as! SKSpriteNode
+        rightLeg = hero.childNode(withName: "rightLeg") as! SKSpriteNode
+        leftLeg = hero.childNode(withName: "leftLeg") as! SKSpriteNode
         birdBase = childNode(withName: "//birdBase") as! Bird
         bulletBase = childNode(withName: "//bulletBase") as! SKSpriteNode
         pooBase = childNode(withName: "//pooBase") as! SKSpriteNode
@@ -250,7 +261,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             }
             upgradeUIElements[type]?._plus = childNode(withName: "//\(type)_plus") as? SKLabelNode
             upgradeUIElements[type]?._button = childNode(withName: "//\(type)_button") as? MSButtonNode
-            upgradeUIElements[type]?._button?.selectedHandler = {
+            upgradeUIElements[type]?._button?.selectedHandler = {[unowned self] in
                 self.upgradeUIElements[type]?.upgradeStatus += 1
                 self.isPaused = false
                 self.gameState = .active
@@ -264,7 +275,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         }
         
         // Pause button functionalities (pauses and presents paused upgrade screen/ unpauses and hides pause screen)
-        pauseButton.selectedHandler = {
+        pauseButton.selectedHandler = {[unowned self] in
             self.gameState = .paused
             self.isPaused = true
             self.leftTouch = nil
@@ -295,7 +306,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             self.menuButton.isHidden = false
             self.menuButton.state = .MSButtonNodeStateActive
         }
-        unpauseButton.selectedHandler = {
+        unpauseButton.selectedHandler = {[unowned self] in
             self.isPaused  = false
             self.gameState = .active
             self.upgradeScreen.isHidden = true
@@ -306,7 +317,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             self.menuButton.isHidden = true
             self.menuButton.state = .MSButtonNodeStateHidden
         }
-        menuButton.selectedHandler = {
+        menuButton.selectedHandler = {[unowned self] in
             // Set reference to SpriteKit view
             guard let skView = self.view as SKView! else {
                 print("Could not get Skview")
@@ -602,6 +613,9 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         
         // Makes sure the scale of scalable variables is correct
         scaleManager()
+        
+        // Manages walking animation
+        legManager()
         
         // Clamps hero's position and velocity to inside play area
         if (hero.position.x <= (-284 + hero.size.width / 2 + 1)) {
@@ -1344,6 +1358,31 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             hero.position.x = hero.position.x * scale
             hero.position.y = -120 + ground.size.height + hero.size.height/2.0
             scaleChanged = false
+        }
+    }
+    
+    // Makes the hero's legs move
+    func legManager() {
+        let legSpeed = abs((hero.physicsBody?.velocity.dx)!/heroSpeed * maxLegSpeed)
+        if rightLeg.zRotation >= legAngle {
+            print ("changed direction")
+            legsMovingForward = false
+        } else if leftLeg.zRotation >= legAngle {
+            print ("changed direction")
+            legsMovingForward = true
+        }
+        if legsMovingForward && legSpeed > 0{
+            rightLeg.zRotation = rightLeg.zRotation + legSpeed
+            leftLeg.zRotation = rightLeg.zRotation * -1
+        } else if legSpeed > 0 {
+            rightLeg.zRotation = rightLeg.zRotation - legSpeed
+            leftLeg.zRotation = rightLeg.zRotation * -1
+        }
+        if legSpeed == CGFloat(0) {
+            print("\(rightLeg.zRotation), down")
+            legsMovingForward = true
+            rightLeg.zRotation = rightLeg.zRotation / 2
+            leftLeg.zRotation = leftLeg.zRotation / 2
         }
     }
 }

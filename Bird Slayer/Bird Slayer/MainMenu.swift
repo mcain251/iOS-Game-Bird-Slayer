@@ -34,17 +34,17 @@ class MainMenu: SKScene {
         newGameButton = childNode(withName: "newGameButton") as! MSButtonNode
         
         // Play button functionality
-        slayButton.selectedHandler = {
+        slayButton.selectedHandler = {[unowned self] in
             self.loadGame("slay")
         }
         
-        newGameButton.selectedHandler = {
+        newGameButton.selectedHandler = {[unowned self] in
             newGame = true
             self.loadGame("slay")
         }
         
         // Option button functionality
-        optionButton.selectedHandler = {
+        optionButton.selectedHandler = {[unowned self] in
             self.loadGame("option")
         }
         

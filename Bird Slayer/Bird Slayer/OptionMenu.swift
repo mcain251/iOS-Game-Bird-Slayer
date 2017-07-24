@@ -73,17 +73,17 @@ class OptionMenu: SKScene {
         }
         
         // Button functionalities
-        controlsButton.selectedHandler = {
+        controlsButton.selectedHandler = {[unowned self] in
             self.defaultScreen.position = self.offScreen
             self.controlsScreen.position = self.onScreen
         }
-        backButton.selectedHandler = {
+        backButton.selectedHandler = {[unowned self] in
             self.loadMainMenu()
         }
-        eraseButton.selectedHandler = {
+        eraseButton.selectedHandler = {[unowned self] in
             self.sureBox.position = self.onScreen
         }
-        yesButton.selectedHandler = {
+        yesButton.selectedHandler = {[unowned self] in
             UserDefaults.standard.set(nil, forKey: "HIGHSCORE")
             UserDefaults.standard.set(nil, forKey: "AUTOFIRE")
             UserDefaults.standard.set(nil, forKey: "LEFTFIXED")
@@ -111,33 +111,33 @@ class OptionMenu: SKScene {
             self.rightJoystick.position = fixedRightJoystickLocation
             self.rightJoystick.position.x -= 284
         }
-        noButton.selectedHandler = {
+        noButton.selectedHandler = {[unowned self] in
             self.sureBox.position = self.offScreen
         }
-        controlsBackButton.selectedHandler = {
+        controlsBackButton.selectedHandler = {[unowned self] in
             self.defaultScreen.position = self.onScreen
             self.controlsScreen.position = self.offScreen
         }
-        autoFireButton.selectedHandler = {
+        autoFireButton.selectedHandler = {[unowned self] in
             autoFire = !autoFire
             UserDefaults.standard.set(autoFire, forKey: "AUTOFIRE")
             self.autoFireTick.isHidden = !autoFire
         }
-        leftButton.selectedHandler = {
+        leftButton.selectedHandler = {[unowned self] in
             leftFixed = !leftFixed
             UserDefaults.standard.set(leftFixed, forKey: "LEFTFIXED")
             self.leftTick.isHidden = !leftFixed
         }
-        rightButton.selectedHandler = {
+        rightButton.selectedHandler = {[unowned self] in
             rightFixed = !rightFixed
             UserDefaults.standard.set(rightFixed, forKey: "RIGHTFIXED")
             self.rightTick.isHidden = !rightFixed
         }
-        customizationButton.selectedHandler = {
+        customizationButton.selectedHandler = {[unowned self] in
             self.controlsScreen.position = self.offScreen
             self.customizationScreen.position = self.onScreen
         }
-        resetLocationsButton.selectedHandler = {
+        resetLocationsButton.selectedHandler = {[unowned self] in
             UserDefaults.standard.set(nil, forKey: "LEFTX")
             UserDefaults.standard.set(nil, forKey: "LEFTY")
             UserDefaults.standard.set(nil, forKey: "RIGHTX")
@@ -149,7 +149,7 @@ class OptionMenu: SKScene {
             self.rightJoystick.position = fixedRightJoystickLocation
             self.rightJoystick.position.x -= 284
         }
-        customizationBackButton.selectedHandler = {
+        customizationBackButton.selectedHandler = {[unowned self] in
             self.customizationScreen.position = self.offScreen
             self.controlsScreen.position = self.onScreen
         }
