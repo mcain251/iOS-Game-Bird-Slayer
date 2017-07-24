@@ -1365,10 +1365,8 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     func legManager() {
         let legSpeed = abs((hero.physicsBody?.velocity.dx)!/heroSpeed * maxLegSpeed)
         if rightLeg.zRotation >= legAngle {
-            print ("changed direction")
             legsMovingForward = false
         } else if leftLeg.zRotation >= legAngle {
-            print ("changed direction")
             legsMovingForward = true
         }
         if legsMovingForward && legSpeed > 0{
@@ -1379,7 +1377,6 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             leftLeg.zRotation = rightLeg.zRotation * -1
         }
         if legSpeed == CGFloat(0) {
-            print("\(rightLeg.zRotation), down")
             legsMovingForward = true
             rightLeg.zRotation = rightLeg.zRotation / 2
             leftLeg.zRotation = leftLeg.zRotation / 2
