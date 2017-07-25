@@ -494,14 +494,6 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         
         // Restarts the game
         if gameState == .gameOver {
-            
-            // Resets saved values
-            for (type, _) in upgradeUIElements {
-                UserDefaults.standard.set(1, forKey: type)
-            }
-            
-            UserDefaults.standard.set(0, forKey: "SAVEDSCORE")
-            UserDefaults.standard.set(minMaxHealth, forKey: "SAVEDHEALTH")
             let skView = self.view as SKView!
             let scene = GameScene(fileNamed:"GameScene") as GameScene!
             scene?.scaleMode = .aspectFill
@@ -1137,6 +1129,14 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             bullets.first?.removeFromParent()
             bullets.removeFirst()
         }
+        
+        // Resets saved values
+        for (type, _) in upgradeUIElements {
+            UserDefaults.standard.set(1, forKey: type)
+        }
+        
+        UserDefaults.standard.set(0, forKey: "SAVEDSCORE")
+        UserDefaults.standard.set(minMaxHealth, forKey: "SAVEDHEALTH")
     }
     
     // Brings up the upgrade screen and pauses the game
