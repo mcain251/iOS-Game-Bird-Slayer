@@ -1073,7 +1073,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         let newPoo = pooBase.copy() as! SKSpriteNode
         newPoo.physicsBody?.linearDamping = 0
         newPoo.position = bird.position
-        newPoo.position.y = bird.position.y - 10
+        newPoo.position.y = bird.position.y
         switch bird.type! {
         case .smart:
             newPoo.color = smartPooColor
@@ -1088,6 +1088,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             let tDist = sqrt(xDist*xDist + yDist*yDist)
             newPoo.physicsBody?.velocity.dy = pooSpeed * (yDist/tDist)
             newPoo.physicsBody?.velocity.dx = pooSpeed * (xDist/tDist)
+            newPoo.zRotation = -atan(xDist/yDist) * 0.75
         case .big:
             newPoo.xScale = 2
             newPoo.yScale = 2
