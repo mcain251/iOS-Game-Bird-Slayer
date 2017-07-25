@@ -143,7 +143,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     // spawnTimer = framecount for bird spawning
     // levelsTo = how many times the player must upgrade for the bird to start spawning
     // isSpawning = if the bird type is spawning or not
-    var birdVariables: [BirdType: (spawnRatio: Int, spawnTime: Int, spawnTimer: Int, levelsTo: Int, isSpawning: Bool)] = [.normal: (100, 0, 0, 0, true), .smart: (30, 0, 0, 2, false), .toxic: (30, 0, 0, 4, false), .big: (100, 0, 0, 0, true), .rare: (1, 0, 0, 8, false)]
+    var birdVariables: [BirdType: (spawnRatio: Int, spawnTime: Int, spawnTimer: Int, levelsTo: Int, isSpawning: Bool)] = [.normal: (100, 0, 0, 0, true), .smart: (30, 0, 0, 2, false), .toxic: (30, 0, 0, 4, false), .big: (10, 0, 0, 6, false), .rare: (1, 0, 0, 8, false)]
     
     // BTS variables
     var score = 0
@@ -377,6 +377,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         originalObjectSizes["toxicHazardBase"] = (toxicHazardBase.size.width, toxicHazardBase.size.height)
         originalObjectSizes["shield"] = (shield.size.width, shield.size.height)
         originalObjectSizes["powerupBase"] = (powerupBase.size.width, powerupBase.size.height)
+        originalObjectSizes["leg"] = (leftLeg.size.width, leftLeg.size.height)
         
         scaleManager()
         hero.position.y = -120 + ground.size.height + hero.size.height/2.0
@@ -948,7 +949,12 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             case "speed":
                 heroSpeed = (((maxHeroSpeed - minHeroSpeed)/CGFloat(upgrades)) * CGFloat((elements.upgradeStatus - 1))) + minHeroSpeed
             case "fire_rate":
-                shotFrequency = Int(Double(minShotFrequency) * pow(pow((Double(maxShotFrequency)/Double(minShotFrequency)), (1.0/Double(upgrades))), Double(elements.upgradeStatus - 1)))
+                let maxShotsPerSecond = 60.0/Double(maxShotFrequency)
+                let minShotsPerSecond = 60.0/Double(minShotFrequency)
+                let deltaSPS = (maxShotsPerSecond - minShotsPerSecond) / Double(upgrades)
+                let specificDSPS = deltaSPS * Double(elements.upgradeStatus - 1)
+                let shotsPerSecond = specificDSPS + minShotsPerSecond
+                shotFrequency = Int(60.0 / shotsPerSecond)
             case "bullet_speed":
                 bulletSpeed = (((maxBulletSpeed - minBulletSpeed)/CGFloat(upgrades)) * CGFloat((elements.upgradeStatus - 1))) + minBulletSpeed
             default:
@@ -1159,7 +1165,12 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             
             // Increases the spawn rate
             calculateTotals()
-            spawnFrequency = Int(Double(minSpawnFrequency) * pow(pow((Double(maxSpawnFrequency)/Double(minSpawnFrequency)), (1.0/Double(upgrades * upgradeTypes))), Double(total - upgradeTypes + 1)))
+            let maxBirdsPerSecond = 60.0/Double(maxSpawnFrequency)
+            let minBirdsPerSecond = 60.0/Double(minSpawnFrequency)
+            let deltaBPS = (maxBirdsPerSecond - minBirdsPerSecond) / Double(upgrades * upgradeTypes)
+            let specificDBPS = deltaBPS * Double((total + 1) - upgradeTypes)
+            let birdsPerSecond = specificDBPS + minBirdsPerSecond
+            spawnFrequency = Int(60.0 / birdsPerSecond)
             
             // Makes invulnerable
             invincibilityTimer = invincibilityTime
@@ -1314,6 +1325,8 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         hero.size = CGSize(width: (originalObjectSizes["hero"]?.x)! * scale, height: (originalObjectSizes["hero"]?.y)! * scale)
         shield.size = CGSize(width: (originalObjectSizes["shield"]?.x)! * scale, height: (originalObjectSizes["shield"]?.y)! * scale)
         gun.size = CGSize(width: (originalObjectSizes["gun"]?.x)! * scale, height: (originalObjectSizes["gun"]?.y)! * scale)
+        leftLeg.size = CGSize(width: (originalObjectSizes["leg"]?.x)! * scale, height: (originalObjectSizes["leg"]?.y)! * scale)
+        rightLeg.size = CGSize(width: (originalObjectSizes["leg"]?.x)! * scale, height: (originalObjectSizes["leg"]?.y)! * scale)
         powerupBase.size = CGSize(width: (originalObjectSizes["powerupBase"]?.x)! * scale, height: (originalObjectSizes["powerupBase"]?.y)! * scale)
         if currentPowerup != nil {
             currentPowerup.0.size = powerupBase.size
