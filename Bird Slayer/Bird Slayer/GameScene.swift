@@ -143,7 +143,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     // spawnTimer = framecount for bird spawning
     // levelsTo = how many times the player must upgrade for the bird to start spawning
     // isSpawning = if the bird type is spawning or not
-    var birdVariables: [BirdType: (spawnRatio: Int, spawnTime: Int, spawnTimer: Int, levelsTo: Int, isSpawning: Bool)] = [.normal: (100, 0, 0, 0, true), .smart: (30, 0, 0, 2, false), .toxic: (30, 0, 0, 4, false), .big: (10, 0, 0, 6, false), .rare: (1, 0, 0, 8, false)]
+    var birdVariables: [BirdType: (spawnRatio: Int, spawnTime: Int, spawnTimer: Int, levelsTo: Int, isSpawning: Bool)] = [.normal: (100, 0, 0, 0, true), .smart: (30, 0, 0, 2, false), .toxic: (30, 0, 0, 4, false), .big: (100, 0, 0, 0, true), .rare: (1, 0, 0, 8, false)]
     
     // BTS variables
     var score = 0
@@ -998,13 +998,14 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         let rand1 = arc4random_uniform(UInt32(2))
         if Int(rand1) < 1 {
             newBird.direction = .right
+            newBird.xScale = -1 * newBird.xScale
         } else {
             newBird.direction = .left
         }
         
         // Determines and sets its inital position
-        var rand = arc4random_uniform(UInt32(CGFloat(maxSpawnHeight - minSpawnHeight) - (2 * newBird.size.height)))
-        rand += UInt32(newBird.size.height) + UInt32(minSpawnHeight)
+        var rand = arc4random_uniform(UInt32(CGFloat(maxSpawnHeight - minSpawnHeight) - newBird.size.height))
+        rand += UInt32(newBird.size.height / 2) + UInt32(minSpawnHeight)
         var newPosition = CGPoint(x: 284 + Int(newBird.size.width/2 + 1),y: Int(rand))
         newBird.physicsBody?.velocity.dx = -1 * newBird.birdSpeed
         if newBird.direction == .right {
@@ -1324,38 +1325,52 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         }
         for bird in birds {
             if scaleChanged {
-                bird.size = CGSize(width: bird.size.width * smallScale, height: bird.size.height * smallScale)
-                bird.position.x = bird.position.x * scale
-                bird.position.y = ((bird.position.y - zoomPoint.position.y) * scale) + zoomPoint.position.y
-                bird.physicsBody?.velocity.dx = (bird.physicsBody?.velocity.dx)! * scale
+                bird.yScale = 1
+                if bird.direction == .right {
+                    bird.xScale = -1
+                } else {
+                    bird.xScale = 1
+                }
+                bird.size = birdBase.size
+                if bird.type == .big {
+                    if bird.direction == .right {
+                        bird.xScale = -2
+                    } else {
+                        bird.xScale = 2
+                    }
+                    bird.yScale = 2
+                }
+                bird.position.x = bird.position.x * smallScale
+                bird.position.y = ((bird.position.y - zoomPoint.position.y) * smallScale) + zoomPoint.position.y
+                bird.physicsBody?.velocity.dx = (bird.physicsBody?.velocity.dx)! * smallScale
             }
         }
         for bullet in bullets {
             bullet.size = bulletBase.size
             if scaleChanged {
-                bullet.position.x = bullet.position.x * scale
-                bullet.position.y = ((bullet.position.y - zoomPoint.position.y) * scale) + zoomPoint.position.y
-                bullet.physicsBody?.velocity.dy = (bullet.physicsBody?.velocity.dy)! * scale
-                bullet.physicsBody?.velocity.dx = (bullet.physicsBody?.velocity.dx)! * scale
+                bullet.position.x = bullet.position.x * smallScale
+                bullet.position.y = ((bullet.position.y - zoomPoint.position.y) * smallScale) + zoomPoint.position.y
+                bullet.physicsBody?.velocity.dy = (bullet.physicsBody?.velocity.dy)! * smallScale
+                bullet.physicsBody?.velocity.dx = (bullet.physicsBody?.velocity.dx)! * smallScale
             }
         }
         for hazard in hazards {
             hazard.0.size = toxicHazardBase.size
             if scaleChanged {
-                hazard.0.position.x = hazard.0.position.x * scale
-                hazard.0.position.y = ((hazard.0.position.y - zoomPoint.position.y) * scale) + zoomPoint.position.y
+                hazard.0.position.x = hazard.0.position.x * smallScale
+                hazard.0.position.y = ((hazard.0.position.y - zoomPoint.position.y) * smallScale) + zoomPoint.position.y
             }
         }
         for poo in poops {
             if scaleChanged {
                 poo.size = CGSize(width: poo.size.width * smallScale, height: poo.size.height * smallScale)
-                poo.position.x = poo.position.x * scale
-                poo.position.y = ((poo.position.y - zoomPoint.position.y) * scale) + zoomPoint.position.y
-                poo.physicsBody?.velocity.dy = (poo.physicsBody?.velocity.dy)! * scale
+                poo.position.x = poo.position.x * smallScale
+                poo.position.y = ((poo.position.y - zoomPoint.position.y) * smallScale) + zoomPoint.position.y
+                poo.physicsBody?.velocity.dy = (poo.physicsBody?.velocity.dy)! * smallScale
             }
         }
         if scaleChanged {
-            hero.position.x = hero.position.x * scale
+            hero.position.x = hero.position.x * smallScale
             hero.position.y = -120 + ground.size.height + hero.size.height/2.0
             scaleChanged = false
         }
