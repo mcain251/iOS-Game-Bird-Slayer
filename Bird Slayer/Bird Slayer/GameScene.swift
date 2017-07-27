@@ -51,6 +51,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     var pauseLabel: SKLabelNode!
     var upgradeLabel: SKLabelNode!
     var shield: SKSpriteNode!
+    var shield_2: SKSpriteNode!
     var ground: SKSpriteNode!
     var powerupBar: SKSpriteNode!
     var powerupBarContainer: SKSpriteNode!
@@ -123,7 +124,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     let maxLegSpeed = CGFloat.pi * (CGFloat(5)/CGFloat(180))
     
     // powerups (color, status, spawn ratio)
-    var powerupStatuses: [String: (UIColor?, Bool, Int)] = ["health": (nil, false, 1), "shield": (nil, false, 1), "spreadShot": (nil, false, 1)]
+    var powerupStatuses: [String: (UIImage?, Bool, Int, UIColor?)] = ["health": (nil, false, 1, nil), "shield": (nil, false, 1, nil), "spreadShot": (nil, false, 1, nil)]
     var currentPowerup: (SKSpriteNode, Bool, Int)!
     var powerupTimer = 0
     var powerupWillAppear = false
@@ -194,9 +195,12 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         bulletSpeed = minBulletSpeed
         shotFrequency = minShotFrequency
         spawnFrequency = minSpawnFrequency
-        powerupStatuses["health"]?.0 = healthPowerupColor
-        powerupStatuses["shield"]?.0 = shieldPowerupColor
-        powerupStatuses["spreadShot"]?.0 = spreadShotPowerupColor
+        powerupStatuses["health"]?.0 = #imageLiteral(resourceName: "Health_Powerup_2")
+        powerupStatuses["health"]?.3 = healthPowerupColor
+        powerupStatuses["shield"]?.0 = #imageLiteral(resourceName: "Shield_Powerup_2")
+        powerupStatuses["shield"]?.3 = shieldPowerupColor
+        powerupStatuses["spreadShot"]?.0 = #imageLiteral(resourceName: "Spread_Powerup_2")
+        powerupStatuses["spreadShot"]?.3 = spreadShotPowerupColor
         
         powerupTimer = nextPowerupTime
         
@@ -240,6 +244,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         rightJoystick = childNode(withName: "rightJoystick") as! SKSpriteNode
         pauseButton = childNode(withName: "pauseButton") as! MSButtonNode
         shield = childNode(withName: "shield") as! SKSpriteNode
+        shield_2 = shield.childNode(withName: "shield_2") as! SKSpriteNode
         ground = childNode(withName: "ground") as! SKSpriteNode
         unpauseButton = childNode(withName: "unpauseButton") as! MSButtonNode
         unpauseButton.position = unpauseButtonPosition
@@ -759,7 +764,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         // Check if one was a powerup and the other was the player, then removes the powerup and toggles the powerup
         if (contactA.categoryBitMask == 64 && contactB.categoryBitMask == 1) {
             for (powerup, attributes) in powerupStatuses {
-                if String(describing: nodeA.color) == String(describing: attributes.0!) {
+                if String(describing: nodeA.color) == String(describing: attributes.3!) {
                     powerupStatuses[powerup]?.1 = true
                 }
             }
@@ -768,7 +773,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         }
         if (contactB.categoryBitMask == 64 && contactA.categoryBitMask == 1) {
             for (powerup, attributes) in powerupStatuses {
-                if String(describing: nodeB.color) == String(describing: attributes.0!) {
+                if String(describing: nodeB.color) == String(describing: attributes.3!) {
                     powerupStatuses[powerup]?.1 = true
                 }
             }
@@ -1243,7 +1248,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             }
             if poweredup {
                 powerupBarContainer.position = hero.position
-                powerupBarContainer.position.y = ground.size.height - powerupBarContainer.size.height/2 - 160
+                powerupBarContainer.position.y = ground.size.height - powerupBarContainer.size.height * 1.5 - 160
                 powerupBarContainer.position.x -= powerupBarContainer.size.width/2
                 powerupBar.size.width = (CGFloat(powerupTimer)/CGFloat(powerupTime)) * (powerupBarContainer.size.width - 5)
             }
@@ -1288,7 +1293,9 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         for (_, attributes) in powerupStatuses {
             rand -= attributes.2
             if rand <= 0 {
-                newPowerup.color = attributes.0!
+                newPowerup.color = attributes.3!
+                newPowerup.texture = SKTexture(image: attributes.0!)
+                newPowerup.size = powerupBase.size
                 break
             }
         }
@@ -1325,6 +1332,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         toxicHazardBase.size = CGSize(width: (originalObjectSizes["toxicHazardBase"]?.x)! * scale, height: (originalObjectSizes["toxicHazardBase"]?.y)! * scale)
         hero.size = CGSize(width: (originalObjectSizes["hero"]?.x)! * scale, height: (originalObjectSizes["hero"]?.y)! * scale)
         shield.size = CGSize(width: (originalObjectSizes["shield"]?.x)! * scale, height: (originalObjectSizes["shield"]?.y)! * scale)
+        shield_2.size = shield.size
         gun.size = CGSize(width: (originalObjectSizes["gun"]?.x)! * scale, height: (originalObjectSizes["gun"]?.y)! * scale)
         leftLeg.size = CGSize(width: (originalObjectSizes["leg"]?.x)! * scale, height: (originalObjectSizes["leg"]?.y)! * scale)
         rightLeg.size = CGSize(width: (originalObjectSizes["leg"]?.x)! * scale, height: (originalObjectSizes["leg"]?.y)! * scale)
