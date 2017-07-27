@@ -385,7 +385,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         originalObjectSizes["leg"] = (leftLeg.size.width, leftLeg.size.height)
         
         scaleManager()
-        hero.position.y = -120 + ground.size.height + hero.size.height/2.0
+        hero.position.y = 39.5 + (ground.position.y + ground.size.height / 2.0) + hero.size.height/2.0
         
         if autoFire {
             gun.zRotation = CGFloat.pi
@@ -1033,7 +1033,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
                 newBullet.physicsBody?.linearDamping = 0
                 newBullet.position = hero.position
                 newBullet.position.x -= gun.size.height * sin(rotation)
-                newBullet.position.y = gun.size.height * cos(rotation) - 160 + ground.size.height + (hero.size.height/2) + gun.position.y
+                newBullet.position.y = gun.size.height * cos(rotation) + (ground.position.y + ground.size.height / 2.0) + (hero.size.height/2) + gun.position.y
                 newBullet.physicsBody?.velocity.dx = -bulletSpeed * sin(rotation)
                 newBullet.physicsBody?.velocity.dy = bulletSpeed * cos(rotation)
                 newBullet.zRotation = rotation
@@ -1058,7 +1058,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
                     rotation = CGFloat.pi - gun.zRotation
                 }
                 newBullet.position.x -= gun.size.height * sin(rotation)
-                newBullet.position.y = gun.size.height * cos(rotation) - 160 + ground.size.height + (hero.size.height/2) + gun.position.y
+                newBullet.position.y = gun.size.height * cos(rotation) + (ground.position.y + ground.size.height / 2.0) + (hero.size.height/2) + gun.position.y
                 if i == 2 {
                     rotation += spreadShotSpread
                 } else if i == 3 {
@@ -1225,7 +1225,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
                     }
                 case "shield":
                     shield.position = hero.position
-                    shield.position.y = ground.size.height + (hero.size.height/2) - 160
+                    shield.position.y = (ground.position.y + ground.size.height / 2.0) + (hero.size.height/2)
                     if !poweredup {
                         powerupTimer = powerupTime
                     }
@@ -1249,7 +1249,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             }
             if poweredup {
                 powerupBarContainer.position = hero.position
-                powerupBarContainer.position.y = ground.size.height - powerupBarContainer.size.height * 1.5 - 160
+                powerupBarContainer.position.y = (ground.position.y + ground.size.height / 2.0) - powerupBarContainer.size.height * 1.5
                 powerupBarContainer.position.x -= powerupBarContainer.size.width/2
                 powerupBar.size.width = (CGFloat(powerupTimer)/CGFloat(powerupTime)) * (powerupBarContainer.size.width - 5)
             }
@@ -1402,7 +1402,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         }
         if scaleChanged {
             hero.position.x = hero.position.x * smallScale
-            hero.position.y = -120 + ground.size.height + hero.size.height/2.0
+            hero.position.y = 39.5 + (ground.position.y + ground.size.height / 2.0) + hero.size.height/2.0
             scaleChanged = false
         }
     }
