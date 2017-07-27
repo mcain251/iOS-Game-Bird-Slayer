@@ -123,7 +123,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     // Max angular delta of hero's legs (angle of change per frame)
     let maxLegSpeed = CGFloat.pi * (CGFloat(5)/CGFloat(180))
     
-    // powerups (color, status, spawn ratio)
+    // powerups (texture, status, spawn ratio, color)
     var powerupStatuses: [String: (UIImage?, Bool, Int, UIColor?)] = ["health": (nil, false, 1, nil), "shield": (nil, false, 1, nil), "spreadShot": (nil, false, 1, nil)]
     var currentPowerup: (SKSpriteNode, Bool, Int)!
     var powerupTimer = 0
@@ -560,6 +560,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     
     // Called every frame
     override func update(_ currentTime: TimeInterval) {
+        
         if invincibilityTimer > 0 {
             invincibilityTimer -= 1
             if invincibilityTimer % 20 > 13 {
@@ -1268,6 +1269,13 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         if currentPowerup != nil {
             if currentPowerup.1 {
                 currentPowerup.2 -= 1
+                if currentPowerup.2 < Int(Double(powerupIdleTime) * 0.4) {
+                    if currentPowerup.2 % 30 > 15 {
+                        currentPowerup.0.alpha = 0
+                    } else {
+                        currentPowerup.0.alpha = 1
+                    }
+                }
             }
             if currentPowerup.2 <= 0 {
                 currentPowerup.0.removeFromParent()
@@ -1284,6 +1292,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     func spawnPowerup(_ pos: CGPoint) {
         let newPowerup = powerupBase.copy() as! SKSpriteNode
         newPowerup.position = pos
+        newPowerup.zPosition = 2
         newPowerup.physicsBody?.linearDamping = 0
         var rtotal = 0
         for (_, attributes) in powerupStatuses {
