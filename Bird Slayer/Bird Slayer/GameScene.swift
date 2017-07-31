@@ -390,6 +390,24 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         if autoFire {
             gun.zRotation = CGFloat.pi
         }
+        if leftFixed {
+            leftInitialPosition = fixedLeftJoystickLocation
+            leftJoystickPosition = leftInitialPosition
+            leftJoystickPosition.x -= 284
+            leftJoystick.position = leftJoystickPosition
+            leftThumb.position = leftJoystickPosition
+            leftJoystick.isHidden = false
+            leftThumb.isHidden = false
+        }
+        if rightFixed {
+            rightInitialPosition = fixedRightJoystickLocation
+            rightJoystickPosition = rightInitialPosition
+            rightJoystickPosition.x -= 284
+            rightJoystick.position = rightJoystickPosition
+            rightThumb.position = rightJoystickPosition
+            rightJoystick.isHidden = false
+            rightThumb.isHidden = false
+        }
     }
     
     // Touch functions
@@ -539,8 +557,11 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
                 if touch === leftTouch {
                     leftTouch = nil
                     leftInitialPosition = nil
-                    leftJoystick.isHidden = true
-                    leftThumb.isHidden = true
+                    leftThumb.position = leftJoystick.position
+                    if !leftFixed {
+                        leftJoystick.isHidden = true
+                        leftThumb.isHidden = true
+                    }
                     hero.physicsBody?.velocity.dx = 0
                 } else if touch === rightTouch {
                     rightTouch = nil
@@ -551,8 +572,11 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
                         gun.zRotation = 0
                     }
                     shooting = false
-                    rightJoystick.isHidden = true
-                    rightThumb.isHidden = true
+                    rightThumb.position = rightJoystick.position
+                    if !rightFixed {
+                        rightJoystick.isHidden = true
+                        rightThumb.isHidden = true
+                    }
                 }
             }
         }
@@ -681,7 +705,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
                 nodeB.isHidden = true
             }
         }
-        if(contactA.categoryBitMask == 8 && contactB.categoryBitMask == 4) {
+        if (contactA.categoryBitMask == 8 && contactB.categoryBitMask == 4) {
             nodeB.removeFromParent()
             nodeB.isHidden = true
             if nodeA.xScale != 2 && nodeA.xScale != 2{
@@ -718,6 +742,8 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         if (contactA.categoryBitMask == 16) {
             if String(describing: nodeB.color) == String(describing: toxicPooColor){
                 createHazard(nodeB)
+            }
+            if contactB.categoryBitMask == 8 {
                 nodeB.removeFromParent()
                 nodeB.isHidden = true
             }
@@ -725,6 +751,8 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         if (contactB.categoryBitMask == 16) {
             if String(describing: nodeB.color) == String(describing: toxicPooColor) {
                 createHazard(nodeA)
+            }
+            if contactA.categoryBitMask == 8 {
                 nodeA.removeFromParent()
                 nodeA.isHidden = true
             }
