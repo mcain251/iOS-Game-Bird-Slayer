@@ -19,6 +19,7 @@
 		0FBC40411F0EDD6300196891 /* MSButtonNode.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0FBC40401F0EDD6300196891 /* MSButtonNode.swift */; };
 		0FD91BD71F100E1000F30CC3 /* MainMenu.sks in Resources */ = {isa = PBXBuildFile; fileRef = 0FD91BD61F100E1000F30CC3 /* MainMenu.sks */; };
 		0FD91BD91F10107300F30CC3 /* MainMenu.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0FD91BD81F10107300F30CC3 /* MainMenu.swift */; };
+		0FE3AEEA1F2FB8510032BD46 /* Grass_5.2.png in Resources */ = {isa = PBXBuildFile; fileRef = 0FE3AEE91F2FB8510032BD46 /* Grass_5.2.png */; };
 		0FFD46611F0D4FC800E26E8E /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0FFD46601F0D4FC800E26E8E /* AppDelegate.swift */; };
 		0FFD46631F0D4FC800E26E8E /* GameScene.sks in Resources */ = {isa = PBXBuildFile; fileRef = 0FFD46621F0D4FC800E26E8E /* GameScene.sks */; };
 		0FFD46651F0D4FC800E26E8E /* Actions.sks in Resources */ = {isa = PBXBuildFile; fileRef = 0FFD46641F0D4FC800E26E8E /* Actions.sks */; };
@@ -42,6 +43,7 @@
 		0FBC40401F0EDD6300196891 /* MSButtonNode.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MSButtonNode.swift; sourceTree = "<group>"; };
 		0FD91BD61F100E1000F30CC3 /* MainMenu.sks */ = {isa = PBXFileReference; lastKnownFileType = file.sks; path = MainMenu.sks; sourceTree = "<group>"; };
 		0FD91BD81F10107300F30CC3 /* MainMenu.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MainMenu.swift; sourceTree = "<group>"; };
+		0FE3AEE91F2FB8510032BD46 /* Grass_5.2.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = Grass_5.2.png; sourceTree = "<group>"; };
 		0FFD465D1F0D4FC800E26E8E /* Bird Slayer.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Bird Slayer.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		0FFD46601F0D4FC800E26E8E /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		0FFD46621F0D4FC800E26E8E /* GameScene.sks */ = {isa = PBXFileReference; lastKnownFileType = file.sks; path = GameScene.sks; sourceTree = "<group>"; };
@@ -92,6 +94,7 @@
 				0FBC403A1F0EAA1600196891 /* Tutorial.sks */,
 				0FBC403E1F0ED8AD00196891 /* UpgradeScreen.sks */,
 				0FFD46621F0D4FC800E26E8E /* GameScene.sks */,
+				0FE3AEE91F2FB8510032BD46 /* Grass_5.2.png */,
 				0FFD46661F0D4FC800E26E8E /* GameScene.swift */,
 				0FD91BD61F100E1000F30CC3 /* MainMenu.sks */,
 				0FD91BD81F10107300F30CC3 /* MainMenu.swift */,
@@ -178,6 +181,7 @@
 				0FFD466E1F0D4FC800E26E8E /* Assets.xcassets in Resources */,
 				0FBC403B1F0EAA1600196891 /* Tutorial.sks in Resources */,
 				0FBC403F1F0ED8AD00196891 /* UpgradeScreen.sks in Resources */,
+				0FE3AEEA1F2FB8510032BD46 /* Grass_5.2.png in Resources */,
 				0FA9C1901F0D525A009621DF /* Hero.sks in Resources */,
 				0FFD46711F0D4FC800E26E8E /* LaunchScreen.storyboard in Resources */,
 				0FA9C1921F0D570E009621DF /* Bird.sks in Resources */,
