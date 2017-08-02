@@ -1172,6 +1172,8 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         
         UserDefaults.standard.set(0, forKey: "SAVEDSCORE")
         UserDefaults.standard.set(minMaxHealth, forKey: "SAVEDHEALTH")
+        
+        newGame = true
     }
     
     // Brings up the upgrade screen and pauses the game
