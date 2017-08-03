@@ -144,7 +144,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     // spawnTimer = framecount for bird spawning
     // levelsTo = how many times the player must upgrade for the bird to start spawning
     // isSpawning = if the bird type is spawning or not
-    var birdVariables: [BirdType: (spawnRatio: Int, spawnTime: Int, spawnTimer: Int, levelsTo: Int, isSpawning: Bool)] = [.normal: (100, 0, 0, 0, true), .smart: (30, 0, 0, 2, false), .toxic: (30, 0, 0, 4, false), .big: (10, 0, 0, 1, false), .rare: (1, 0, 0, 8, false)]
+    var birdVariables: [BirdType: (spawnRatio: Int, spawnTime: Int, spawnTimer: Int, levelsTo: Int, isSpawning: Bool)] = [.normal: (100, 0, 0, 0, true), .smart: (30, 0, 0, 2, false), .toxic: (30, 0, 0, 4, false), .big: (10, 0, 0, 6, false), .rare: (1, 0, 0, 8, false)]
     
     // BTS variables
     var score = 0
