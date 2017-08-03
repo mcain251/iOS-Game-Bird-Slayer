@@ -56,6 +56,8 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     var powerupBar: SKSpriteNode!
     var powerupBarContainer: SKSpriteNode!
     var zoomPoint: SKNode!
+    var background: SKSpriteNode!
+    var trees: SKSpriteNode!
     
     // Upgrade UI and relevant values
     var upgradeUIElements: [String: (squares: [SKSpriteNode?], _plus: SKLabelNode?, _button: MSButtonNode?, upgradeStatus: Int, oldUpgradeStatus: Int)] = ["health": ([nil, nil, nil], nil, nil, 1, 1), "speed": ([nil, nil, nil], nil, nil, 1, 1), "fire_rate": ([nil, nil, nil], nil, nil, 1, 1), "bullet_speed": ([nil, nil, nil], nil, nil, 1, 1)]
@@ -116,8 +118,6 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     let spreadShotSpread: CGFloat = CGFloat(Double.pi/12)
     // Minimum size of objects on screen after zoom-out
     let minScale = 0.6
-    // Tracks the original size of scalable objects for scaling
-    var originalObjectSizes: [String: (x: CGFloat, y: CGFloat)] = [:]
     // Max angle of hero's legs
     let legAngle = CGFloat.pi * (CGFloat(45)/CGFloat(180))
     // Max angular delta of hero's legs (angle of change per frame)
@@ -144,7 +144,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     // spawnTimer = framecount for bird spawning
     // levelsTo = how many times the player must upgrade for the bird to start spawning
     // isSpawning = if the bird type is spawning or not
-    var birdVariables: [BirdType: (spawnRatio: Int, spawnTime: Int, spawnTimer: Int, levelsTo: Int, isSpawning: Bool)] = [.normal: (100, 0, 0, 0, true), .smart: (30, 0, 0, 2, false), .toxic: (30, 0, 0, 4, false), .big: (10, 0, 0, 6, false), .rare: (1, 0, 0, 8, false)]
+    var birdVariables: [BirdType: (spawnRatio: Int, spawnTime: Int, spawnTimer: Int, levelsTo: Int, isSpawning: Bool)] = [.normal: (100, 0, 0, 0, true), .smart: (30, 0, 0, 2, false), .toxic: (30, 0, 0, 4, false), .big: (10, 0, 0, 1, false), .rare: (1, 0, 0, 8, false)]
     
     // BTS variables
     var score = 0
@@ -160,8 +160,8 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     var shotTimer: Int = 0
     var gameState: GameSceneState = .inactive
     // List of scores that initiate upgrade screen
-    var upgradeScores: [Int] = [50, 150, 300, 500, 750, 1050, 1400, 1800, 2250, 2750, 3300, 3900]
-    //var upgradeScores: [Int] = [10, 20, 50, 80, 110, 140, 220, 300, 500, 700, 900, 1100]
+    //var upgradeScores: [Int] = [50, 150, 300, 500, 750, 1050, 1400, 1800, 2250, 2750, 3300, 3900]
+    var upgradeScores: [Int] = [10, 20, 50, 80, 110, 140, 220, 300, 500, 700, 900, 1100]
     var pause = false
     var maxHeroSpeed: CGFloat = 0
     var minHeroSpeed: CGFloat = 0
@@ -257,7 +257,8 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         powerupBar = childNode(withName: "//powerupBar") as! SKSpriteNode
         powerupBarContainer = childNode(withName: "powerupBarContainer") as! SKSpriteNode
         zoomPoint = childNode(withName: "zoomPoint")
-
+        background = childNode(withName: "background") as! SKSpriteNode
+        trees = background.childNode(withName: "trees") as! SKSpriteNode
         
         // Set reference to upgrade UI objects
         for (type, elements) in upgradeUIElements {
@@ -373,19 +374,13 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             newGame = false
         }
         
-        // Save original object sizes
-        originalObjectSizes["birdBase"] = (birdBase.size.width, birdBase.size.height)
-        originalObjectSizes["pooBase"] = (pooBase.size.width, pooBase.size.height)
-        originalObjectSizes["bulletBase"] = (bulletBase.size.width, bulletBase.size.height)
-        originalObjectSizes["hero"] = (hero.size.width, hero.size.height)
-        originalObjectSizes["gun"] = (gun.size.width, gun.size.height)
-        originalObjectSizes["toxicHazardBase"] = (toxicHazardBase.size.width, toxicHazardBase.size.height)
-        originalObjectSizes["shield"] = (shield.size.width, shield.size.height)
-        originalObjectSizes["powerupBase"] = (powerupBase.size.width, powerupBase.size.height)
-        originalObjectSizes["leg"] = (leftLeg.size.width, leftLeg.size.height)
-        
-        scaleManager()
-        hero.position.y = 39.5 + (ground.position.y + ground.size.height / 2.0) + hero.size.height/2.0
+        calculateTotals()
+        var tempTotal = total
+        while tempTotal - upgradeTypes >= 1 {
+            scaleChanged = true
+            scaleManager()
+            tempTotal -= 1
+        }
         
         if autoFire {
             gun.zRotation = CGFloat.pi
@@ -1352,87 +1347,80 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         UserDefaults.standard.set(health, forKey: "SAVEDHEALTH")
     }
     
+    // Scales the given object to the given scale
+    func scale(_ node: SKNode, by thisMuch: CGFloat) {
+        node.xScale = thisMuch
+        node.yScale = thisMuch
+    }
+    
     // Scales the scaling elements on the screen down to simulate zooming out
     func scaleManager() {
         calculateTotals()
-        let smallScale = CGFloat(pow(Double(minScale), (1.0/Double(upgrades * upgradeTypes))))
-        let scale = CGFloat(pow(Double(smallScale), Double(total - upgradeTypes)))
-        minSpawnHeight = Int((CGFloat(originalMinSpawnHeight) - zoomPoint.position.y) * scale + zoomPoint.position.y)
-        maxHeroSpeed = originalMaxHeroSpeed * scale
-        minHeroSpeed = originalMinHeroSpeed * scale
-        maxBulletSpeed = originalMaxBulletSpeed * scale
-        minBulletSpeed = originalMinBulletSpeed * scale
-        birdSpeed = originalBirdSpeed * scale
-        pooSpeed = originalPooSpeed * scale
-        powerupSpeed = originalPowerupSpeed * scale
-        birdBase.size = CGSize(width: (originalObjectSizes["birdBase"]?.x)! * scale, height: (originalObjectSizes["birdBase"]?.y)! * scale)
-        pooBase.size = CGSize(width: (originalObjectSizes["pooBase"]?.x)! * scale, height: (originalObjectSizes["pooBase"]?.y)! * scale)
-        bulletBase.size = CGSize(width: (originalObjectSizes["bulletBase"]?.x)! * scale, height: (originalObjectSizes["bulletBase"]?.y)! * scale)
-        toxicHazardBase.size = CGSize(width: (originalObjectSizes["toxicHazardBase"]?.x)! * scale, height: (originalObjectSizes["toxicHazardBase"]?.y)! * scale)
-        hero.size = CGSize(width: (originalObjectSizes["hero"]?.x)! * scale, height: (originalObjectSizes["hero"]?.y)! * scale)
-        shield.size = CGSize(width: (originalObjectSizes["shield"]?.x)! * scale, height: (originalObjectSizes["shield"]?.y)! * scale)
-        shield_2.size = shield.size
-        gun.size = CGSize(width: (originalObjectSizes["gun"]?.x)! * scale, height: (originalObjectSizes["gun"]?.y)! * scale)
-        leftLeg.size = CGSize(width: (originalObjectSizes["leg"]?.x)! * scale, height: (originalObjectSizes["leg"]?.y)! * scale)
-        rightLeg.size = CGSize(width: (originalObjectSizes["leg"]?.x)! * scale, height: (originalObjectSizes["leg"]?.y)! * scale)
-        powerupBase.size = CGSize(width: (originalObjectSizes["powerupBase"]?.x)! * scale, height: (originalObjectSizes["powerupBase"]?.y)! * scale)
-        if currentPowerup != nil {
-            currentPowerup.0.size = powerupBase.size
-            if scaleChanged {
-                currentPowerup.0.position.x = currentPowerup.0.position.x
-                currentPowerup.0.position.y = ((currentPowerup.0.position.y - zoomPoint.position.y) * scale) + zoomPoint.position.y
-                currentPowerup.0.physicsBody?.velocity.dy = (currentPowerup.0.physicsBody?.velocity.dy)! * scale
-            }
-        }
-        for bird in birds {
-            if scaleChanged {
-                bird.yScale = 1
-                if bird.direction == .right {
-                    bird.xScale = -1
-                } else {
-                    bird.xScale = 1
-                }
-                bird.size = birdBase.size
-                if bird.type == .big {
-                    if bird.direction == .right {
-                        bird.xScale = -2
-                    } else {
-                        bird.xScale = 2
-                    }
-                    bird.yScale = 2
-                }
-                bird.position.x = bird.position.x * smallScale
-                bird.position.y = ((bird.position.y - zoomPoint.position.y) * smallScale) + zoomPoint.position.y
-                bird.physicsBody?.velocity.dx = (bird.physicsBody?.velocity.dx)! * smallScale
-            }
-        }
-        for bullet in bullets {
-            bullet.size = bulletBase.size
-            if scaleChanged {
-                bullet.position.x = bullet.position.x * smallScale
-                bullet.position.y = ((bullet.position.y - zoomPoint.position.y) * smallScale) + zoomPoint.position.y
-                bullet.physicsBody?.velocity.dy = (bullet.physicsBody?.velocity.dy)! * smallScale
-                bullet.physicsBody?.velocity.dx = (bullet.physicsBody?.velocity.dx)! * smallScale
-            }
-        }
-        for hazard in hazards {
-            hazard.0.size = toxicHazardBase.size
-            if scaleChanged {
-                hazard.0.position.x = hazard.0.position.x * smallScale
-                hazard.0.position.y = ((hazard.0.position.y - zoomPoint.position.y) * smallScale) + zoomPoint.position.y
-            }
-        }
-        for poo in poops {
-            if scaleChanged {
-                poo.size = CGSize(width: poo.size.width * smallScale, height: poo.size.height * smallScale)
-                poo.position.x = poo.position.x * smallScale
-                poo.position.y = ((poo.position.y - zoomPoint.position.y) * smallScale) + zoomPoint.position.y
-                poo.physicsBody?.velocity.dy = (poo.physicsBody?.velocity.dy)! * smallScale
-            }
-        }
+        let stepScale = CGFloat(pow(Double(minScale), (1.0/Double(upgrades * upgradeTypes))))
+        let fullScale = CGFloat(pow(Double(stepScale), Double(total - upgradeTypes)))
+        minSpawnHeight = Int((CGFloat(originalMinSpawnHeight) - zoomPoint.position.y) * stepScale + zoomPoint.position.y)
+        maxHeroSpeed = originalMaxHeroSpeed * fullScale
+        minHeroSpeed = originalMinHeroSpeed * fullScale
+        maxBulletSpeed = originalMaxBulletSpeed * fullScale
+        minBulletSpeed = originalMinBulletSpeed * fullScale
+        birdSpeed = originalBirdSpeed * fullScale
+        pooSpeed = originalPooSpeed * fullScale
+        powerupSpeed = originalPowerupSpeed * fullScale
         if scaleChanged {
-            hero.position.x = hero.position.x * smallScale
+            scale(birdBase, by: stepScale)
+            scale(pooBase, by: stepScale)
+            scale(bulletBase, by: stepScale)
+            scale(toxicHazardBase, by: stepScale)
+            scale(hero, by: stepScale)
+            hero.position.x = hero.position.x * stepScale
             hero.position.y = 39.5 + (ground.position.y + ground.size.height / 2.0) + hero.size.height/2.0
+            scale(powerupBase, by: stepScale)
+            scale(shield, by: stepScale)
+            scale(background, by: stepScale)
+            scale(ground, by: stepScale)
+            ground.position.y = zoomPoint.position.y - (ground.size.height / 2.0)
+            if currentPowerup != nil {
+                scale(currentPowerup.0, by: stepScale)
+                currentPowerup.0.position.x = currentPowerup.0.position.x * stepScale
+                currentPowerup.0.position.y = ((currentPowerup.0.position.y - zoomPoint.position.y) * stepScale) + zoomPoint.position.y
+                currentPowerup.0.physicsBody?.velocity.dy = (currentPowerup.0.physicsBody?.velocity.dy)! * stepScale
+            }
+            for bird in birds {
+                scale(bird, by: stepScale)
+                if bird.direction == .right {
+                    bird.xScale = bird.xScale * -1
+                }
+                if bird.type == .big {
+                    bird.xScale = bird.xScale * 2
+                    bird.yScale = bird.yScale * 2
+                }
+                bird.position.x = bird.position.x * stepScale
+                bird.position.y = ((bird.position.y - zoomPoint.position.y) * stepScale) + zoomPoint.position.y
+                bird.physicsBody?.velocity.dx = (bird.physicsBody?.velocity.dx)! * stepScale
+            }
+            for bullet in bullets {
+                scale(bullet, by: stepScale)
+                bullet.position.x = bullet.position.x * stepScale
+                bullet.position.y = ((bullet.position.y - zoomPoint.position.y) * stepScale) + zoomPoint.position.y
+                bullet.physicsBody?.velocity.dy = (bullet.physicsBody?.velocity.dy)! * stepScale
+                bullet.physicsBody?.velocity.dx = (bullet.physicsBody?.velocity.dx)! * stepScale
+            }
+            for hazard in hazards {
+                scale(hazard.0, by: stepScale)
+                hazard.0.position.x = hazard.0.position.x * stepScale
+                hazard.0.position.y = ((hazard.0.position.y - zoomPoint.position.y) * stepScale) + zoomPoint.position.y
+            }
+            for poo in poops {
+                let big = poo.xScale == 2 && poo.yScale == 2
+                scale(poo, by: stepScale)
+                if big {
+                    poo.xScale = 2 * poo.xScale
+                    poo.yScale = 2 * poo.yScale
+                }
+                poo.position.x = poo.position.x * stepScale
+                poo.position.y = ((poo.position.y - zoomPoint.position.y) * stepScale) + zoomPoint.position.y
+                poo.physicsBody?.velocity.dy = (poo.physicsBody?.velocity.dy)! * stepScale
+            }
             scaleChanged = false
         }
     }
