@@ -20,7 +20,7 @@ enum Side {
 class Bird: SKSpriteNode {
     
     // Colors
-    let smartBirdColor = UIColor(red: 1.0, green: 1.0, blue: 0.75, alpha: 1.0)
+    let smartBirdColor = UIColor(red: 1.0, green: 1.0, blue: 0.6, alpha: 1.0)
     let rareBirdColor = UIColor(red: 1.0, green: 1.0, blue: 0.0, alpha: 1.0)
     let toxicBirdColor = UIColor(red: 0.61, green: 1.0, blue: 0.47, alpha: 1.0)
     
@@ -33,8 +33,8 @@ class Bird: SKSpriteNode {
                 health = 2
                 pointValue = pointValue * 3
             case .big:
-                xScale = 2
-                yScale = 2
+                xScale = 2 * xScale
+                yScale = 2 * yScale
                 health = 5
                 pointValue = pointValue * 8
                 birdSpeed = birdSpeed * (2/3)

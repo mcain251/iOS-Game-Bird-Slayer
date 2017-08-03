@@ -86,18 +86,18 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     var delay = false
     
     // Gameplay constants
-    let maxMaxHealth = 12
-    let minMaxHealth = 6
-    let originalMaxHeroSpeed: CGFloat = 300
-    let originalMinHeroSpeed: CGFloat = 150
-    let originalMaxBulletSpeed: CGFloat = 500
-    let originalMinBulletSpeed: CGFloat = 200
+    let maxMaxHealth = 6
+    let minMaxHealth = 3
+    let originalMaxHeroSpeed: CGFloat = 250
+    let originalMinHeroSpeed: CGFloat = 100
+    let originalMaxBulletSpeed: CGFloat = 350
+    let originalMinBulletSpeed: CGFloat = 150
     // Frames until next shot ~(seconds * 60)
     let maxShotFrequency: Int = 30
     let minShotFrequency: Int = 1 * 60
     // Average frames until next bird spawn ~(seconds * 60)
     let minSpawnFrequency = 3 * 60
-    let maxSpawnFrequency = Int(0.75 * 60.0)
+    let maxSpawnFrequency = 1 * 60
     let originalMinSpawnHeight = 50
     let maxSpawnHeight = 160
     // Frames until post-upgrade invincibility runs out ~(seconds * 60)
@@ -109,7 +109,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     // Frames until hazards disappear ~(seconds * 60)
     let hazardTime: Int = 2 * 60
     // Frames until next powerup ~(seconds * 60)
-    let nextPowerupTime: Int = 45 * 60
+    let nextPowerupTime: Int = 35 * 60
     // Frames until powerup runs out ~(seconds * 60)
     let powerupTime: Int = 15 * 60
     // Frames until powerup disappears on ground ~(seconds * 60)
@@ -134,6 +134,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     let upgradedColor: UIColor = UIColor(red: 0.0, green: 1.0, blue: 0.0, alpha: 1.0)
     let smartPooColor: UIColor = UIColor(red: 1.0, green: 1.0, blue: 0.75, alpha: 1.0)
     let toxicPooColor: UIColor = UIColor(red: 0.72, green: 1.0, blue: 0.46, alpha: 1.0)
+    let bigPooColor: UIColor = UIColor(red: 1.0, green: 1.0, blue: 0.99, alpha: 1.0)
     let healthPowerupColor: UIColor = UIColor(red: 1.0, green: 0.0, blue: 0.0, alpha: 1.0)
     let shieldPowerupColor: UIColor = UIColor(red: 0.0, green: 0.0, blue: 1.0, alpha: 1.0)
     let spreadShotPowerupColor: UIColor = UIColor(red: 1.0, green: 1.0, blue: 0.0, alpha: 1.0)
@@ -161,7 +162,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     var gameState: GameSceneState = .inactive
     // List of scores that initiate upgrade screen
     //var upgradeScores: [Int] = [50, 150, 300, 500, 750, 1050, 1400, 1800, 2250, 2750, 3300, 3900]
-    var upgradeScores: [Int] = [10, 20, 50, 80, 110, 140, 220, 300, 500, 700, 900, 1100]
+    var upgradeScores: [Int] = [10, 20, 50, 80, 130, 180, 360, 440, 640, 840, 1040, 1240]
     var pause = false
     var maxHeroSpeed: CGFloat = 0
     var minHeroSpeed: CGFloat = 0
@@ -502,7 +503,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
                         shooting = true
                         rightJoystick.isHidden = false
                         rightThumb.isHidden = false
-                        if hero.xScale == -1 {
+                        if hero.xScale < 0 {
                             gun.zRotation = -gun.zRotation
                         }
                     }
@@ -538,7 +539,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
                     gun.zRotation = (rightInitialPosition.x - touch.location(in: self.view).x) * CGFloat(Double.pi/4/50) + CGFloat.pi
                     gun.zRotation = clamp(value: gun.zRotation, lower: -CGFloat(Double.pi/4) + CGFloat.pi, upper: CGFloat(Double.pi/4) + CGFloat.pi)
                     rightThumb.position.x = clamp(value: touch.location(in: self).x, lower: rightJoystickPosition.x - 50, upper: rightJoystickPosition.x + 50)
-                    if hero.xScale == -1 {
+                    if hero.xScale < 0 {
                         gun.zRotation = -gun.zRotation
                     }
                 }
@@ -646,14 +647,14 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         }
         
         if (hero.physicsBody?.velocity.dx)! < CGFloat(0) {
-            hero.xScale = -1
+            hero.xScale = -1 * abs(hero.xScale)
             if right {
                 gun.zRotation = -gun.zRotation
             }
             right = false
         }
         if (hero.physicsBody?.velocity.dx)! > CGFloat(0) {
-            hero.xScale = 1
+            hero.xScale = abs(hero.xScale)
             if !right {
                 gun.zRotation = -gun.zRotation
             }
@@ -695,7 +696,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         if (contactA.categoryBitMask == 4 && contactB.categoryBitMask == 8) {
             nodeA.removeFromParent()
             nodeA.isHidden = true
-            if nodeB.xScale != 2 && nodeB.xScale != 2{
+            if String(describing: nodeB.color) != String(describing: bigPooColor) {
                 nodeB.removeFromParent()
                 nodeB.isHidden = true
             }
@@ -703,7 +704,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         if (contactA.categoryBitMask == 8 && contactB.categoryBitMask == 4) {
             nodeB.removeFromParent()
             nodeB.isHidden = true
-            if nodeA.xScale != 2 && nodeA.xScale != 2{
+            if String(describing: nodeA.color) != String(describing: bigPooColor) {
                 nodeA.removeFromParent()
                 nodeA.isHidden = true
             }
@@ -713,7 +714,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         if (contactA.categoryBitMask == 1 && contactB.categoryBitMask == 8) {
             if invincibilityTimer <= 0 && !(powerupStatuses["shield"]?.1)! {
                 health -= 1
-                if nodeB.xScale == 2 && nodeB.yScale == 2 && health != 0{
+                if String(describing: nodeB.color) == String(describing: bigPooColor) && health != 0{
                     health -= 1
                 }
                 invincibilityTimer = invincibilityTime
@@ -724,7 +725,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         if (contactB.categoryBitMask == 1 && contactA.categoryBitMask == 8) {
             if invincibilityTimer <= 0 && !(powerupStatuses["shield"]?.1)! {
                 health -= 1
-                if nodeA.xScale == 2 && nodeA.yScale == 2 && health != 0 {
+                if String(describing: nodeA.color) == String(describing: bigPooColor) && health != 0 {
                     health -= 1
                 }
                 invincibilityTimer = invincibilityTime
@@ -1049,7 +1050,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         if gameState == .active {
             if delay || autoFire {
                 var rotation = gun.zRotation + CGFloat.pi
-                if hero.xScale == -1 {
+                if hero.xScale < 0 {
                     rotation = CGFloat.pi - gun.zRotation
                 }
                 let newBullet = bulletBase.copy() as! SKSpriteNode
@@ -1077,7 +1078,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
                 newBullet.physicsBody?.linearDamping = 0
                 newBullet.position = hero.position
                 var rotation = gun.zRotation + CGFloat.pi
-                if hero.xScale == -1 {
+                if hero.xScale < 0 {
                     rotation = CGFloat.pi - gun.zRotation
                 }
                 newBullet.position.x -= gun.size.height * sin(rotation)
@@ -1119,6 +1120,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             newPoo.physicsBody?.velocity.dx = pooSpeed * (xDist/tDist)
             newPoo.zRotation = -atan(xDist/yDist) * 0.75
         case .big:
+            newPoo.color = bigPooColor
             newPoo.xScale = 2
             newPoo.yScale = 2
             newPoo.physicsBody?.velocity.dy = -0.75 * pooSpeed
@@ -1348,9 +1350,62 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     }
     
     // Scales the given object to the given scale
-    func scale(_ node: SKNode, by thisMuch: CGFloat) {
-        node.xScale = thisMuch
-        node.yScale = thisMuch
+    func scale(_ node: SKSpriteNode, by thisMuch: CGFloat) {
+        var body = false
+        var dynamic = false
+        var allowsRotation = false
+        var pinned = false
+        var affectedByGravity = false
+        var friction: CGFloat = 0.0
+        var restitution: CGFloat = 0.0
+        var linearDamping: CGFloat = 0.0
+        var angularDamping: CGFloat = 0.0
+        var mass: CGFloat =
+        0.0
+        var categoryMask: UInt32 = 0
+        var collisionMask: UInt32 = 0
+        var fieldMask: UInt32 = 0
+        var contactMask: UInt32 = 0
+        var velocitydx: CGFloat = 0
+        var velocitydy: CGFloat = 0
+        
+        if node.physicsBody != nil {
+            body = true
+            dynamic = (node.physicsBody?.isDynamic)!
+            allowsRotation = (node.physicsBody?.allowsRotation)!
+            pinned = (node.physicsBody?.pinned)!
+            affectedByGravity = (node.physicsBody?.affectedByGravity)!
+            friction = (node.physicsBody?.friction)!
+            restitution = (node.physicsBody?.restitution)!
+            linearDamping = (node.physicsBody?.linearDamping)!
+            angularDamping = (node.physicsBody?.angularDamping)!
+            mass = (node.physicsBody?.mass)!
+            categoryMask = (node.physicsBody?.categoryBitMask)!
+            collisionMask = (node.physicsBody?.collisionBitMask)!
+            fieldMask = (node.physicsBody?.collisionBitMask)!
+            contactMask = (node.physicsBody?.contactTestBitMask)!
+            velocitydx = (node.physicsBody?.velocity.dx)!
+            velocitydy = (node.physicsBody?.velocity.dy)!
+        }
+        node.setScale(thisMuch)
+        if body {
+            node.physicsBody? = SKPhysicsBody(rectangleOf: node.size)
+            node.physicsBody?.isDynamic = dynamic
+            node.physicsBody?.allowsRotation = allowsRotation
+            node.physicsBody?.pinned = pinned
+            node.physicsBody?.affectedByGravity = affectedByGravity
+            node.physicsBody?.friction = friction
+            node.physicsBody?.restitution = restitution
+            node.physicsBody?.linearDamping = linearDamping
+            node.physicsBody?.angularDamping = angularDamping
+            node.physicsBody?.mass = mass
+            node.physicsBody?.categoryBitMask = categoryMask
+            node.physicsBody?.collisionBitMask = collisionMask
+            node.physicsBody?.fieldBitMask = fieldMask
+            node.physicsBody?.contactTestBitMask = contactMask
+            node.physicsBody?.velocity.dx = velocitydx
+            node.physicsBody?.velocity.dy = velocitydy
+        }
     }
     
     // Scales the scaling elements on the screen down to simulate zooming out
@@ -1367,52 +1422,48 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         pooSpeed = originalPooSpeed * fullScale
         powerupSpeed = originalPowerupSpeed * fullScale
         if scaleChanged {
-            scale(birdBase, by: stepScale)
-            scale(pooBase, by: stepScale)
-            scale(bulletBase, by: stepScale)
-            scale(toxicHazardBase, by: stepScale)
-            scale(hero, by: stepScale)
+            scale(birdBase, by: fullScale)
+            scale(pooBase, by: fullScale)
+            scale(bulletBase, by: fullScale)
+            scale(toxicHazardBase, by: fullScale)
+            scale(hero, by: fullScale)
             hero.position.x = hero.position.x * stepScale
             hero.position.y = 39.5 + (ground.position.y + ground.size.height / 2.0) + hero.size.height/2.0
-            scale(powerupBase, by: stepScale)
-            scale(shield, by: stepScale)
-            scale(background, by: stepScale)
-            scale(ground, by: stepScale)
+            scale(powerupBase, by: fullScale)
+            scale(shield, by: fullScale)
+            scale(background, by: fullScale)
+            scale(ground, by: fullScale)
             ground.position.y = zoomPoint.position.y - (ground.size.height / 2.0)
             if currentPowerup != nil {
-                scale(currentPowerup.0, by: stepScale)
+                scale(currentPowerup.0, by: fullScale)
                 currentPowerup.0.position.x = currentPowerup.0.position.x * stepScale
                 currentPowerup.0.position.y = ((currentPowerup.0.position.y - zoomPoint.position.y) * stepScale) + zoomPoint.position.y
                 currentPowerup.0.physicsBody?.velocity.dy = (currentPowerup.0.physicsBody?.velocity.dy)! * stepScale
             }
             for bird in birds {
-                scale(bird, by: stepScale)
+                scale(bird, by: fullScale)
                 if bird.direction == .right {
-                    bird.xScale = bird.xScale * -1
-                }
-                if bird.type == .big {
-                    bird.xScale = bird.xScale * 2
-                    bird.yScale = bird.yScale * 2
+                    bird.xScale = -1 * xScale
                 }
                 bird.position.x = bird.position.x * stepScale
                 bird.position.y = ((bird.position.y - zoomPoint.position.y) * stepScale) + zoomPoint.position.y
                 bird.physicsBody?.velocity.dx = (bird.physicsBody?.velocity.dx)! * stepScale
             }
             for bullet in bullets {
-                scale(bullet, by: stepScale)
+                scale(bullet, by: fullScale)
                 bullet.position.x = bullet.position.x * stepScale
                 bullet.position.y = ((bullet.position.y - zoomPoint.position.y) * stepScale) + zoomPoint.position.y
                 bullet.physicsBody?.velocity.dy = (bullet.physicsBody?.velocity.dy)! * stepScale
                 bullet.physicsBody?.velocity.dx = (bullet.physicsBody?.velocity.dx)! * stepScale
             }
             for hazard in hazards {
-                scale(hazard.0, by: stepScale)
+                scale(hazard.0, by: fullScale)
                 hazard.0.position.x = hazard.0.position.x * stepScale
                 hazard.0.position.y = ((hazard.0.position.y - zoomPoint.position.y) * stepScale) + zoomPoint.position.y
             }
             for poo in poops {
-                let big = poo.xScale == 2 && poo.yScale == 2
-                scale(poo, by: stepScale)
+                let big = String(describing: poo.color) == String(describing: bigPooColor)
+                scale(poo, by: fullScale)
                 if big {
                     poo.xScale = 2 * poo.xScale
                     poo.yScale = 2 * poo.yScale
