@@ -90,9 +90,9 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     let maxMaxHealth = 6
     let minMaxHealth = 3
     let originalMaxHeroSpeed: CGFloat = 200
-    let originalMinHeroSpeed: CGFloat = 75
+    let originalMinHeroSpeed: CGFloat = 85
     let originalMaxBulletSpeed: CGFloat = 350
-    let originalMinBulletSpeed: CGFloat = 150
+    let originalMinBulletSpeed: CGFloat = 160
     // Frames until next shot ~(seconds * 60)
     let maxShotFrequency: Int = 30
     let minShotFrequency: Int = 1 * 60
@@ -148,7 +148,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     // spawnTimer = framecount for bird spawning
     // levelsTo = how many times the player must upgrade for the bird to start spawning
     // isSpawning = if the bird type is spawning or not
-    var birdVariables: [BirdType: (spawnRatio: Int, spawnTime: Int, spawnTimer: Int, levelsTo: Int, isSpawning: Bool)] = [.normal: (100, 0, 0, 0, true), .smart: (30, 0, 0, 2, false), .toxic: (30, 0, 0, 1, false), .big: (15, 0, 0, 6, false), .rapid: (10, 0, 0, 8, false), .rare: (1, 0, 0, 10, false)]
+    var birdVariables: [BirdType: (spawnRatio: Int, spawnTime: Int, spawnTimer: Int, levelsTo: Int, isSpawning: Bool)] = [.normal: (100, 0, 0, 0, true), .smart: (30, 0, 0, 2, false), .toxic: (30, 0, 0, 4, false), .big: (15, 0, 0, 6, false), .rapid: (10, 0, 0, 8, false), .rare: (1, 0, 0, 10, false)]
     
     // BTS variables
     var score = 0
@@ -816,6 +816,15 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         if (contactA.categoryBitMask == 32) {
             if invincibilityTimer <= 0 && !(powerupStatuses["shield"]?.1)! {
                 health -= 1
+                let healthText = healthTextBase.copy() as! SKLabelNode
+                healthText.position = hero.position
+                healthText.position.y = healthText.position.y - 39.5 + (hero.size.height / 2)
+                healthText.text = "-1"
+                addChild(healthText)
+                let fade = SKAction(named: "textFade")!
+                let remove = SKAction.removeFromParent()
+                let sequence = SKAction.sequence([fade, remove])
+                healthText.run(sequence)
             }
             invincibilityTimer = invincibilityTime
             nodeA.removeFromParent()
@@ -824,6 +833,15 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         if (contactB.categoryBitMask == 32) {
             if invincibilityTimer <= 0 && !(powerupStatuses["shield"]?.1)! {
                 health -= 1
+                let healthText = healthTextBase.copy() as! SKLabelNode
+                healthText.position = hero.position
+                healthText.position.y = healthText.position.y - 39.5 + (hero.size.height / 2)
+                healthText.text = "-1"
+                addChild(healthText)
+                let fade = SKAction(named: "textFade")!
+                let remove = SKAction.removeFromParent()
+                let sequence = SKAction.sequence([fade, remove])
+                healthText.run(sequence)
             }
             invincibilityTimer = invincibilityTime
             nodeB.removeFromParent()
@@ -1314,6 +1332,15 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
                 case "health":
                     if health < maxHealth {
                         health += 1
+                        let healthText = scoreTextBase.copy() as! SKLabelNode
+                        healthText.position = hero.position
+                        healthText.position.y = healthText.position.y - 39.5 + (hero.size.height / 2)
+                        healthText.text = "+1"
+                        addChild(healthText)
+                        let fade = SKAction(named: "textFade")!
+                        let remove = SKAction.removeFromParent()
+                        let sequence = SKAction.sequence([fade, remove])
+                        healthText.run(sequence)
                     }
                 case "shield":
                     shield.position = hero.position
