@@ -59,6 +59,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     var background: SKSpriteNode!
     var scoreTextBase: SKLabelNode!
     var healthTextBase: SKLabelNode!
+    var featherBase: SKSpriteNode!
     
     // Upgrade UI and relevant values
     var upgradeUIElements: [String: (squares: [SKSpriteNode?], _plus: SKLabelNode?, _button: MSButtonNode?, upgradeStatus: Int, oldUpgradeStatus: Int)] = ["health": ([nil, nil, nil], nil, nil, 1, 1), "speed": ([nil, nil, nil], nil, nil, 1, 1), "fire_rate": ([nil, nil, nil], nil, nil, 1, 1), "bullet_speed": ([nil, nil, nil], nil, nil, 1, 1)]
@@ -266,6 +267,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         background = childNode(withName: "background") as! SKSpriteNode
         scoreTextBase = childNode(withName: "scoreTextBase") as! SKLabelNode
         healthTextBase = childNode(withName: "healthTextBase") as! SKLabelNode
+        featherBase = childNode(withName: "featherBase") as! SKSpriteNode
         
         // Set reference to upgrade UI objects
         for (type, elements) in upgradeUIElements {
@@ -693,6 +695,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
                     let remove = SKAction.removeFromParent()
                     let sequence = SKAction.sequence([fade, remove])
                     scoreText.run(sequence)
+                    explodeInFeathers(birdA)
                 }
                 nodeB.removeFromParent()
                 nodeB.isHidden = true
@@ -708,6 +711,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
                     let remove = SKAction.removeFromParent()
                     let sequence = SKAction.sequence([fade, remove])
                     scoreText.run(sequence)
+                    explodeInFeathers(birdB)
                 }
                 nodeA.removeFromParent()
                 nodeA.isHidden = true
@@ -1525,6 +1529,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             scale(shield, by: fullScale)
             scale(background, by: fullScale)
             scale(ground, by: fullScale)
+            scale(featherBase, by: fullScale)
             ground.position.y = zoomPoint.position.y - (ground.size.height / 2.0)
             if currentPowerup != nil {
                 scale(currentPowerup.0, by: fullScale)
@@ -1591,6 +1596,27 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             legsMovingForward = true
             rightLeg.zRotation = rightLeg.zRotation / 2
             leftLeg.zRotation = leftLeg.zRotation / 2
+        }
+    }
+    
+    // Spawns feathers at the birds location
+    func explodeInFeathers(_ bird: Bird) {
+        let location = bird.position
+        for _ in 0 ... 20 {
+            let rand = CGFloat(Int(arc4random_uniform(50)) - 25)
+            let rand2 = CGFloat(Int(arc4random_uniform(50)) - 25)
+            let rand3 = CGFloat(Int(arc4random_uniform(20)) - 10)
+            let move = SKAction.moveBy(x: rand, y: rand2, duration: 0.5)
+            let fade = SKAction.fadeOut(withDuration: 0.5)
+            let rotate = SKAction.rotate(byAngle: rand3, duration: 0.5)
+            let remove = SKAction.removeFromParent()
+            let group = SKAction.group([move, rotate, fade])
+            let sequence = SKAction.sequence([group, remove])
+            let feather = featherBase.copy() as! SKSpriteNode
+            addChild(feather)
+            feather.position = location
+            feather.color = bird.color
+            feather.run(sequence)
         }
     }
 }
