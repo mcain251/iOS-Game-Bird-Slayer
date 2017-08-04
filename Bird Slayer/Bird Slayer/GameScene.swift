@@ -162,7 +162,9 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     var gameState: GameSceneState = .inactive
     // List of scores that initiate upgrade screen
     //var upgradeScores: [Int] = [50, 150, 300, 500, 750, 1050, 1400, 1800, 2250, 2750, 3300, 3900]
-    var upgradeScores: [Int] = [10, 20, 50, 80, 130, 180, 360, 440, 640, 840, 1040, 1240]
+    //var upgradeScores: [Int] = [10, 20, 50, 80, 130, 180, 360, 440, 640, 840, 1040, 1240]
+    //var upgradeScores: [Int] = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
+    var upgradeScores: [Int] = [1, 2, 3, 4, 5, 6, 20, 30, 40, 50, 60, 70]
     var pause = false
     var maxHeroSpeed: CGFloat = 0
     var minHeroSpeed: CGFloat = 0
@@ -853,7 +855,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
                     i -= 1
                 }
                 
-            // Checks if birds are due to poo. Poops if true
+            // Checks if birds are due to poo. Poos if true
             } else if birds[i].pooTimer <= 0 {
                 if !birds[i].started {
                     birds[i].started = true
@@ -1109,11 +1111,11 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             newPoo.color = smartPooColor
             var xDist = hero.position.x - newPoo.position.x
             let yDist = hero.position.y - newPoo.position.y - 100
-            if xDist > abs(yDist) {
-                xDist = abs(yDist)
+            if xDist > ((7 * abs(yDist)) / 9) {
+                xDist = ((7 * abs(yDist)) / 9)
             }
-            if xDist < yDist {
-                xDist = yDist
+            if xDist < ((7 * yDist) / 9) {
+                xDist = ((7 * yDist) / 9)
             }
             let tDist = sqrt(xDist*xDist + yDist*yDist)
             newPoo.physicsBody?.velocity.dy = pooSpeed * (yDist/tDist)
@@ -1121,8 +1123,8 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             newPoo.zRotation = -atan(xDist/yDist) * 0.75
         case .big:
             newPoo.color = bigPooColor
-            newPoo.xScale = 2
-            newPoo.yScale = 2
+            newPoo.xScale = 2 * newPoo.xScale
+            newPoo.yScale = 2 * newPoo.yScale
             newPoo.physicsBody?.velocity.dy = -0.75 * pooSpeed
         case .rare:
             isPooping = false
@@ -1349,7 +1351,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         UserDefaults.standard.set(health, forKey: "SAVEDHEALTH")
     }
     
-    // Scales the given object to the given scale
+    // Scales the given object to the given scale and resets physicsBody
     func scale(_ node: SKSpriteNode, by thisMuch: CGFloat) {
         var body = false
         var dynamic = false
@@ -1443,7 +1445,11 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             for bird in birds {
                 scale(bird, by: fullScale)
                 if bird.direction == .right {
-                    bird.xScale = -1 * xScale
+                    bird.xScale = -1 * bird.xScale
+                }
+                if bird.type == .big {
+                    bird.xScale = 2 * bird.xScale
+                    bird.yScale = 2 * bird.yScale
                 }
                 bird.position.x = bird.position.x * stepScale
                 bird.position.y = ((bird.position.y - zoomPoint.position.y) * stepScale) + zoomPoint.position.y
