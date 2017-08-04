@@ -107,7 +107,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     // Average frames until next poop ~(seconds * 60)
     let pooFrequency: Int = 2 * 60
     // Frames until hazards disappear ~(seconds * 60)
-    let hazardTime: Int = 2 * 60
+    let hazardTime: Int = Int(1.5 * 60.0)
     // Frames until next powerup ~(seconds * 60)
     let nextPowerupTime: Int = 35 * 60
     // Frames until powerup runs out ~(seconds * 60)
@@ -145,7 +145,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     // spawnTimer = framecount for bird spawning
     // levelsTo = how many times the player must upgrade for the bird to start spawning
     // isSpawning = if the bird type is spawning or not
-    var birdVariables: [BirdType: (spawnRatio: Int, spawnTime: Int, spawnTimer: Int, levelsTo: Int, isSpawning: Bool)] = [.normal: (100, 0, 0, 0, true), .smart: (30, 0, 0, 2, false), .toxic: (30, 0, 0, 4, false), .big: (10, 0, 0, 6, false), .rare: (1, 0, 0, 8, false)]
+    var birdVariables: [BirdType: (spawnRatio: Int, spawnTime: Int, spawnTimer: Int, levelsTo: Int, isSpawning: Bool)] = [.normal: (100, 0, 0, 0, true), .smart: (30, 0, 0, 2, false), .toxic: (30, 0, 0, 1, false), .big: (10, 0, 0, 6, false), .rare: (1, 0, 0, 8, false)]
     
     // BTS variables
     var score = 0
@@ -161,8 +161,8 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     var shotTimer: Int = 0
     var gameState: GameSceneState = .inactive
     // List of scores that initiate upgrade screen
-    var upgradeScores: [Int] = [50, 150, 300, 500, 750, 1050, 1400, 1800, 2250, 2750, 3300, 3900]
-    //var upgradeScores: [Int] = [10, 20, 50, 80, 130, 180, 360, 440, 640, 840, 1040, 1240]
+    //var upgradeScores: [Int] = [50, 150, 300, 500, 750, 1050, 1400, 1800, 2250, 2750, 3300, 3900]
+    var upgradeScores: [Int] = [10, 20, 50, 80, 130, 180, 360, 440, 640, 840, 1040, 1240]
     //var upgradeScores: [Int] = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
     //var upgradeScores: [Int] = [1, 2, 3, 4, 5, 6, 20, 30, 40, 50, 60, 70]
     var pause = false
@@ -1005,7 +1005,10 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             if i < hazards.count {
                 hazards[i].1 += 1
                 if hazards[i].1 >= hazardTime {
-                    hazards[i].0.removeFromParent()
+                    let fadeOut = SKAction(named: "fadeOut")!
+                    let removeFromScene = SKAction.removeFromParent()
+                    let sequence = SKAction.sequence([fadeOut,removeFromScene])
+                    hazards[i].0.run(sequence)
                     hazards.remove(at: i)
                 } else if hazards[i].0.isHidden {
                     hazards[i].0.removeFromParent()
