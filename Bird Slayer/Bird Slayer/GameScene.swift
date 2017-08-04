@@ -161,10 +161,10 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     var shotTimer: Int = 0
     var gameState: GameSceneState = .inactive
     // List of scores that initiate upgrade screen
-    //var upgradeScores: [Int] = [50, 150, 300, 500, 750, 1050, 1400, 1800, 2250, 2750, 3300, 3900]
+    var upgradeScores: [Int] = [50, 150, 300, 500, 750, 1050, 1400, 1800, 2250, 2750, 3300, 3900]
     //var upgradeScores: [Int] = [10, 20, 50, 80, 130, 180, 360, 440, 640, 840, 1040, 1240]
     //var upgradeScores: [Int] = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
-    var upgradeScores: [Int] = [1, 2, 3, 4, 5, 6, 20, 30, 40, 50, 60, 70]
+    //var upgradeScores: [Int] = [1, 2, 3, 4, 5, 6, 20, 30, 40, 50, 60, 70]
     var pause = false
     var maxHeroSpeed: CGFloat = 0
     var minHeroSpeed: CGFloat = 0
