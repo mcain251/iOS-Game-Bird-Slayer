@@ -88,8 +88,8 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     // Gameplay constants
     let maxMaxHealth = 6
     let minMaxHealth = 3
-    let originalMaxHeroSpeed: CGFloat = 250
-    let originalMinHeroSpeed: CGFloat = 100
+    let originalMaxHeroSpeed: CGFloat = 200
+    let originalMinHeroSpeed: CGFloat = 75
     let originalMaxBulletSpeed: CGFloat = 350
     let originalMinBulletSpeed: CGFloat = 150
     // Frames until next shot ~(seconds * 60)
