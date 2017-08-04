@@ -57,7 +57,8 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     var powerupBarContainer: SKSpriteNode!
     var zoomPoint: SKNode!
     var background: SKSpriteNode!
-    var trees: SKSpriteNode!
+    var scoreTextBase: SKLabelNode!
+    var healthTextBase: SKLabelNode!
     
     // Upgrade UI and relevant values
     var upgradeUIElements: [String: (squares: [SKSpriteNode?], _plus: SKLabelNode?, _button: MSButtonNode?, upgradeStatus: Int, oldUpgradeStatus: Int)] = ["health": ([nil, nil, nil], nil, nil, 1, 1), "speed": ([nil, nil, nil], nil, nil, 1, 1), "fire_rate": ([nil, nil, nil], nil, nil, 1, 1), "bullet_speed": ([nil, nil, nil], nil, nil, 1, 1)]
@@ -122,6 +123,8 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     let legAngle = CGFloat.pi * (CGFloat(45)/CGFloat(180))
     // Max angular delta of hero's legs (angle of change per frame)
     let maxLegSpeed = CGFloat.pi * (CGFloat(5)/CGFloat(180))
+    // Frames until next rapid poo ~(seconds * 60)
+    let rapidPooTime = Int(0.5 * 60.0)
     
     // powerups (texture, status, spawn ratio, color)
     var powerupStatuses: [String: (UIImage?, Bool, Int, UIColor?)] = ["health": (nil, false, 1, nil), "shield": (nil, false, 1, nil), "spreadShot": (nil, false, 1, nil)]
@@ -145,7 +148,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     // spawnTimer = framecount for bird spawning
     // levelsTo = how many times the player must upgrade for the bird to start spawning
     // isSpawning = if the bird type is spawning or not
-    var birdVariables: [BirdType: (spawnRatio: Int, spawnTime: Int, spawnTimer: Int, levelsTo: Int, isSpawning: Bool)] = [.normal: (100, 0, 0, 0, true), .smart: (30, 0, 0, 2, false), .toxic: (30, 0, 0, 1, false), .big: (10, 0, 0, 6, false), .rare: (1, 0, 0, 8, false)]
+    var birdVariables: [BirdType: (spawnRatio: Int, spawnTime: Int, spawnTimer: Int, levelsTo: Int, isSpawning: Bool)] = [.normal: (100, 0, 0, 0, true), .smart: (30, 0, 0, 2, false), .toxic: (30, 0, 0, 1, false), .big: (15, 0, 0, 6, false), .rapid: (10, 0, 0, 8, false), .rare: (1, 0, 0, 10, false)]
     
     // BTS variables
     var score = 0
@@ -161,8 +164,8 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     var shotTimer: Int = 0
     var gameState: GameSceneState = .inactive
     // List of scores that initiate upgrade screen
-    //var upgradeScores: [Int] = [50, 150, 300, 500, 750, 1050, 1400, 1800, 2250, 2750, 3300, 3900]
-    var upgradeScores: [Int] = [10, 20, 50, 80, 130, 180, 360, 440, 640, 840, 1040, 1240]
+    var upgradeScores: [Int] = [50, 150, 300, 500, 750, 1050, 1400, 1800, 2250, 2750, 3300, 3900]
+    //var upgradeScores: [Int] = [10, 20, 50, 80, 130, 180, 360, 440, 640, 840, 1040, 1240]
     //var upgradeScores: [Int] = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
     //var upgradeScores: [Int] = [1, 2, 3, 4, 5, 6, 20, 30, 40, 50, 60, 70]
     var pause = false
@@ -261,7 +264,8 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         powerupBarContainer = childNode(withName: "powerupBarContainer") as! SKSpriteNode
         zoomPoint = childNode(withName: "zoomPoint")
         background = childNode(withName: "background") as! SKSpriteNode
-        trees = background.childNode(withName: "trees") as! SKSpriteNode
+        scoreTextBase = childNode(withName: "scoreTextBase") as! SKLabelNode
+        healthTextBase = childNode(withName: "healthTextBase") as! SKLabelNode
         
         // Set reference to upgrade UI objects
         for (type, elements) in upgradeUIElements {
@@ -681,6 +685,14 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
                 birdA.health -= 1
                 if birdA.health == 0 {
                     score += birdA.pointValue
+                    let scoreText = scoreTextBase.copy() as! SKLabelNode
+                    scoreText.position = birdA.position
+                    scoreText.text = "+\(birdA.pointValue)"
+                    addChild(scoreText)
+                    let fade = SKAction(named: "textFade")!
+                    let remove = SKAction.removeFromParent()
+                    let sequence = SKAction.sequence([fade, remove])
+                    scoreText.run(sequence)
                 }
                 nodeB.removeFromParent()
                 nodeB.isHidden = true
@@ -688,6 +700,14 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
                 birdB.health -= 1
                 if birdB.health == 0 {
                     score += birdB.pointValue
+                    let scoreText = scoreTextBase.copy() as! SKLabelNode
+                    scoreText.position = birdB.position
+                    scoreText.text = "+\(birdB.pointValue)"
+                    addChild(scoreText)
+                    let fade = SKAction(named: "textFade")!
+                    let remove = SKAction.removeFromParent()
+                    let sequence = SKAction.sequence([fade, remove])
+                    scoreText.run(sequence)
                 }
                 nodeA.removeFromParent()
                 nodeA.isHidden = true
@@ -718,6 +738,25 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
                 health -= 1
                 if String(describing: nodeB.color) == String(describing: bigPooColor) && health != 0{
                     health -= 1
+                    let healthText = healthTextBase.copy() as! SKLabelNode
+                    healthText.position = hero.position
+                    healthText.position.y = healthText.position.y - 39.5 + (hero.size.height / 2)
+                    healthText.text = "-2"
+                    addChild(healthText)
+                    let fade = SKAction(named: "textFade")!
+                    let remove = SKAction.removeFromParent()
+                    let sequence = SKAction.sequence([fade, remove])
+                    healthText.run(sequence)
+                } else {
+                    let healthText = healthTextBase.copy() as! SKLabelNode
+                    healthText.position = hero.position
+                    healthText.position.y = healthText.position.y - 39.5 + (hero.size.height / 2)
+                    healthText.text = "-1"
+                    addChild(healthText)
+                    let fade = SKAction(named: "textFade")!
+                    let remove = SKAction.removeFromParent()
+                    let sequence = SKAction.sequence([fade, remove])
+                    healthText.run(sequence)
                 }
                 invincibilityTimer = invincibilityTime
             }
@@ -729,6 +768,23 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
                 health -= 1
                 if String(describing: nodeA.color) == String(describing: bigPooColor) && health != 0 {
                     health -= 1
+                    let healthText = healthTextBase.copy() as! SKLabelNode
+                    healthText.position = hero.position
+                    healthText.text = "-2"
+                    addChild(healthText)
+                    let fade = SKAction(named: "textFade")!
+                    let remove = SKAction.removeFromParent()
+                    let sequence = SKAction.sequence([fade, remove])
+                    healthText.run(sequence)
+                } else {
+                    let healthText = healthTextBase.copy() as! SKLabelNode
+                    healthText.position = hero.position
+                    healthText.text = "-1"
+                    addChild(healthText)
+                    let fade = SKAction(named: "textFade")!
+                    let remove = SKAction.removeFromParent()
+                    let sequence = SKAction.sequence([fade, remove])
+                    healthText.run(sequence)
                 }
                 invincibilityTimer = invincibilityTime
             }
@@ -758,7 +814,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         
         // Check if one was a hazard, then removes hazard and decrements health
         if (contactA.categoryBitMask == 32) {
-            if invincibilityTimer <= 0 {
+            if invincibilityTimer <= 0 && !(powerupStatuses["shield"]?.1)! {
                 health -= 1
             }
             invincibilityTimer = invincibilityTime
@@ -766,7 +822,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             nodeA.isHidden = true
         }
         if (contactB.categoryBitMask == 32) {
-            if invincibilityTimer <= 0 {
+            if invincibilityTimer <= 0 && !(powerupStatuses["shield"]?.1)! {
                 health -= 1
             }
             invincibilityTimer = invincibilityTime
@@ -863,6 +919,9 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
                     poo(birds[i])
                 }
                 birds[i].pooTimer = Int(arc4random_uniform(UInt32(pooFrequency))) + (pooFrequency/2)
+                if birds[i].type == .rapid {
+                    birds[i].pooTimer = rapidPooTime
+                }
             }
         }
     }
@@ -1071,6 +1130,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
                 newBullet.zPosition = 2
             } else {
                 delay = true
+                shotTimer = shotFrequency / 2
             }
         }
     }
