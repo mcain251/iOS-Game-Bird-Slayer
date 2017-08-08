@@ -20,10 +20,19 @@ var newGame = false
 
 class MainMenu: SKScene {
     
+    let offScreen: CGPoint = CGPoint(x: -1000, y: -1000)
+    let onScreen: CGPoint = CGPoint(x: 0, y: 0)
+    
     // UI
     var slayButton: MSButtonNode!
     var optionButton: MSButtonNode!
     var newGameButton: MSButtonNode!
+    var continueBox: SKSpriteNode!
+    var continueBackButton: MSButtonNode!
+    var creditsButton: MSButtonNode!
+    var creditsBox: SKSpriteNode!
+    var creditsBackButton: MSButtonNode!
+    var continueButton: MSButtonNode!
     
     // Setup scene
     override func didMove(to view: SKView) {
@@ -31,11 +40,26 @@ class MainMenu: SKScene {
         // Set reference to buttons
         slayButton = childNode(withName: "slayButton") as! MSButtonNode
         optionButton = childNode(withName: "optionButton") as! MSButtonNode
-        newGameButton = childNode(withName: "newGameButton") as! MSButtonNode
+        continueBox = childNode(withName: "continueBox") as! SKSpriteNode
+        newGameButton = continueBox.childNode(withName: "newGameButton") as! MSButtonNode
+        continueBackButton = continueBox.childNode(withName: "continueBackButton") as! MSButtonNode
+        continueButton = continueBox.childNode(withName: "continueButton") as! MSButtonNode
+        creditsButton = childNode(withName: "creditsButton") as! MSButtonNode
+        creditsBox = childNode(withName: "creditsBox") as! SKSpriteNode
+        creditsBackButton = creditsBox.childNode(withName: "creditsBackButton") as! MSButtonNode
         
         // Play button functionality
         slayButton.selectedHandler = {[unowned self] in
-            self.loadGame("slay")
+            var continuable = false
+            if let savedScore = UserDefaults().integer(forKey: "SAVEDSCORE") as Int? {
+                if savedScore > 0 {
+                    continuable = true
+                    self.continueBox.position = self.onScreen
+                }
+            }
+            if !continuable {
+                self.loadGame("slay")
+            }
         }
         
         newGameButton.selectedHandler = {[unowned self] in
@@ -43,10 +67,28 @@ class MainMenu: SKScene {
             self.loadGame("slay")
         }
         
+        continueButton.selectedHandler = {[unowned self] in
+            self.loadGame("slay")
+        }
+        
+        continueBackButton.selectedHandler = {[unowned self] in
+            self.continueBox.position = self.offScreen
+        }
+        
         // Option button functionality
         optionButton.selectedHandler = {[unowned self] in
             self.loadGame("option")
         }
+        
+        creditsBackButton.selectedHandler = {[unowned self] in
+            self.creditsBox.position = self.offScreen
+        }
+        
+        creditsButton.selectedHandler = {[unowned self] in
+            self.creditsBox.position = self.onScreen
+        }
+        
+        
         
         // Loads saved control scheme
         if let auto = UserDefaults().bool(forKey: "AUTOFIRE") as Bool? {
