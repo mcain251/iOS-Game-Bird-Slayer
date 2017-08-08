@@ -109,9 +109,9 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     // Average frames until next poop ~(seconds * 60)
     let pooFrequency: Int = 2 * 60
     // Frames until hazards disappear ~(seconds * 60)
-    let hazardTime: Int = Int(1.5 * 60.0)
+    let hazardTime: Int = Int(1 * 60.0)
     // Frames until next powerup ~(seconds * 60)
-    let nextPowerupTime: Int = 35 * 60
+    let nextPowerupTime: Int = 25 * 60
     // Frames until powerup runs out ~(seconds * 60)
     let powerupTime: Int = 15 * 60
     // Frames until powerup disappears on ground ~(seconds * 60)
@@ -128,7 +128,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     let rapidPooTime = Int(0.5 * 60.0)
     
     // powerups (texture, status, spawn ratio, color)
-    var powerupStatuses: [String: (UIImage?, Bool, Int, UIColor?)] = ["health": (nil, false, 1, nil), "shield": (nil, false, 1, nil), "spreadShot": (nil, false, 1, nil)]
+    var powerupStatuses: [String: (UIImage?, Bool, Int, UIColor?)] = ["health": (nil, false, 2, nil), "shield": (nil, false, 1, nil), "spreadShot": (nil, false, 1, nil)]
     var currentPowerup: (SKSpriteNode, Bool, Int)!
     var powerupTimer = 0
     var powerupWillAppear = false
@@ -167,7 +167,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     // List of scores that initiate upgrade screen
     var upgradeScores: [Int] = [50, 150, 300, 500, 750, 1050, 1400, 1800, 2250, 2750, 3300, 3900]
     //var upgradeScores: [Int] = [10, 20, 50, 80, 130, 180, 360, 440, 640, 840, 1040, 1240]
-    //var upgradeScores: [Int] = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
+    //var upgradeScores: [Int] = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 10, 10]
     //var upgradeScores: [Int] = [1, 2, 3, 4, 5, 6, 20, 30, 40, 50, 60, 70]
     var pause = false
     var maxHeroSpeed: CGFloat = 0
@@ -1603,8 +1603,12 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     func explodeInFeathers(_ bird: Bird) {
         let location = bird.position
         for _ in 0 ... 20 {
-            let rand = CGFloat(Int(arc4random_uniform(50)) - 25)
-            let rand2 = CGFloat(Int(arc4random_uniform(50)) - 25)
+            var rand = CGFloat(Int(arc4random_uniform(50)) - 25)
+            var rand2 = CGFloat(Int(arc4random_uniform(50)) - 25)
+            if bird.type == .big {
+                rand = rand * 2
+                rand2 = rand2 * 2
+            }
             let rand3 = CGFloat(Int(arc4random_uniform(20)) - 10)
             let move = SKAction.moveBy(x: rand, y: rand2, duration: 0.5)
             let fade = SKAction.fadeOut(withDuration: 0.5)
@@ -1616,6 +1620,10 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             addChild(feather)
             feather.position = location
             feather.color = bird.color
+            if bird.type == .big {
+                feather.xScale = feather.xScale * 2
+                feather.yScale = feather.yScale * 2
+            }
             feather.run(sequence)
         }
     }

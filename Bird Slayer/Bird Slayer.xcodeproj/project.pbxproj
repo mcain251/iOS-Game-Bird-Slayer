@@ -14,6 +14,7 @@
 		0FA9C1941F0D585E009621DF /* Bullet.sks in Resources */ = {isa = PBXBuildFile; fileRef = 0FA9C1931F0D585E009621DF /* Bullet.sks */; };
 		0FA9C1961F0D5937009621DF /* Poo.sks in Resources */ = {isa = PBXBuildFile; fileRef = 0FA9C1951F0D5937009621DF /* Poo.sks */; };
 		0FA9C19E1F0D876A009621DF /* Bird.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0FA9C19D1F0D876A009621DF /* Bird.swift */; };
+		0FB42B161F3987590035724C /* Hobby-of-night.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 0FB42B151F3987590035724C /* Hobby-of-night.ttf */; };
 		0FBC403B1F0EAA1600196891 /* Tutorial.sks in Resources */ = {isa = PBXBuildFile; fileRef = 0FBC403A1F0EAA1600196891 /* Tutorial.sks */; };
 		0FBC403F1F0ED8AD00196891 /* UpgradeScreen.sks in Resources */ = {isa = PBXBuildFile; fileRef = 0FBC403E1F0ED8AD00196891 /* UpgradeScreen.sks */; };
 		0FBC40411F0EDD6300196891 /* MSButtonNode.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0FBC40401F0EDD6300196891 /* MSButtonNode.swift */; };
@@ -37,6 +38,7 @@
 		0FA9C1931F0D585E009621DF /* Bullet.sks */ = {isa = PBXFileReference; lastKnownFileType = file.sks; path = Bullet.sks; sourceTree = "<group>"; };
 		0FA9C1951F0D5937009621DF /* Poo.sks */ = {isa = PBXFileReference; lastKnownFileType = file.sks; path = Poo.sks; sourceTree = "<group>"; };
 		0FA9C19D1F0D876A009621DF /* Bird.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = Bird.swift; path = ../Bird.swift; sourceTree = "<group>"; };
+		0FB42B151F3987590035724C /* Hobby-of-night.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Hobby-of-night.ttf"; sourceTree = "<group>"; };
 		0FBC403A1F0EAA1600196891 /* Tutorial.sks */ = {isa = PBXFileReference; lastKnownFileType = file.sks; path = Tutorial.sks; sourceTree = "<group>"; };
 		0FBC403E1F0ED8AD00196891 /* UpgradeScreen.sks */ = {isa = PBXFileReference; lastKnownFileType = file.sks; path = UpgradeScreen.sks; sourceTree = "<group>"; };
 		0FBC40401F0EDD6300196891 /* MSButtonNode.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MSButtonNode.swift; sourceTree = "<group>"; };
@@ -105,6 +107,7 @@
 				0FFD466F1F0D4FC800E26E8E /* LaunchScreen.storyboard */,
 				0FFD46721F0D4FC800E26E8E /* Info.plist */,
 				0FBC40401F0EDD6300196891 /* MSButtonNode.swift */,
+				0FB42B151F3987590035724C /* Hobby-of-night.ttf */,
 			);
 			path = "Bird Slayer";
 			sourceTree = "<group>";
@@ -178,6 +181,7 @@
 				0FFD466E1F0D4FC800E26E8E /* Assets.xcassets in Resources */,
 				0FBC403B1F0EAA1600196891 /* Tutorial.sks in Resources */,
 				0FBC403F1F0ED8AD00196891 /* UpgradeScreen.sks in Resources */,
+				0FB42B161F3987590035724C /* Hobby-of-night.ttf in Resources */,
 				0FA9C1901F0D525A009621DF /* Hero.sks in Resources */,
 				0FFD46711F0D4FC800E26E8E /* LaunchScreen.storyboard in Resources */,
 				0FA9C1921F0D570E009621DF /* Bird.sks in Resources */,

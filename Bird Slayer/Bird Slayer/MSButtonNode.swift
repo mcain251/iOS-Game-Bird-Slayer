@@ -14,6 +14,14 @@ enum MSButtonNodeState {
 
 class MSButtonNode: SKSpriteNode {
     
+    var originalXScale: CGFloat = 1
+    var originalYScale: CGFloat = 1
+    var topNode: SKNode!
+    var bottomNode: SKNode!
+    var xDist: CGFloat = 0
+    var yDist: CGFloat = 0
+    var text = false
+    
     /* Setup a dummy action closure */
     var selectedHandler: () -> Void = { print("No button action set") }
     
@@ -26,11 +34,29 @@ class MSButtonNode: SKSpriteNode {
                 self.isUserInteractionEnabled = true
                 
                 /* Visible */
-                self.alpha = 1
+                if !text {
+                    self.alpha = 1
+                    self.xScale = originalXScale
+                    self.yScale = originalYScale
+                } else {
+                    topNode.position.x = -1 * (xDist / 2.0)
+                    topNode.position.y = -1 * (yDist / 2.0)
+                    bottomNode.position.x = xDist
+                    bottomNode.position.y = yDist
+                }
                 break
             case .MSButtonNodeStateSelected:
                 /* Semi transparent */
-                self.alpha = 0.7
+                if !text {
+                    self.alpha = 0.7
+                    self.xScale = originalXScale * 0.9
+                    self.yScale = originalYScale * 0.9
+                } else {
+                    topNode.position.x = xDist * (1.0 / 4.0)
+                    topNode.position.y = yDist * (1.0 / 4.0)
+                    bottomNode.position.x = xDist / 4.0
+                    bottomNode.position.y = yDist / 4.0
+                }
                 break
             case .MSButtonNodeStateHidden:
                 /* Disable touch */
@@ -51,6 +77,16 @@ class MSButtonNode: SKSpriteNode {
         
         /* Enable touch on button node */
         self.isUserInteractionEnabled = true
+        
+        originalXScale = self.xScale
+        originalYScale = self.yScale
+        if self.childNode(withName: "topNode") != nil && self.childNode(withName: "//bottomNode") != nil {
+            topNode = self.childNode(withName: "topNode")
+            bottomNode = topNode.childNode(withName: "bottomNode")
+            xDist = bottomNode.position.x
+            yDist = bottomNode.position.y
+            text = true
+        }
     }
     
     // MARK: - Touch handling
