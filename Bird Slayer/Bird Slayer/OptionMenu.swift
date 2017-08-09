@@ -104,12 +104,10 @@ class OptionMenu: SKScene {
             leftFixed = false
             self.leftTick.isHidden = true
             self.autoFireTick.isHidden = true
-            fixedLeftJoystickLocation = CGPoint(x: 142, y: -145)
-            fixedRightJoystickLocation = CGPoint(x: 426, y: -145)
+            fixedLeftJoystickLocation = CGPoint(x: -142, y: -145)
+            fixedRightJoystickLocation = CGPoint(x: 142, y: -145)
             self.leftJoystick.position = fixedLeftJoystickLocation
-            self.leftJoystick.position.x -= 284
             self.rightJoystick.position = fixedRightJoystickLocation
-            self.rightJoystick.position.x -= 284
         }
         noButton.selectedHandler = {[unowned self] in
             self.sureBox.position = self.offScreen
@@ -142,12 +140,10 @@ class OptionMenu: SKScene {
             UserDefaults.standard.set(nil, forKey: "LEFTY")
             UserDefaults.standard.set(nil, forKey: "RIGHTX")
             UserDefaults.standard.set(nil, forKey: "RIGHTY")
-            fixedLeftJoystickLocation = CGPoint(x: 142, y: -145)
-            fixedRightJoystickLocation = CGPoint(x: 426, y: -145)
+            fixedLeftJoystickLocation = CGPoint(x: -142, y: -145)
+            fixedRightJoystickLocation = CGPoint(x: 142, y: -145)
             self.leftJoystick.position = fixedLeftJoystickLocation
-            self.leftJoystick.position.x -= 284
             self.rightJoystick.position = fixedRightJoystickLocation
-            self.rightJoystick.position.x -= 284
         }
         customizationBackButton.selectedHandler = {[unowned self] in
             self.customizationScreen.position = self.offScreen
@@ -156,29 +152,23 @@ class OptionMenu: SKScene {
         
         // Sets joystick locations
         leftJoystick.position = fixedLeftJoystickLocation
-        self.leftJoystick.position.x -= 284
         rightJoystick.position = fixedRightJoystickLocation
-        self.rightJoystick.position.x -= 284
     }
     
     override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
         if customizationScreen.position == onScreen {
             for touch in touches {
-                if touch.location(in: self.view).x <= 284 {
+                if touch.location(in: self).x <= 0 {
                     if leftTouch == nil {
                         leftTouch = touch
-                        var location = touch.location(in: view)
-                        location.y = 160 - location.y
-                        location.x -= 284
+                        let location = touch.location(in: self)
                         leftJoystick.position.x = clamp(value: location.x, lower: -209, upper: -75)
                         leftJoystick.position.y = clamp(value: location.y, lower: -145, upper: 145)
                     }
                 } else {
                     if rightTouch == nil {
                         rightTouch = touch
-                        var location = touch.location(in: view)
-                        location.y = 160 - location.y
-                        location.x -= 284
+                        let location = touch.location(in: self)
                         rightJoystick.position.x = clamp(value: location.x, lower: 75, upper: 209)
                         rightJoystick.position.y = clamp(value: location.y, lower: -145, upper: 145)
                     }
@@ -191,16 +181,12 @@ class OptionMenu: SKScene {
         if customizationScreen.position == onScreen {
             for touch in touches {
                 if touch === leftTouch {
-                    var location = touch.location(in: view)
-                    location.y = 160 - location.y
-                    location.x -= 284
+                    let location = touch.location(in: self)
                     leftJoystick.position.x = clamp(value: location.x, lower: -224, upper: -60)
                     leftJoystick.position.y = clamp(value: location.y, lower: -145, upper: 145)
                 }
                 if touch === rightTouch {
-                    var location = touch.location(in: view)
-                    location.y = 160 - location.y
-                    location.x -= 284
+                    let location = touch.location(in: self)
                     rightJoystick.position.x = clamp(value: location.x, lower: 60, upper: 224)
                     rightJoystick.position.y = clamp(value: location.y, lower: -145, upper: 145)
                 }
@@ -213,13 +199,13 @@ class OptionMenu: SKScene {
             if touch === leftTouch {
                 leftTouch = nil
                 fixedLeftJoystickLocation = leftJoystick.position
-                UserDefaults.standard.set(Int(leftJoystick.position.x) + 284, forKey: "LEFTX")
+                UserDefaults.standard.set(Int(leftJoystick.position.x), forKey: "LEFTX")
                 UserDefaults.standard.set(Int(leftJoystick.position.y), forKey: "LEFTY")
             }
             if touch === rightTouch {
                 rightTouch = nil
                 fixedRightJoystickLocation = rightJoystick.position
-                UserDefaults.standard.set(Int(rightJoystick.position.x) + 284, forKey: "RIGHTX")
+                UserDefaults.standard.set(Int(rightJoystick.position.x), forKey: "RIGHTX")
                 UserDefaults.standard.set(Int(rightJoystick.position.y), forKey: "RIGHTY")
             }
         }

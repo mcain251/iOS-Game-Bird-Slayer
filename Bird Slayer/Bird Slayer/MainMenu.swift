@@ -13,8 +13,8 @@ var autoFire: Bool! = false
 var leftFixed: Bool! = false
 var rightFixed: Bool! = false
 
-var fixedLeftJoystickLocation: CGPoint = CGPoint(x: 142, y: -145)
-var fixedRightJoystickLocation: CGPoint = CGPoint(x: 426, y: -145)
+var fixedLeftJoystickLocation: CGPoint = CGPoint(x: -142, y: -145)
+var fixedRightJoystickLocation: CGPoint = CGPoint(x: 142, y: -145)
 
 var newGame = false
 

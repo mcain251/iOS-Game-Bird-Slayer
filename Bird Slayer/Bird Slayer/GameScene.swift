@@ -397,7 +397,6 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         if leftFixed {
             leftInitialPosition = fixedLeftJoystickLocation
             leftJoystickPosition = leftInitialPosition
-            leftJoystickPosition.x -= 284
             leftJoystick.position = leftJoystickPosition
             leftThumb.position = leftJoystickPosition
             leftJoystick.isHidden = false
@@ -406,7 +405,6 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         if rightFixed {
             rightInitialPosition = fixedRightJoystickLocation
             rightJoystickPosition = rightInitialPosition
-            rightJoystickPosition.x -= 284
             rightJoystick.position = rightJoystickPosition
             rightThumb.position = rightJoystickPosition
             rightJoystick.isHidden = false
@@ -456,23 +454,20 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         // Allows the player to control the hero if the game is playing
         if gameState != .gameOver && !isPaused {
             for touch in touches {
-                if touch.location(in: self.view).x <= 284 {
+                if touch.location(in: self).x <= 0 {
                     if leftTouch == nil {
                         leftTouch = touch
                         if !leftFixed {
-                            leftInitialPosition = touch.location(in: self.view)
+                            leftInitialPosition = touch.location(in: self)
                             leftJoystickPosition = leftInitialPosition
-                            leftJoystickPosition.x -= 284
-                            leftJoystickPosition.y = 160 - leftInitialPosition.y
                             leftJoystick.position = leftJoystickPosition
                             leftThumb.position = leftJoystickPosition
                         } else {
                             leftInitialPosition = fixedLeftJoystickLocation
                             leftJoystickPosition = leftInitialPosition
-                            leftJoystickPosition.x -= 284
                             leftJoystick.position = leftJoystickPosition
                             leftThumb.position = leftJoystickPosition
-                            hero.physicsBody?.velocity.dx = (touch.location(in: self.view).x - leftInitialPosition.x) * (heroSpeed/50)
+                            hero.physicsBody?.velocity.dx = (touch.location(in: self).x - leftInitialPosition.x) * (heroSpeed/50)
                             hero.physicsBody?.velocity.dx = clamp(value: (hero.physicsBody?.velocity.dx)!, lower: -1 * heroSpeed, upper: heroSpeed)
                             if (hero.position.x <= (-284 + hero.size.width / 2 + 1)) {
                                 hero.position.x = max(hero.position.x, -284 + hero.size.width / 2)
@@ -491,20 +486,17 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
                     if rightTouch == nil {
                         rightTouch = touch
                         if !rightFixed {
-                            rightInitialPosition = touch.location(in: self.view)
+                            rightInitialPosition = touch.location(in: self)
                             rightJoystickPosition = rightInitialPosition
-                            rightJoystickPosition.x -= 284
-                            rightJoystickPosition.y = 160 - rightInitialPosition.y
                             rightJoystick.position = rightJoystickPosition
                             rightThumb.position = rightJoystickPosition
                             gun.zRotation = CGFloat.pi
                         } else {
                             rightInitialPosition = fixedRightJoystickLocation
                             rightJoystickPosition = rightInitialPosition
-                            rightJoystickPosition.x -= 284
                             rightJoystick.position = rightJoystickPosition
                             rightThumb.position = rightJoystickPosition
-                            gun.zRotation = (rightInitialPosition.x - touch.location(in: self.view).x) * CGFloat(Double.pi/4/50) + CGFloat.pi
+                            gun.zRotation = (rightInitialPosition.x - touch.location(in: self).x) * CGFloat(Double.pi/4/50) + CGFloat.pi
                             gun.zRotation = clamp(value: gun.zRotation, lower: -CGFloat(Double.pi/4) + CGFloat.pi, upper: CGFloat(Double.pi/4) + CGFloat.pi)
                             rightThumb.position.x = clamp(value: touch.location(in: self).x, lower: rightJoystickPosition.x - 50, upper: rightJoystickPosition.x + 50)
                         }
@@ -532,7 +524,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         if gameState != .gameOver && !isPaused {
             for touch in touches {
                 if touch === leftTouch {
-                    hero.physicsBody?.velocity.dx = (touch.location(in: self.view).x - leftInitialPosition.x) * (heroSpeed/50)
+                    hero.physicsBody?.velocity.dx = (touch.location(in: self).x - leftInitialPosition.x) * (heroSpeed/50)
                     hero.physicsBody?.velocity.dx = clamp(value: (hero.physicsBody?.velocity.dx)!, lower: -1 * heroSpeed, upper: heroSpeed)
                     if (hero.position.x <= (-284 + hero.size.width / 2 + 1)) {
                         hero.position.x = max(hero.position.x, -284 + hero.size.width / 2)
@@ -544,7 +536,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
                     }
                     leftThumb.position.x = clamp(value: touch.location(in: self).x, lower: leftJoystickPosition.x - 50, upper: leftJoystickPosition.x + 50)
                 } else if touch === rightTouch {
-                    gun.zRotation = (rightInitialPosition.x - touch.location(in: self.view).x) * CGFloat(Double.pi/4/50) + CGFloat.pi
+                    gun.zRotation = (rightInitialPosition.x - touch.location(in: self).x) * CGFloat(Double.pi/4/50) + CGFloat.pi
                     gun.zRotation = clamp(value: gun.zRotation, lower: -CGFloat(Double.pi/4) + CGFloat.pi, upper: CGFloat(Double.pi/4) + CGFloat.pi)
                     rightThumb.position.x = clamp(value: touch.location(in: self).x, lower: rightJoystickPosition.x - 50, upper: rightJoystickPosition.x + 50)
                     if hero.xScale < 0 {
