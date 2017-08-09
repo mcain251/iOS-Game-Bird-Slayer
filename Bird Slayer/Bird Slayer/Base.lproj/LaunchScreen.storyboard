@@ -6,7 +6,6 @@
     <dependencies>
         <deployment identifier="iOS"/>
         <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="12089"/>
-        <capability name="Constraints to layout margins" minToolsVersion="6.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
     <scenes>
@@ -29,14 +28,11 @@
                         </subviews>
                         <color key="backgroundColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                         <constraints>
-                            <constraint firstItem="oSy-DJ-L1x" firstAttribute="leading" secondItem="Ze5-6b-2t3" secondAttribute="leadingMargin" id="0OV-W1-3NH"/>
                             <constraint firstItem="oSy-DJ-L1x" firstAttribute="top" secondItem="Llm-lL-Icb" secondAttribute="bottom" id="245-kG-Ngb"/>
-                            <constraint firstAttribute="trailingMargin" secondItem="oSy-DJ-L1x" secondAttribute="trailing" id="LDT-8Z-Xl8"/>
                             <constraint firstItem="xb3-aO-Qok" firstAttribute="top" secondItem="oSy-DJ-L1x" secondAttribute="bottom" id="MrQ-Cl-Zgb"/>
                             <constraint firstAttribute="trailing" secondItem="oSy-DJ-L1x" secondAttribute="trailing" id="eJG-TT-lm4"/>
                             <constraint firstItem="oSy-DJ-L1x" firstAttribute="leading" secondItem="Ze5-6b-2t3" secondAttribute="leading" id="oM2-wP-bpu"/>
                             <constraint firstItem="oSy-DJ-L1x" firstAttribute="centerX" secondItem="Ze5-6b-2t3" secondAttribute="centerX" id="qsy-hZ-RRt"/>
-                            <constraint firstItem="oSy-DJ-L1x" firstAttribute="centerY" secondItem="Ze5-6b-2t3" secondAttribute="centerY" id="wY6-6d-5tr"/>
                         </constraints>
                     </view>
                 </viewController>
