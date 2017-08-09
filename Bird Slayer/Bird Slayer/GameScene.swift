@@ -7,6 +7,7 @@
 //
 
 import SpriteKit
+import AVFoundation
 
 // Clamp function
 func clamp<T: Comparable>(value: T, lower: T, upper: T) -> T {
@@ -60,6 +61,9 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     var scoreTextBase: SKLabelNode!
     var healthTextBase: SKLabelNode!
     var featherBase: SKSpriteNode!
+    
+    // Music player
+    var bgMusic: AVAudioPlayer?
     
     // Upgrade UI and relevant values
     var upgradeUIElements: [String: (squares: [SKSpriteNode?], _plus: SKLabelNode?, _button: MSButtonNode?, upgradeStatus: Int, oldUpgradeStatus: Int)] = ["health": ([nil, nil, nil], nil, nil, 1, 1), "speed": ([nil, nil, nil], nil, nil, 1, 1), "fire_rate": ([nil, nil, nil], nil, nil, 1, 1), "bullet_speed": ([nil, nil, nil], nil, nil, 1, 1)]
@@ -410,6 +414,8 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             rightJoystick.isHidden = false
             rightThumb.isHidden = false
         }
+        
+        startBackgroundMusic()
     }
     
     // Touch functions
@@ -1618,5 +1624,31 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             }
             feather.run(sequence)
         }
+    }
+    
+    // Starts the background music
+    func startBackgroundMusic()
+    {
+        if let bgMusic = self.setupAudioPlayerWithFile("megasong", type:"mp3") {
+            self.bgMusic = bgMusic
+        }
+        self.bgMusic!.play()
+        self.bgMusic?.numberOfLoops = -1
+    }
+    
+    // Calls for audio player
+    func setupAudioPlayerWithFile(_ file:NSString, type:NSString) -> AVAudioPlayer?  {
+        
+        let soundFilePath = Bundle.main.path(forResource: file as String, ofType: type as String)
+        let soundFileURL = URL(fileURLWithPath: soundFilePath!)
+        
+        var audioPlayer: AVAudioPlayer?
+        
+        do {
+            try audioPlayer = AVAudioPlayer(contentsOf: soundFileURL)
+        } catch {
+            print("Player not available")
+        }
+        return audioPlayer
     }
 }

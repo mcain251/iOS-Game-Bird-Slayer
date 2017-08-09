@@ -10,8 +10,6 @@
 		0F5AC2641F3BC4A800244D98 /* megasong.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 0F5AC2621F3BC4A800244D98 /* megasong.mp3 */; };
 		0F5AC2651F3BC4A800244D98 /* Menace.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 0F5AC2631F3BC4A800244D98 /* Menace.mp3 */; };
 		0F5AC2671F3BC8B200244D98 /* Launch_Screen_1.png in Resources */ = {isa = PBXBuildFile; fileRef = 0F5AC2661F3BC8B200244D98 /* Launch_Screen_1.png */; };
-		0FA558C41F17DAE0002474C6 /* OptionMenu.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0FA558C31F17DADF002474C6 /* OptionMenu.swift */; };
-		0FA558C61F17DB04002474C6 /* OptionMenu.sks in Resources */ = {isa = PBXBuildFile; fileRef = 0FA558C51F17DB04002474C6 /* OptionMenu.sks */; };
 		0FA9C1901F0D525A009621DF /* Hero.sks in Resources */ = {isa = PBXBuildFile; fileRef = 0FA9C18F1F0D525A009621DF /* Hero.sks */; };
 		0FA9C1921F0D570E009621DF /* Bird.sks in Resources */ = {isa = PBXBuildFile; fileRef = 0FA9C1911F0D570E009621DF /* Bird.sks */; };
 		0FA9C1941F0D585E009621DF /* Bullet.sks in Resources */ = {isa = PBXBuildFile; fileRef = 0FA9C1931F0D585E009621DF /* Bullet.sks */; };
@@ -37,8 +35,6 @@
 		0F5AC2621F3BC4A800244D98 /* megasong.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = megasong.mp3; sourceTree = "<group>"; };
 		0F5AC2631F3BC4A800244D98 /* Menace.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = Menace.mp3; sourceTree = "<group>"; };
 		0F5AC2661F3BC8B200244D98 /* Launch_Screen_1.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = Launch_Screen_1.png; sourceTree = "<group>"; };
-		0FA558C31F17DADF002474C6 /* OptionMenu.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = OptionMenu.swift; sourceTree = "<group>"; };
-		0FA558C51F17DB04002474C6 /* OptionMenu.sks */ = {isa = PBXFileReference; lastKnownFileType = file.sks; path = OptionMenu.sks; sourceTree = "<group>"; };
 		0FA9C18F1F0D525A009621DF /* Hero.sks */ = {isa = PBXFileReference; lastKnownFileType = file.sks; path = Hero.sks; sourceTree = "<group>"; };
 		0FA9C1911F0D570E009621DF /* Bird.sks */ = {isa = PBXFileReference; lastKnownFileType = file.sks; path = Bird.sks; sourceTree = "<group>"; };
 		0FA9C1931F0D585E009621DF /* Bullet.sks */ = {isa = PBXFileReference; lastKnownFileType = file.sks; path = Bullet.sks; sourceTree = "<group>"; };
@@ -102,11 +98,7 @@
 				0FFD46621F0D4FC800E26E8E /* GameScene.sks */,
 				0FFD46661F0D4FC800E26E8E /* GameScene.swift */,
 				0FD91BD61F100E1000F30CC3 /* MainMenu.sks */,
-				0F5AC2621F3BC4A800244D98 /* megasong.mp3 */,
-				0F5AC2631F3BC4A800244D98 /* Menace.mp3 */,
 				0FD91BD81F10107300F30CC3 /* MainMenu.swift */,
-				0FA558C51F17DB04002474C6 /* OptionMenu.sks */,
-				0FA558C31F17DADF002474C6 /* OptionMenu.swift */,
 				0FFD46641F0D4FC800E26E8E /* Actions.sks */,
 				0FFD46681F0D4FC800E26E8E /* GameViewController.swift */,
 				0FFD46601F0D4FC800E26E8E /* AppDelegate.swift */,
@@ -117,6 +109,8 @@
 				0FFD46721F0D4FC800E26E8E /* Info.plist */,
 				0FBC40401F0EDD6300196891 /* MSButtonNode.swift */,
 				0FB42B151F3987590035724C /* Hobby-of-night.ttf */,
+				0F5AC2621F3BC4A800244D98 /* megasong.mp3 */,
+				0F5AC2631F3BC4A800244D98 /* Menace.mp3 */,
 			);
 			path = "Bird Slayer";
 			sourceTree = "<group>";
@@ -187,7 +181,6 @@
 				0FA9C1941F0D585E009621DF /* Bullet.sks in Resources */,
 				0FFD46631F0D4FC800E26E8E /* GameScene.sks in Resources */,
 				0FA9C1961F0D5937009621DF /* Poo.sks in Resources */,
-				0FA558C61F17DB04002474C6 /* OptionMenu.sks in Resources */,
 				0FFD466E1F0D4FC800E26E8E /* Assets.xcassets in Resources */,
 				0F5AC2641F3BC4A800244D98 /* megasong.mp3 in Resources */,
 				0FBC403B1F0EAA1600196891 /* Tutorial.sks in Resources */,
@@ -209,7 +202,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				0FFD46671F0D4FC800E26E8E /* GameScene.swift in Sources */,
-				0FA558C41F17DAE0002474C6 /* OptionMenu.swift in Sources */,
 				0FD91BD91F10107300F30CC3 /* MainMenu.swift in Sources */,
 				0FFD46691F0D4FC800E26E8E /* GameViewController.swift in Sources */,
 				0FA9C19E1F0D876A009621DF /* Bird.swift in Sources */,
