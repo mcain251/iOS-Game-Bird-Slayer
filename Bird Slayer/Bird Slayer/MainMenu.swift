@@ -112,10 +112,12 @@ class MainMenu: SKScene {
         
         creditsBackButton.selectedHandler = {[unowned self] in
             self.creditsBox.position = self.offScreen
+            self.mainScreen.position = self.onScreen
         }
         
         creditsButton.selectedHandler = {[unowned self] in
             self.creditsBox.position = self.onScreen
+            self.mainScreen.position = self.offScreen
         }
         
         
