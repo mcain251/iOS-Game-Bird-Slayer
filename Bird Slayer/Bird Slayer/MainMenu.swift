@@ -19,6 +19,9 @@ var fixedRightJoystickLocation: CGPoint = CGPoint(x: 142, y: -145)
 
 var newGame = false
 
+var musicPlaying = true
+var soundOn = true
+
 class MainMenu: SKScene {
     
     let offScreen: CGPoint = CGPoint(x: -1000, y: -1000)
@@ -36,8 +39,9 @@ class MainMenu: SKScene {
     var creditsBox: SKSpriteNode!
     var creditsBackButton: MSButtonNode!
     var continueButton: MSButtonNode!
-    
-    // UI 2
+    var soundButton: MSButtonNode!
+    var musicButton: MSButtonNode!
+    var musicX: SKSpriteNode!
     var controlsButton: MSButtonNode!
     var eraseButton: MSButtonNode!
     var yesButton: MSButtonNode!
@@ -61,68 +65,12 @@ class MainMenu: SKScene {
     var rightTouch: UITouch!
     var autoFireButton: MSButtonNode!
     var autoFireTick: SKSpriteNode!
-    
     var mainScreen: SKNode!
     
     // Setup scene
     override func didMove(to view: SKView) {
         
-        // Set reference to buttons
-        slayButton = childNode(withName: "//slayButton") as! MSButtonNode
-        optionButton = childNode(withName: "//optionButton") as! MSButtonNode
-        continueBox = childNode(withName: "//continueBox") as! SKSpriteNode
-        newGameButton = continueBox.childNode(withName: "newGameButton") as! MSButtonNode
-        continueBackButton = continueBox.childNode(withName: "continueBackButton") as! MSButtonNode
-        continueButton = continueBox.childNode(withName: "continueButton") as! MSButtonNode
-        creditsButton = childNode(withName: "//creditsButton") as! MSButtonNode
-        creditsBox = childNode(withName: "//creditsBox") as! SKSpriteNode
-        creditsBackButton = creditsBox.childNode(withName: "creditsBackButton") as! MSButtonNode
-        
-        // Play button functionality
-        slayButton.selectedHandler = {[unowned self] in
-            var continuable = false
-            if let savedScore = UserDefaults().integer(forKey: "SAVEDSCORE") as Int? {
-                if savedScore > 0 {
-                    continuable = true
-                    self.continueBox.position = self.onScreen
-                }
-            }
-            if !continuable {
-                self.loadGame("slay")
-            }
-        }
-        
-        newGameButton.selectedHandler = {[unowned self] in
-            newGame = true
-            self.loadGame("slay")
-        }
-        
-        continueButton.selectedHandler = {[unowned self] in
-            self.loadGame("slay")
-        }
-        
-        continueBackButton.selectedHandler = {[unowned self] in
-            self.continueBox.position = self.offScreen
-        }
-        
-        // Option button functionality
-        optionButton.selectedHandler = {[unowned self] in
-            self.loadGame("option")
-        }
-        
-        creditsBackButton.selectedHandler = {[unowned self] in
-            self.creditsBox.position = self.offScreen
-            self.mainScreen.position = self.onScreen
-        }
-        
-        creditsButton.selectedHandler = {[unowned self] in
-            self.creditsBox.position = self.onScreen
-            self.mainScreen.position = self.offScreen
-        }
-        
-        
-        
-        // Loads saved control scheme
+        // Loads saved data
         if let auto = UserDefaults().bool(forKey: "AUTOFIRE") as Bool? {
             autoFire = auto
         }
@@ -152,11 +100,23 @@ class MainMenu: SKScene {
                 fixedRightJoystickLocation.y = CGFloat(rightY)
             }
         }
+        if let music = UserDefaults().bool(forKey: "MUSIC") as Bool? {
+            musicPlaying = !music
+        }
+        if let sound = UserDefaults().bool(forKey: "SOUND") as Bool? {
+            soundOn = !sound
+        }
         
-        startBackgroundMusic()
-        
-        
-        // Set reference to buttons
+        // Set reference to objects
+        slayButton = childNode(withName: "//slayButton") as! MSButtonNode
+        optionButton = childNode(withName: "//optionButton") as! MSButtonNode
+        continueBox = childNode(withName: "//continueBox") as! SKSpriteNode
+        newGameButton = continueBox.childNode(withName: "newGameButton") as! MSButtonNode
+        continueBackButton = continueBox.childNode(withName: "continueBackButton") as! MSButtonNode
+        continueButton = continueBox.childNode(withName: "continueButton") as! MSButtonNode
+        creditsButton = childNode(withName: "//creditsButton") as! MSButtonNode
+        creditsBox = childNode(withName: "//creditsBox") as! SKSpriteNode
+        creditsBackButton = creditsBox.childNode(withName: "creditsBackButton") as! MSButtonNode
         controlsButton = childNode(withName: "//controlsButton") as! MSButtonNode
         eraseButton = childNode(withName: "//eraseButton") as! MSButtonNode
         yesButton = childNode(withName: "//yesButton") as! MSButtonNode
@@ -187,8 +147,58 @@ class MainMenu: SKScene {
         if !autoFire {
             autoFireTick.isHidden = true
         }
+        musicButton = childNode(withName: "//musicButton") as! MSButtonNode
+        soundButton = childNode(withName: "//soundButton") as! MSButtonNode
+        musicX = musicButton.childNode(withName: "musicX") as! SKSpriteNode
+        if !musicPlaying {
+            musicX.position = onScreen
+        } else {
+            musicX.position = offScreen
+        }
+        if soundOn {
+            soundButton.texture = SKTexture(imageNamed: "Sound_On")
+        } else {
+            soundButton.texture = SKTexture(imageNamed: "Sound_Off")
+        }
         
         // Button functionalities
+        slayButton.selectedHandler = {[unowned self] in
+            var continuable = false
+            if let savedScore = UserDefaults().integer(forKey: "SAVEDSCORE") as Int? {
+                if savedScore > 0 {
+                    continuable = true
+                    self.continueBox.position = self.onScreen
+                }
+            }
+            if !continuable {
+                self.loadGame("slay")
+            }
+        }
+        newGameButton.selectedHandler = {[unowned self] in
+            newGame = true
+            self.loadGame("slay")
+        }
+        
+        continueButton.selectedHandler = {[unowned self] in
+            self.loadGame("slay")
+        }
+        
+        continueBackButton.selectedHandler = {[unowned self] in
+            self.continueBox.position = self.offScreen
+        }
+        optionButton.selectedHandler = {[unowned self] in
+            self.loadGame("option")
+        }
+        
+        creditsBackButton.selectedHandler = {[unowned self] in
+            self.creditsBox.position = self.offScreen
+            self.mainScreen.position = self.onScreen
+        }
+        
+        creditsButton.selectedHandler = {[unowned self] in
+            self.creditsBox.position = self.onScreen
+            self.mainScreen.position = self.offScreen
+        }
         controlsButton.selectedHandler = {[unowned self] in
             self.defaultScreen.position = self.offScreen
             self.controlsScreen.position = self.onScreen
@@ -264,6 +274,30 @@ class MainMenu: SKScene {
         customizationBackButton.selectedHandler = {[unowned self] in
             self.customizationScreen.position = self.offScreen
             self.controlsScreen.position = self.onScreen
+        }
+        musicButton.selectedHandler = {[unowned self] in
+            musicPlaying = !musicPlaying
+            UserDefaults.standard.set(!musicPlaying, forKey: "MUSIC")
+            if !musicPlaying {
+                self.musicX.position = self.onScreen
+                self.bgMusic?.pause()
+            } else {
+                self.musicX.position = self.offScreen
+                self.startBackgroundMusic()
+            }
+        }
+        soundButton.selectedHandler = {[unowned self] in
+            soundOn = !soundOn
+            UserDefaults.standard.set(!soundOn, forKey: "SOUND")
+            if soundOn {
+                self.soundButton.texture = SKTexture(imageNamed: "Sound_On")
+            } else {
+                self.soundButton.texture = SKTexture(imageNamed: "Sound_Off")
+            }
+        }
+        
+        if musicPlaying {
+            startBackgroundMusic()
         }
         
         // Sets joystick locations

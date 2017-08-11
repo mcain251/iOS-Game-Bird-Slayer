@@ -21,6 +21,9 @@ enum GameSceneState {
 
 class GameScene: SKScene, SKPhysicsContactDelegate {
 
+    let onScreen = CGPoint(x: 0, y: 0)
+    let offScreen = CGPoint(x: -1000, y: -1000)
+    
     // Game objects
     var hero: SKSpriteNode!
     var gun: SKSpriteNode!
@@ -46,9 +49,14 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     var levelUpLabel: SKLabelNode!
     var pauseButton: MSButtonNode!
     var unpauseButton: MSButtonNode!
-    let unpauseButtonPosition: CGPoint = CGPoint(x: 241.5, y: 122.5)
+    let unpauseButtonPosition = CGPoint(x: 246.5, y: 122.5)
     var menuButton: MSButtonNode!
-    let menuButtonPosition: CGPoint = CGPoint(x: -226.5, y: 122.5)
+    let menuButtonPosition = CGPoint(x: -224, y: 122.5)
+    var soundButton: MSButtonNode!
+    let soundButtonPosition = CGPoint(x: 116.5, y: 122.5)
+    var musicButton: MSButtonNode!
+    let musicButtonPosition = CGPoint(x: 176.5, y: 122.5)
+    var musicX: SKSpriteNode!
     var pauseLabel: SKLabelNode!
     var upgradeLabel: SKLabelNode!
     var shield: SKSpriteNode!
@@ -70,7 +78,6 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     // Total of the upgrade statuses
     var total = 0
     var oldTotal = 0
-    let offScreen: CGPoint = CGPoint(x: -1000, y: -1000)
     // Number of upgrades per catagory (set later)
     var upgrades = 0
     // Number of categories (set later)
@@ -265,6 +272,25 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         menuButton.position = menuButtonPosition
         menuButton.isHidden = true
         menuButton.state = .MSButtonNodeStateHidden
+        soundButton = childNode(withName: "soundButton") as! MSButtonNode
+        soundButton.position = soundButtonPosition
+        soundButton.isHidden = true
+        soundButton.state = .MSButtonNodeStateHidden
+        musicButton = childNode(withName: "musicButton") as! MSButtonNode
+        musicButton.position = musicButtonPosition
+        musicButton.isHidden = true
+        musicButton.state = .MSButtonNodeStateHidden
+        musicX = musicButton.childNode(withName: "musicX") as! SKSpriteNode
+        if !musicPlaying {
+            musicX.position = onScreen
+        } else {
+            musicX.position = offScreen
+        }
+        if soundOn {
+            soundButton.texture = SKTexture(imageNamed: "Sound_On")
+        } else {
+            soundButton.texture = SKTexture(imageNamed: "Sound_Off")
+        }
         powerupBar = childNode(withName: "//powerupBar") as! SKSpriteNode
         powerupBarContainer = childNode(withName: "powerupBarContainer") as! SKSpriteNode
         zoomPoint = childNode(withName: "zoomPoint")
@@ -324,6 +350,13 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             self.unpauseButton.state = .MSButtonNodeStateActive
             self.menuButton.isHidden = false
             self.menuButton.state = .MSButtonNodeStateActive
+            self.soundButton.isHidden = false
+            self.soundButton.state = .MSButtonNodeStateActive
+            self.musicButton.isHidden = false
+            self.musicButton.state = .MSButtonNodeStateActive
+            if self.bgMusic != nil && musicPlaying {
+                self.bgMusic!.pause()
+            }
         }
         unpauseButton.selectedHandler = {[unowned self] in
             self.isPaused  = false
@@ -335,6 +368,17 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             self.unpauseButton.state = .MSButtonNodeStateHidden
             self.menuButton.isHidden = true
             self.menuButton.state = .MSButtonNodeStateHidden
+            self.soundButton.isHidden = true
+            self.soundButton.state = .MSButtonNodeStateHidden
+            self.musicButton.isHidden = true
+            self.musicButton.state = .MSButtonNodeStateHidden
+            if self.bgMusic != nil && musicPlaying {
+                self.bgMusic!.play()
+                self.bgMusic?.numberOfLoops = -1
+            }
+            else if self.bgMusic == nil && musicPlaying {
+                self.startBackgroundMusic()
+            }
         }
         menuButton.selectedHandler = {[unowned self] in
             // Set reference to SpriteKit view
@@ -351,6 +395,27 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
                 skView.presentScene(scene)
             }
         }
+        musicButton.selectedHandler = {[unowned self] in
+            musicPlaying = !musicPlaying
+            UserDefaults.standard.set(!musicPlaying, forKey: "MUSIC")
+            if !musicPlaying {
+                self.musicX.position = self.onScreen
+                self.bgMusic?.pause()
+            } else {
+                self.musicX.position = self.offScreen
+                self.startBackgroundMusic()
+            }
+        }
+        soundButton.selectedHandler = {[unowned self] in
+            soundOn = !soundOn
+            UserDefaults.standard.set(!soundOn, forKey: "SOUND")
+            if soundOn {
+                self.soundButton.texture = SKTexture(imageNamed: "Sound_On")
+            } else {
+                self.soundButton.texture = SKTexture(imageNamed: "Sound_Off")
+            }
+        }
+        
         
         // Set physics contact delegate
         physicsWorld.contactDelegate = self
@@ -415,7 +480,9 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             rightThumb.isHidden = false
         }
         
-        startBackgroundMusic()
+        if musicPlaying {
+            startBackgroundMusic()
+        }
     }
     
     // Touch functions
@@ -1627,8 +1694,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     }
     
     // Starts the background music
-    func startBackgroundMusic()
-    {
+    func startBackgroundMusic() {
         if let bgMusic = self.setupAudioPlayerWithFile("megasong", type:"mp3") {
             self.bgMusic = bgMusic
         }
