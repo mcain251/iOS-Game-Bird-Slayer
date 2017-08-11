@@ -122,7 +122,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     // Frames until hazards disappear ~(seconds * 60)
     let hazardTime: Int = Int(1 * 60.0)
     // Frames until next powerup ~(seconds * 60)
-    let nextPowerupTime: Int = 25 * 60
+    let nextPowerupTime: Int = 5 * 60
     // Frames until powerup runs out ~(seconds * 60)
     let powerupTime: Int = 15 * 60
     // Frames until powerup disappears on ground ~(seconds * 60)
@@ -139,7 +139,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     let rapidPooTime = Int(0.5 * 60.0)
     
     // powerups (texture, status, spawn ratio, color)
-    var powerupStatuses: [String: (UIImage?, Bool, Int, UIColor?)] = ["health": (nil, false, 2, nil), "shield": (nil, false, 1, nil), "spreadShot": (nil, false, 1, nil)]
+    var powerupStatuses: [String: (UIImage?, Bool, Int, UIColor?)] = ["health": (nil, false, 2, nil), "shield": (nil, false, 10, nil), "spreadShot": (nil, false, 1, nil)]
     var currentPowerup: (SKSpriteNode, Bool, Int)!
     var powerupTimer = 0
     var powerupWillAppear = false
@@ -261,7 +261,8 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         leftJoystick = childNode(withName: "leftJoystick") as! SKSpriteNode
         rightJoystick = childNode(withName: "rightJoystick") as! SKSpriteNode
         pauseButton = childNode(withName: "pauseButton") as! MSButtonNode
-        shield = childNode(withName: "shield") as! SKSpriteNode
+        shield = hero.childNode(withName: "shield") as! SKSpriteNode
+        shield.position = offScreen
         shield_2 = shield.childNode(withName: "shield_2") as! SKSpriteNode
         ground = childNode(withName: "ground") as! SKSpriteNode
         unpauseButton = childNode(withName: "unpauseButton") as! MSButtonNode
@@ -1412,8 +1413,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
                         healthText.run(sequence)
                     }
                 case "shield":
-                    shield.position = hero.position
-                    shield.position.y = (ground.position.y + ground.size.height / 2.0) + (hero.size.height/2)
+                    shield.position = onScreen
                     if !poweredup {
                         powerupTimer = powerupTime
                     }
