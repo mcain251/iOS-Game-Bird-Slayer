@@ -97,6 +97,19 @@ class MSButtonNode: SKSpriteNode {
     override func touchesEnded(_ touches: Set<UITouch>, with event: UIEvent?) {
         selectedHandler()
         state = .MSButtonNodeStateActive
+        playSound("click")
+    }
+    
+    // Plays sound
+    func playSound(_ sound: String) {
+        if soundOn {
+            switch sound {
+            case "click":
+                run(SKAction.playSoundFileNamed("Click_2.mp3", waitForCompletion: false))
+            default:
+                break
+            }
+        }
     }
     
 }

@@ -404,7 +404,6 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
                 self.bgMusic?.pause()
             } else {
                 self.musicX.position = self.offScreen
-                self.startBackgroundMusic()
             }
         }
         soundButton.selectedHandler = {[unowned self] in
@@ -806,6 +805,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         if (contactA.categoryBitMask == 1 && contactB.categoryBitMask == 8) {
             if invincibilityTimer <= 0 && !(powerupStatuses["shield"]?.1)! {
                 health -= 1
+                playSound("ugh")
                 if String(describing: nodeB.color) == String(describing: bigPooColor) && health != 0{
                     health -= 1
                     let healthText = healthTextBase.copy() as! SKLabelNode
@@ -832,10 +832,12 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             }
             nodeB.removeFromParent()
             nodeB.isHidden = true
+            playSound("splat")
         }
         if (contactB.categoryBitMask == 1 && contactA.categoryBitMask == 8) {
             if invincibilityTimer <= 0 && !(powerupStatuses["shield"]?.1)! {
                 health -= 1
+                playSound("ugh")
                 if String(describing: nodeA.color) == String(describing: bigPooColor) && health != 0 {
                     health -= 1
                     let healthText = healthTextBase.copy() as! SKLabelNode
@@ -860,12 +862,14 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             }
             nodeA.removeFromParent()
             nodeA.isHidden = true
+            playSound("splat")
         }
         
         // Check if one was the ground, then acts accordingly based on the type of poop
         if (contactA.categoryBitMask == 16) {
             if String(describing: nodeB.color) == String(describing: toxicPooColor){
                 createHazard(nodeB)
+                playSound("splat")
             }
             if contactB.categoryBitMask == 8 {
                 nodeB.removeFromParent()
@@ -875,6 +879,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         if (contactB.categoryBitMask == 16) {
             if String(describing: nodeB.color) == String(describing: toxicPooColor) {
                 createHazard(nodeA)
+                playSound("splat")
             }
             if contactA.categoryBitMask == 8 {
                 nodeA.removeFromParent()
@@ -885,6 +890,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         // Check if one was a hazard, then removes hazard and decrements health
         if (contactA.categoryBitMask == 32) {
             if invincibilityTimer <= 0 && !(powerupStatuses["shield"]?.1)! {
+                playSound("ugh")
                 health -= 1
                 let healthText = healthTextBase.copy() as! SKLabelNode
                 healthText.position = hero.position
@@ -899,10 +905,12 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             invincibilityTimer = invincibilityTime
             nodeA.removeFromParent()
             nodeA.isHidden = true
+            playSound("splat")
         }
         if (contactB.categoryBitMask == 32) {
             if invincibilityTimer <= 0 && !(powerupStatuses["shield"]?.1)! {
                 health -= 1
+                playSound("ugh")
                 let healthText = healthTextBase.copy() as! SKLabelNode
                 healthText.position = hero.position
                 healthText.position.y = healthText.position.y - 39.5 + (hero.size.height / 2)
@@ -916,6 +924,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             invincibilityTimer = invincibilityTime
             nodeB.removeFromParent()
             nodeB.isHidden = true
+            playSound("splat")
         }
         
         // Check if one was a powerup and the other was the ground, then stops the powerup and starts the timer
@@ -989,6 +998,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
                 }
                 birds[i].removeFromParent()
                 birds.remove(at: i)
+                playSound("birdDeath")
                 if i > 0 {
                     i -= 1
                 }
@@ -1216,6 +1226,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
                 bullets.append(newBullet)
                 self.addChild(newBullet)
                 newBullet.zPosition = 2
+                playSound("shot")
             } else {
                 delay = true
                 shotTimer = shotFrequency / 2
@@ -1246,6 +1257,8 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
                 newBullet.zRotation = rotation
                 bullets.append(newBullet)
                 self.addChild(newBullet)
+                newBullet.zPosition = 2
+                playSound("shot")
             }
         }
     }
@@ -1716,5 +1729,23 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             print("Player not available")
         }
         return audioPlayer
+    }
+    
+    // Plays sound
+    func playSound(_ sound: String) {
+        if soundOn {
+            switch sound {
+            case "shot":
+                run(SKAction.playSoundFileNamed("Gunshot_2.wav", waitForCompletion: false))
+            case "birdDeath":
+                run(SKAction.playSoundFileNamed("Bird_Death_2.wav", waitForCompletion: false))
+            case "splat":
+                run(SKAction.playSoundFileNamed("Splat_1.wav", waitForCompletion: false))
+            case "ugh":
+                run(SKAction.playSoundFileNamed("Ugh_1.wav", waitForCompletion: false))
+            default:
+                break
+            }
+        }
     }
 }
