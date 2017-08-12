@@ -122,7 +122,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     // Frames until hazards disappear ~(seconds * 60)
     let hazardTime: Int = Int(1 * 60.0)
     // Frames until next powerup ~(seconds * 60)
-    let nextPowerupTime: Int = 5 * 60
+    let nextPowerupTime: Int = 25 * 60
     // Frames until powerup runs out ~(seconds * 60)
     let powerupTime: Int = 15 * 60
     // Frames until powerup disappears on ground ~(seconds * 60)
@@ -139,7 +139,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     let rapidPooTime = Int(0.5 * 60.0)
     
     // powerups (texture, status, spawn ratio, color)
-    var powerupStatuses: [String: (UIImage?, Bool, Int, UIColor?)] = ["health": (nil, false, 2, nil), "shield": (nil, false, 10, nil), "spreadShot": (nil, false, 1, nil)]
+    var powerupStatuses: [String: (UIImage?, Bool, Int, UIColor?)] = ["health": (nil, false, 2, nil), "shield": (nil, false, 1, nil), "spreadShot": (nil, false, 1, nil)]
     var currentPowerup: (SKSpriteNode, Bool, Int)!
     var powerupTimer = 0
     var powerupWillAppear = false
@@ -192,6 +192,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     var minSpawnHeight = 0
     var right = true
     var legsMovingForward = true
+    var birdShot = false
     
     // Called when game begins
     override func didMove(to view: SKView) {
@@ -436,6 +437,11 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             if let savedHealth = UserDefaults().integer(forKey: "SAVEDHEALTH") as Int? {
                 if savedHealth > 0 {
                     health = savedHealth
+                } else {
+                    score = 0
+                    for (type, _) in upgradeUIElements {
+                        UserDefaults.standard.set(1, forKey: type)
+                    }
                 }
             }
             while upgradeScores.count >= 1 && score >= upgradeScores.first! {
@@ -450,6 +456,11 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
                 .upgradeStatus)! - 1))) + minBulletSpeed
         } else {
             newGame = false
+        }
+        if score == 0 {
+            health = maxHealth
+        } else {
+            birdShot = true
         }
         
         calculateTotals()
@@ -999,6 +1010,11 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
                 birds[i].removeFromParent()
                 birds.remove(at: i)
                 playSound("birdDeath")
+                if musicPlaying && !birdShot {
+                    birdShot = true
+                    startBackgroundMusic()
+                }
+                birdShot = true
                 if i > 0 {
                     i -= 1
                 }
@@ -1708,8 +1724,14 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     
     // Starts the background music
     func startBackgroundMusic() {
-        if let bgMusic = self.setupAudioPlayerWithFile("megasong", type:"mp3") {
-            self.bgMusic = bgMusic
+        if birdShot {
+            if let bgMusic = self.setupAudioPlayerWithFile("megasong_edit_8", type:"mp3") {
+                self.bgMusic = bgMusic
+            }
+        } else {
+            if let bgMusic = self.setupAudioPlayerWithFile("Birds_2", type:"wav") {
+                self.bgMusic = bgMusic
+            }
         }
         self.bgMusic!.play()
         self.bgMusic?.numberOfLoops = -1
