@@ -72,6 +72,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     
     // Music player
     var bgMusic: AVAudioPlayer?
+    var sFX: AVAudioPlayer?
     
     // Upgrade UI and relevant values
     var upgradeUIElements: [String: (squares: [SKSpriteNode?], _plus: SKLabelNode?, _button: MSButtonNode?, upgradeStatus: Int, oldUpgradeStatus: Int)] = ["health": ([nil, nil, nil], nil, nil, 1, 1), "speed": ([nil, nil, nil], nil, nil, 1, 1), "fire_rate": ([nil, nil, nil], nil, nil, 1, 1), "bullet_speed": ([nil, nil, nil], nil, nil, 1, 1)]
@@ -957,6 +958,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             for (powerup, attributes) in powerupStatuses {
                 if String(describing: nodeA.color) == String(describing: attributes.3!) {
                     powerupStatuses[powerup]?.1 = true
+                    playSound("powerup")
                 }
             }
             nodeA.removeFromParent()
@@ -966,6 +968,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             for (powerup, attributes) in powerupStatuses {
                 if String(describing: nodeB.color) == String(describing: attributes.3!) {
                     powerupStatuses[powerup]?.1 = true
+                    playSound("powerup")
                 }
             }
             nodeB.removeFromParent()
@@ -1253,6 +1256,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     // Shoots in a spread patten
     func spreadShoot() {
         if gameState == .active {
+            playSound("shot")
             for i in 1 ... 3 {
                 let newBullet = bulletBase.copy() as! SKSpriteNode
                 newBullet.physicsBody?.linearDamping = 0
@@ -1273,9 +1277,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
                 newBullet.zRotation = rotation
                 bullets.append(newBullet)
                 self.addChild(newBullet)
-                newBullet.zPosition = 2
-                playSound("shot")
-            }
+                newBullet.zPosition = 2            }
         }
     }
     
@@ -1374,6 +1376,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             shooting = false
             rightJoystick.isHidden = true
             rightThumb.isHidden = true
+            playSound("levelUp")
             isPaused = true
             
             // Presents level up label
@@ -1765,6 +1768,14 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
                 run(SKAction.playSoundFileNamed("Splat_1.wav", waitForCompletion: false))
             case "ugh":
                 run(SKAction.playSoundFileNamed("Ugh_1.wav", waitForCompletion: false))
+            case "powerup":
+                run(SKAction.playSoundFileNamed("Powerup_1.wav", waitForCompletion: false))
+            case "levelUp":
+                if let sound = self.setupAudioPlayerWithFile("Level_Up_2", type:"wav") {
+                    sFX = sound
+                }
+                sFX!.play()
+                sFX?.numberOfLoops = 0
             default:
                 break
             }
