@@ -8,6 +8,7 @@
 
 import SpriteKit
 import AVFoundation
+import GameKit
 
 // Clamp function
 func clamp<T: Comparable>(value: T, lower: T, upper: T) -> T {
@@ -140,7 +141,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     let rapidPooTime = Int(0.5 * 60.0)
     
     // powerups (texture, status, spawn ratio, color)
-    var powerupStatuses: [String: (UIImage?, Bool, Int, UIColor?)] = ["health": (nil, false, 2, nil), "shield": (nil, false, 1, nil), "spreadShot": (nil, false, 1, nil)]
+    var powerupStatuses: [String: (UIImage?, Bool, Int, UIColor?)] = ["health": (nil, false, 2, nil), "shield": (nil, false, 100, nil), "spreadShot": (nil, false, 1, nil)]
     var currentPowerup: (SKSpriteNode, Bool, Int)!
     var powerupTimer = 0
     var powerupWillAppear = false
@@ -181,6 +182,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     //var upgradeScores: [Int] = [10, 20, 50, 80, 130, 180, 360, 440, 640, 840, 1040, 1240]
     //var upgradeScores: [Int] = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 10, 10]
     //var upgradeScores: [Int] = [1, 2, 3, 4, 5, 6, 20, 30, 40, 50, 60, 70]
+    var referenceUpgradeScores: [Int] = []
     var pause = false
     var maxHeroSpeed: CGFloat = 0
     var minHeroSpeed: CGFloat = 0
@@ -194,6 +196,16 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     var right = true
     var legsMovingForward = true
     var birdShot = false
+    
+    var mainMenu: GameScene! = nil
+    var restartScene: GameScene! = nil
+    
+    var gunShot = SKAction.playSoundFileNamed("Gunshot_2.wav", waitForCompletion: false)
+    var birdDeath = SKAction.playSoundFileNamed("Bird_Death_2.wav", waitForCompletion: false)
+    var splat = SKAction.playSoundFileNamed("Splat_1.wav", waitForCompletion: false)
+    var ugh = SKAction.playSoundFileNamed("Ugh_1.wav", waitForCompletion: false)
+    var powerup = SKAction.playSoundFileNamed("Powerup_1.wav", waitForCompletion: false)
+    var levelUp: AVAudioPlayer! = nil
     
     // Called when game begins
     override func didMove(to view: SKView) {
@@ -221,6 +233,10 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         powerupStatuses["shield"]?.3 = shieldPowerupColor
         powerupStatuses["spreadShot"]?.0 = #imageLiteral(resourceName: "Spread_Powerup_2")
         powerupStatuses["spreadShot"]?.3 = spreadShotPowerupColor
+        referenceUpgradeScores = upgradeScores
+        levelUp = self.setupAudioPlayerWithFile("Level_Up_2", type:"wav")
+        mainMenu = GameScene(fileNamed: "MainMenu")
+        restartScene = GameScene(fileNamed: "GameScene")
         
         powerupTimer = nextPowerupTime
         
@@ -391,7 +407,8 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             }
             
             // Creates GameScene
-            if let scene = GameScene(fileNamed: "MainMenu") {
+            if let scene = self.mainMenu {
+                self.bgMusic?.stop()
                 
                 // Ensure correct aspect mode
                 scene.scaleMode = .aspectFit
@@ -445,6 +462,12 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
                     }
                 }
             }
+            calculateTotals()
+            for i in 0 ..< referenceUpgradeScores.count {
+                if score >= referenceUpgradeScores[i] && (total - upgradeTypes) <= i {
+                    score = referenceUpgradeScores[i] - 10
+                }
+            }
             while upgradeScores.count >= 1 && score >= upgradeScores.first! {
                 upgradeScores.removeFirst()
             }
@@ -495,6 +518,8 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         if musicPlaying {
             startBackgroundMusic()
         }
+        
+        submitScoreToGC(highScore)
     }
     
     // Touch functions
@@ -518,21 +543,31 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         // Reveals the upgrade menu
         if gameState == .upgrading && !levelUpLabel.isHidden {
             levelUpLabel.isHidden = true
-            upgradeScreen.isHidden = false
-            upgradeLabel.isHidden = false
-            for (type, elements) in upgradeUIElements {
-                if (elements.upgradeStatus - 2) >= 0 && (elements.upgradeStatus - 2) < elements.squares.count {
-                    for i in 0 ... elements.upgradeStatus - 2 {
-                        self.upgradeUIElements[type]?.squares[i]?.color = self.upgradedColor
+            calculateTotals()
+            if (total - upgradeTypes) < (upgrades * upgradeTypes) {
+                upgradeScreen.isHidden = false
+                upgradeLabel.isHidden = false
+                for (type, elements) in upgradeUIElements {
+                    if (elements.upgradeStatus - 2) >= 0 && (elements.upgradeStatus - 2) < elements.squares.count {
+                        for i in 0 ... elements.upgradeStatus - 2 {
+                            self.upgradeUIElements[type]?.squares[i]?.color = self.upgradedColor
+                        }
+                    }
+                    if (elements.upgradeStatus - 1) < elements.squares.count {
+                        upgradeUIElements[type]?._button?.position = (elements.squares[elements.upgradeStatus - 1]?.position)!
+                        upgradeUIElements[type]?._plus?.position = (elements.squares[elements.upgradeStatus - 1]?.position)!
+                    } else {
+                        upgradeUIElements[type]?._button?.state = .MSButtonNodeStateHidden
+                        upgradeUIElements[type]?._plus?.text = ""
                     }
                 }
-                if (elements.upgradeStatus - 1) < elements.squares.count {
-                    upgradeUIElements[type]?._button?.position = (elements.squares[elements.upgradeStatus - 1]?.position)!
-                    upgradeUIElements[type]?._plus?.position = (elements.squares[elements.upgradeStatus - 1]?.position)!
-                } else {
-                    upgradeUIElements[type]?._button?.state = .MSButtonNodeStateHidden
-                    upgradeUIElements[type]?._plus?.text = ""
-                }
+            } else {
+                self.isPaused = false
+                self.gameState = .active
+                self.upgradeScreen.isHidden = true
+                self.upgradeLabel.isHidden = true
+                self.pauseButton.isHidden = false
+                self.pauseButton.state = .MSButtonNodeStateActive
             }
         }
         
@@ -599,7 +634,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         // Restarts the game
         if gameState == .gameOver {
             let skView = self.view as SKView!
-            let scene = GameScene(fileNamed:"GameScene") as GameScene!
+            let scene = restartScene as GameScene!
             scene?.scaleMode = .aspectFill
             skView?.presentScene(scene)
         }
@@ -1115,6 +1150,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             UserDefaults.standard.set(score, forKey: "HIGHSCORE")
             highScore = UserDefaults().integer(forKey: "HIGHSCORE")
             highScoreLabel.text = "High: \(highScore)"
+            submitScoreToGC(highScore)
         }
         if upgradeScores.count > 0 {
             if score >= upgradeScores.first! {
@@ -1446,6 +1482,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
                     }
                 case "shield":
                     shield.position = onScreen
+                    shield_2.position = onScreen
                     if !poweredup {
                         powerupTimer = powerupTime
                     }
@@ -1761,23 +1798,40 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         if soundOn {
             switch sound {
             case "shot":
-                run(SKAction.playSoundFileNamed("Gunshot_2.wav", waitForCompletion: false))
+                run(gunShot)
             case "birdDeath":
-                run(SKAction.playSoundFileNamed("Bird_Death_2.wav", waitForCompletion: false))
+                run(birdDeath)
             case "splat":
-                run(SKAction.playSoundFileNamed("Splat_1.wav", waitForCompletion: false))
+                run(splat)
             case "ugh":
-                run(SKAction.playSoundFileNamed("Ugh_1.wav", waitForCompletion: false))
+                run(ugh)
             case "powerup":
-                run(SKAction.playSoundFileNamed("Powerup_1.wav", waitForCompletion: false))
+                run(powerup)
             case "levelUp":
-                if let sound = self.setupAudioPlayerWithFile("Level_Up_2", type:"wav") {
+                if let sound = levelUp {
                     sFX = sound
                 }
                 sFX!.play()
                 sFX?.numberOfLoops = 0
             default:
                 break
+            }
+        }
+    }
+    
+    // Submit high score to Game Center
+    @IBAction func submitScoreToGC(_ newScore: Int /*_ sender: AnyObject*/) {
+        if GKLocalPlayer.localPlayer().isAuthenticated {
+            
+            // Submit score to GC leaderboard
+            let bestScoreInt = GKScore(leaderboardIdentifier: LEADERBOARD_ID)
+            bestScoreInt.value = Int64(newScore)
+            GKScore.report([bestScoreInt]) { (error) in
+                if error != nil {
+                    print(error!.localizedDescription)
+                } else {
+                    print("Best Score submitted to your Leaderboard!")
+                }
             }
         }
     }

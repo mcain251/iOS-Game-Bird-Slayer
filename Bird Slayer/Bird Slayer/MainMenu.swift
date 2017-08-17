@@ -7,6 +7,7 @@
 //
 
 import SpriteKit
+import GameKit
 import AVFoundation
 
 var autoFire: Bool! = false
@@ -22,7 +23,9 @@ var newGame = false
 var musicPlaying = true
 var soundOn = true
 
-class MainMenu: SKScene {
+let LEADERBOARD_ID = "com.mcain.birdslayer"
+
+class MainMenu: SKScene, GKGameCenterControllerDelegate {
     
     let offScreen: CGPoint = CGPoint(x: -1000, y: -1000)
     let onScreen: CGPoint = CGPoint(x: 0, y: 0)
@@ -40,8 +43,13 @@ class MainMenu: SKScene {
     var creditsBackButton: MSButtonNode!
     var continueButton: MSButtonNode!
     var soundButton: MSButtonNode!
+    var soundTop: SKSpriteNode!
+    var soundBottom: SKSpriteNode!
     var musicButton: MSButtonNode!
-    var musicX: SKSpriteNode!
+    var musicTop: SKSpriteNode!
+    var musicBottom: SKSpriteNode!
+    var topMusicX: SKSpriteNode!
+    var bottomMusicX: SKSpriteNode!
     var controlsButton: MSButtonNode!
     var eraseButton: MSButtonNode!
     var yesButton: MSButtonNode!
@@ -66,6 +74,11 @@ class MainMenu: SKScene {
     var autoFireButton: MSButtonNode!
     var autoFireTick: SKSpriteNode!
     var mainScreen: SKNode!
+    var leaderBoardButton: MSButtonNode!
+    
+    var gcEnabled = Bool()
+    var gcDefaultLeaderBoard = String()
+    var gcScore = 100
     
     // Setup scene
     override func didMove(to view: SKView) {
@@ -149,17 +162,27 @@ class MainMenu: SKScene {
         }
         musicButton = childNode(withName: "//musicButton") as! MSButtonNode
         soundButton = childNode(withName: "//soundButton") as! MSButtonNode
-        musicX = musicButton.childNode(withName: "musicX") as! SKSpriteNode
+        soundTop = soundButton.childNode(withName: "topNode") as! SKSpriteNode
+        soundBottom = soundTop.childNode(withName: "bottomNode") as! SKSpriteNode
+        musicTop = musicButton.childNode(withName: "topNode") as! SKSpriteNode
+        musicBottom = musicTop.childNode(withName: "bottomNode") as! SKSpriteNode
+        topMusicX = musicTop.childNode(withName: "topMusicX") as! SKSpriteNode
+        bottomMusicX = musicBottom.childNode(withName: "bottomMusicX") as! SKSpriteNode
         if !musicPlaying {
-            musicX.position = onScreen
+            topMusicX.position = onScreen
+            bottomMusicX.position = onScreen
         } else {
-            musicX.position = offScreen
+            topMusicX.position = offScreen
+            bottomMusicX.position = offScreen
         }
         if soundOn {
-            soundButton.texture = SKTexture(imageNamed: "Sound_On")
+            soundTop.texture = SKTexture(imageNamed: "Sound_On")
+            soundBottom.texture = SKTexture(imageNamed: "Sound_On")
         } else {
-            soundButton.texture = SKTexture(imageNamed: "Sound_Off")
+            soundTop.texture = SKTexture(imageNamed: "Sound_Off")
+            soundBottom.texture = SKTexture(imageNamed: "Sound_Off")
         }
+        leaderBoardButton = childNode(withName: "//leaderBoardButton") as! MSButtonNode
         
         // Button functionalities
         slayButton.selectedHandler = {[unowned self] in
@@ -279,10 +302,12 @@ class MainMenu: SKScene {
             musicPlaying = !musicPlaying
             UserDefaults.standard.set(!musicPlaying, forKey: "MUSIC")
             if !musicPlaying {
-                self.musicX.position = self.onScreen
+                self.topMusicX.position = self.onScreen
+                self.bottomMusicX.position = self.onScreen
                 self.bgMusic?.pause()
             } else {
-                self.musicX.position = self.offScreen
+                self.topMusicX.position = self.offScreen
+                self.bottomMusicX.position = self.offScreen
                 self.startBackgroundMusic()
             }
         }
@@ -290,10 +315,15 @@ class MainMenu: SKScene {
             soundOn = !soundOn
             UserDefaults.standard.set(!soundOn, forKey: "SOUND")
             if soundOn {
-                self.soundButton.texture = SKTexture(imageNamed: "Sound_On")
+                self.soundTop.texture = SKTexture(imageNamed: "Sound_On")
+                self.soundBottom.texture = SKTexture(imageNamed: "Sound_On")
             } else {
-                self.soundButton.texture = SKTexture(imageNamed: "Sound_Off")
+                self.soundTop.texture = SKTexture(imageNamed: "Sound_Off")
+                self.soundBottom.texture = SKTexture(imageNamed: "Sound_Off")
             }
+        }
+        leaderBoardButton.selectedHandler = {[unowned self] in
+            self.checkGCLeaderboard()
         }
         
         if musicPlaying {
@@ -305,6 +335,8 @@ class MainMenu: SKScene {
         rightJoystick.position = fixedRightJoystickLocation
         
         mainScreen = childNode(withName: "Main")
+        
+        authenticateLocalPlayer()
     }
     
     // Changes the scene to GameScene
@@ -325,6 +357,7 @@ class MainMenu: SKScene {
                 scene.scaleMode = .aspectFit
                 skView.presentScene(scene)
             }
+            bgMusic?.stop()
         case "option":
             mainScreen.position = offScreen
             defaultScreen.position = onScreen
@@ -420,5 +453,131 @@ class MainMenu: SKScene {
         
         defaultScreen.position = offScreen
         mainScreen.position = onScreen
+    }
+    
+    
+    
+    
+    
+    //send high score to leaderboard
+//    func saveHighscore(score:Int) {
+//        
+//        //check if user is signed in
+//        if GKLocalPlayer.localPlayer().isAuthenticated {
+//            
+//            var scoreReporter = GKScore(leaderboardIdentifier: LEADERBOARD_ID) //leaderboard id here
+//            
+//            scoreReporter.value = Int64(score) //score variable here (same as above)
+//            
+//            var scoreArray: [GKScore] = [scoreReporter]
+//            
+//            GKScore.reportScores(scoreArray, {(error : NSError!) -> Void in
+//                if error != nil {
+//                    println("error")
+//                }
+//            })
+//            
+//        }
+//        
+//    }
+//    
+//    
+//    //shows leaderboard screen
+//    func showLeader() {
+//        let vc = self.view?.window?.rootViewController
+//        let gc = GKGameCenterViewController()
+//        gc.gameCenterDelegate = self
+//        vc?.present(gc, animated: true, completion: nil)
+//    }
+//    
+//    //hides leaderboard screen
+//    func gameCenterViewControllerDidFinish(gameCenterViewController: GKGameCenterViewController!)
+//    {
+//        gameCenterViewController.dismissViewControllerAnimated(true, completion: nil)
+//        
+//    }
+    
+    //initiate gamecenter
+//    func authenticateLocalPlayer(){
+//        
+//        var localPlayer = GKLocalPlayer.localPlayer()
+//        
+//        localPlayer.authenticateHandler = {(viewController, error) -> Void in
+//            
+//            if (viewController != nil) {
+//                let vc: UIViewController = self.view!.window!.rootViewController!
+//                vc.presentViewController(viewController, animated: true, completion: nil)
+//            }
+//                
+//            else {
+//                println((GKLocalPlayer.localPlayer().authenticated))
+//            }
+//        }
+//        
+//    }
+    
+    
+    // Authenticates local Game Center Player
+    func authenticateLocalPlayer() {
+        let localPlayer: GKLocalPlayer = GKLocalPlayer.localPlayer()
+        
+        localPlayer.authenticateHandler = {(ViewController, error) -> Void in
+            if((ViewController) != nil) {
+                // 1. Show login if player is not logged in
+                let vc = self.view?.window?.rootViewController
+                //let gc = GKGameCenterViewController()
+                //gc.gameCenterDelegate = self
+                vc?.present(ViewController!, animated: true, completion: nil)
+                //self.view.present(ViewController!, animated: true, completion: nil)
+            } else if (localPlayer.isAuthenticated) {
+                // 2. Player is already authenticated & logged in, load game center
+                self.gcEnabled = true
+                
+                // Get the default leaderboard ID
+                localPlayer.loadDefaultLeaderboardIdentifier(completionHandler: { (leaderboardIdentifer, error) in
+                    if error != nil { print(error!)
+                    } else { self.gcDefaultLeaderBoard = leaderboardIdentifer! }
+                })
+                
+            } else {
+                // 3. Game center is not enabled on the users device
+                self.gcEnabled = false
+                print("Local player could not be authenticated!")
+                print(error!)
+            }
+        }
+    }
+    
+    // Submit high score to Game Center
+    @IBAction func submitScoreToGC(_ newScore: Int /*_ sender: AnyObject*/) {
+        if GKLocalPlayer.localPlayer().isAuthenticated {
+            
+            // Submit score to GC leaderboard
+            let bestScoreInt = GKScore(leaderboardIdentifier: LEADERBOARD_ID)
+            bestScoreInt.value = Int64(newScore)
+            GKScore.report([bestScoreInt]) { (error) in
+                if error != nil {
+                    print(error!.localizedDescription)
+                } else {
+                    print("Best Score submitted to your Leaderboard!")
+                }
+            }
+        }
+    }
+    
+    func gameCenterViewControllerDidFinish(_ gameCenterViewController: GKGameCenterViewController) {
+        gameCenterViewController.dismiss(animated: true, completion: nil)
+    }
+    
+    @IBAction func checkGCLeaderboard(/*_ sender: AnyObject*/) {
+        let gcVC = GKGameCenterViewController()
+        gcVC.gameCenterDelegate = self
+        gcVC.viewState = .leaderboards
+        gcVC.leaderboardIdentifier = LEADERBOARD_ID
+        let vc = self.view?.window?.rootViewController
+        //let gc = GKGameCenterViewController()
+        //gc.gameCenterDelegate = self
+        vc?.present(gcVC, animated: true, completion: nil)
+        //present(gcVC, animated: true, completion: nil)
     }
 }
