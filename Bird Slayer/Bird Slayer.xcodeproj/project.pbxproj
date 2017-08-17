@@ -8,10 +8,8 @@
 
 /* Begin PBXBuildFile section */
 		0F5AC2651F3BC4A800244D98 /* Menace.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 0F5AC2631F3BC4A800244D98 /* Menace.mp3 */; };
-		0F7E9FCA1F40131100A5841C /* Level_Up_1.wav in Resources */ = {isa = PBXBuildFile; fileRef = 0F7E9FC71F40131100A5841C /* Level_Up_1.wav */; };
 		0F7E9FCB1F40131100A5841C /* Level_Up_2.wav in Resources */ = {isa = PBXBuildFile; fileRef = 0F7E9FC81F40131100A5841C /* Level_Up_2.wav */; };
 		0F7E9FCC1F40131100A5841C /* Powerup_1.wav in Resources */ = {isa = PBXBuildFile; fileRef = 0F7E9FC91F40131100A5841C /* Powerup_1.wav */; };
-		0F7E9FCE1F4015BA00A5841C /* Level_Up_3.wav in Resources */ = {isa = PBXBuildFile; fileRef = 0F7E9FCD1F4015BA00A5841C /* Level_Up_3.wav */; };
 		0FA9C1901F0D525A009621DF /* Hero.sks in Resources */ = {isa = PBXBuildFile; fileRef = 0FA9C18F1F0D525A009621DF /* Hero.sks */; };
 		0FA9C1921F0D570E009621DF /* Bird.sks in Resources */ = {isa = PBXBuildFile; fileRef = 0FA9C1911F0D570E009621DF /* Bird.sks */; };
 		0FA9C1941F0D585E009621DF /* Bullet.sks in Resources */ = {isa = PBXBuildFile; fileRef = 0FA9C1931F0D585E009621DF /* Bullet.sks */; };
@@ -43,10 +41,8 @@
 
 /* Begin PBXFileReference section */
 		0F5AC2631F3BC4A800244D98 /* Menace.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = Menace.mp3; sourceTree = "<group>"; };
-		0F7E9FC71F40131100A5841C /* Level_Up_1.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = Level_Up_1.wav; sourceTree = "<group>"; };
 		0F7E9FC81F40131100A5841C /* Level_Up_2.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = Level_Up_2.wav; sourceTree = "<group>"; };
 		0F7E9FC91F40131100A5841C /* Powerup_1.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = Powerup_1.wav; sourceTree = "<group>"; };
-		0F7E9FCD1F4015BA00A5841C /* Level_Up_3.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = Level_Up_3.wav; sourceTree = "<group>"; };
 		0FA9C18F1F0D525A009621DF /* Hero.sks */ = {isa = PBXFileReference; lastKnownFileType = file.sks; path = Hero.sks; sourceTree = "<group>"; };
 		0FA9C1911F0D570E009621DF /* Bird.sks */ = {isa = PBXFileReference; lastKnownFileType = file.sks; path = Bird.sks; sourceTree = "<group>"; };
 		0FA9C1931F0D585E009621DF /* Bullet.sks */ = {isa = PBXFileReference; lastKnownFileType = file.sks; path = Bullet.sks; sourceTree = "<group>"; };
@@ -131,10 +127,6 @@
 				0FD91BD81F10107300F30CC3 /* MainMenu.swift */,
 				0FFD46641F0D4FC800E26E8E /* Actions.sks */,
 				0FFD46681F0D4FC800E26E8E /* GameViewController.swift */,
-				0F7E9FC71F40131100A5841C /* Level_Up_1.wav */,
-				0F7E9FC81F40131100A5841C /* Level_Up_2.wav */,
-				0F7E9FCD1F4015BA00A5841C /* Level_Up_3.wav */,
-				0F7E9FC91F40131100A5841C /* Powerup_1.wav */,
 				0FFD46601F0D4FC800E26E8E /* AppDelegate.swift */,
 				0FFD466A1F0D4FC800E26E8E /* Main.storyboard */,
 				0FFD466D1F0D4FC800E26E8E /* Assets.xcassets */,
@@ -143,11 +135,13 @@
 				0FBC40401F0EDD6300196891 /* MSButtonNode.swift */,
 				0FB42B151F3987590035724C /* Hobby-of-night.ttf */,
 				0F5AC2631F3BC4A800244D98 /* Menace.mp3 */,
-				0FC12DEF1F3E535B00F04006 /* Bird_Death_2.wav */,
 				0FC12E151F3ED7FD00F04006 /* megasong_edit_8.mp3 */,
+				0FC12DEF1F3E535B00F04006 /* Bird_Death_2.wav */,
+				0F7E9FC91F40131100A5841C /* Powerup_1.wav */,
 				0FC12DF51F3E5E3900F04006 /* Splat_1.wav */,
 				0FC12DF71F3E5E4400F04006 /* Ugh_1.wav */,
 				0FC12DF01F3E535B00F04006 /* Click_2.mp3 */,
+				0F7E9FC81F40131100A5841C /* Level_Up_2.wav */,
 				0FC12DF11F3E535B00F04006 /* Gunshot_2.wav */,
 				0FC12DFA1F3E6A1300F04006 /* Birds_2.wav */,
 			);
@@ -219,7 +213,6 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				0F7E9FCA1F40131100A5841C /* Level_Up_1.wav in Resources */,
 				0FFD466C1F0D4FC800E26E8E /* Main.storyboard in Resources */,
 				0F5AC2651F3BC4A800244D98 /* Menace.mp3 in Resources */,
 				0FD91BD71F100E1000F30CC3 /* MainMenu.sks in Resources */,
@@ -239,7 +232,6 @@
 				0FA9C1901F0D525A009621DF /* Hero.sks in Resources */,
 				0F7E9FCB1F40131100A5841C /* Level_Up_2.wav in Resources */,
 				0FFD46711F0D4FC800E26E8E /* LaunchScreen.storyboard in Resources */,
-				0F7E9FCE1F4015BA00A5841C /* Level_Up_3.wav in Resources */,
 				0FC12DF61F3E5E3900F04006 /* Splat_1.wav in Resources */,
 				0FA9C1921F0D570E009621DF /* Bird.sks in Resources */,
 				0FC12E161F3ED7FD00F04006 /* megasong_edit_8.mp3 in Resources */,
