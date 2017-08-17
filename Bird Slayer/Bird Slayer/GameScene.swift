@@ -141,7 +141,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     let rapidPooTime = Int(0.5 * 60.0)
     
     // powerups (texture, status, spawn ratio, color)
-    var powerupStatuses: [String: (UIImage?, Bool, Int, UIColor?)] = ["health": (nil, false, 2, nil), "shield": (nil, false, 100, nil), "spreadShot": (nil, false, 1, nil)]
+    var powerupStatuses: [String: (UIImage?, Bool, Int, UIColor?)] = ["health": (nil, false, 2, nil), "shield": (nil, false, 1, nil), "spreadShot": (nil, false, 1, nil)]
     var currentPowerup: (SKSpriteNode, Bool, Int)!
     var powerupTimer = 0
     var powerupWillAppear = false
@@ -948,8 +948,8 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
                 let remove = SKAction.removeFromParent()
                 let sequence = SKAction.sequence([fade, remove])
                 healthText.run(sequence)
+                invincibilityTimer = invincibilityTime
             }
-            invincibilityTimer = invincibilityTime
             nodeA.removeFromParent()
             nodeA.isHidden = true
             playSound("splat")
@@ -967,8 +967,8 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
                 let remove = SKAction.removeFromParent()
                 let sequence = SKAction.sequence([fade, remove])
                 healthText.run(sequence)
+                invincibilityTimer = invincibilityTime
             }
-            invincibilityTimer = invincibilityTime
             nodeB.removeFromParent()
             nodeB.isHidden = true
             playSound("splat")
@@ -1660,7 +1660,6 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             hero.position.x = hero.position.x * stepScale
             hero.position.y = 39.5 + (ground.position.y + ground.size.height / 2.0) + hero.size.height/2.0
             scale(powerupBase, by: fullScale)
-            scale(shield, by: fullScale)
             scale(background, by: fullScale)
             scale(ground, by: fullScale)
             scale(featherBase, by: fullScale)
